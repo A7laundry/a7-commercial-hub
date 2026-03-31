@@ -10,6 +10,7 @@ import {
   FolderOpen,
   Bell,
   Kanban,
+  Upload,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -20,6 +21,7 @@ const NAV = [
   { href: "/contracts", label: "Contratos", icon: FileText },
   { href: "/documents", label: "Documentos",icon: FolderOpen },
   { href: "/alerts",    label: "Alertas",   icon: Bell },
+  { href: "/import",    label: "Importar",  icon: Upload },
 ] as const
 
 export function Sidebar() {
