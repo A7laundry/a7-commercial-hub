@@ -17,6 +17,18 @@ export type TenantUser = {
 
 export type AccountStatus = "active" | "inactive" | "prospect"
 
+// ── CRM Pipeline ─────────────────────────────────────────────────────────────
+
+export type PipelineStage =
+  | "lead"
+  | "in_service"
+  | "quote_sent"
+  | "negotiating"
+  | "closed"
+  | "recurring"
+
+export type CommercialStatus = "active" | "at_risk" | "lost"
+
 export type Account = {
   id: string
   tenant_id: string
@@ -28,6 +40,13 @@ export type Account = {
   notes: string | null
   created_at: string
   updated_at: string
+  // CRM pipeline fields
+  pipeline_stage: PipelineStage
+  commercial_status: CommercialStatus
+  last_contact_at: string | null
+  next_action: string | null
+  estimated_value: number | null
+  frequency: string | null
 }
 
 export type ContractStatus = "draft" | "active" | "expiring" | "expired" | "cancelled"
@@ -88,4 +107,44 @@ export type Alert = {
   created_at: string
   // joined
   account_name?: string
+}
+
+// ── WhatsApp ──────────────────────────────────────────────────────────────────
+
+export type WhatsAppMessage = {
+  id: string
+  tenant_id: string
+  account_id: string | null
+  phone: string
+  message_text: string
+  direction: "inbound" | "outbound"
+  wa_message_id: string | null
+  received_at: string
+  processed: boolean
+  created_at: string
+}
+
+export type PhoneMapping = {
+  id: string
+  tenant_id: string
+  phone: string
+  account_id: string
+  created_at: string
+}
+
+// ── Automation ────────────────────────────────────────────────────────────────
+
+export type AutomationTriggerType = "upsell" | "cross_sell" | "remarketing" | "reactivation"
+export type AutomationTriggerStatus = "pending" | "fired" | "dismissed"
+
+export type AutomationTrigger = {
+  id: string
+  tenant_id: string
+  account_id: string | null
+  type: AutomationTriggerType
+  status: AutomationTriggerStatus
+  reason: string | null
+  scheduled_for: string | null
+  fired_at: string | null
+  created_at: string
 }

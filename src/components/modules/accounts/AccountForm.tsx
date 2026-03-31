@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import type { Account } from "@/types"
+import type { Account, PipelineStage, CommercialStatus } from "@/types"
 
 type AccountFormProps = {
   initial?: Partial<Account>
@@ -20,6 +20,7 @@ type AccountFormProps = {
   onSuccess: () => void
   onCancel: () => void
   submitLabel?: string
+  showCrmFields?: boolean
 }
 
 export function AccountForm({
@@ -28,17 +29,22 @@ export function AccountForm({
   onSuccess,
   onCancel,
   submitLabel = "Salvar",
+  showCrmFields = false,
 }: AccountFormProps) {
   const [error, setError] = useState<string | null>(null)
-  const [status, setStatus] = useState<Account["status"]>(
-    initial?.status ?? "active"
-  )
+  const [status, setStatus] = useState<Account["status"]>(initial?.status ?? "active")
+  const [pipelineStage, setPipelineStage] = useState<PipelineStage>(initial?.pipeline_stage ?? "lead")
+  const [commercialStatus, setCommercialStatus] = useState<CommercialStatus>(initial?.commercial_status ?? "active")
   const [isPending, startTransition] = useTransition()
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const formData = new FormData(e.currentTarget)
     formData.set("status", status)
+    if (showCrmFields) {
+      formData.set("pipeline_stage", pipelineStage)
+      formData.set("commercial_status", commercialStatus)
+    }
 
     startTransition(async () => {
       const result = await action(formData)
@@ -129,6 +135,93 @@ export function AccountForm({
           placeholder="Observações relevantes..."
         />
       </div>
+
+      {showCrmFields && (
+        <>
+          <div className="border-t pt-4">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">Pipeline Comercial</p>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Estágio</Label>
+                <Select value={pipelineStage} onValueChange={(v) => setPipelineStage(v as PipelineStage)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="lead">Lead</SelectItem>
+                    <SelectItem value="in_service">Em serviço</SelectItem>
+                    <SelectItem value="quote_sent">Proposta</SelectItem>
+                    <SelectItem value="negotiating">Negociando</SelectItem>
+                    <SelectItem value="closed">Fechado</SelectItem>
+                    <SelectItem value="recurring">Recorrente</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Status comercial</Label>
+                <Select value={commercialStatus} onValueChange={(v) => setCommercialStatus(v as CommercialStatus)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">Ativo</SelectItem>
+                    <SelectItem value="at_risk">Em risco</SelectItem>
+                    <SelectItem value="lost">Perdido</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="estimated_value">Valor estimado (R$)</Label>
+              <Input
+                id="estimated_value"
+                name="estimated_value"
+                type="number"
+                min="0"
+                step="0.01"
+                defaultValue={initial?.estimated_value ?? ""}
+                placeholder="0,00"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="frequency">Frequência</Label>
+              <Input
+                id="frequency"
+                name="frequency"
+                defaultValue={initial?.frequency ?? ""}
+                placeholder="Ex: Mensal, Semanal"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="last_contact_at">Último contato</Label>
+              <Input
+                id="last_contact_at"
+                name="last_contact_at"
+                type="date"
+                defaultValue={initial?.last_contact_at?.slice(0, 10) ?? ""}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="next_action">Próxima ação</Label>
+              <Input
+                id="next_action"
+                name="next_action"
+                defaultValue={initial?.next_action ?? ""}
+                placeholder="Ex: Enviar proposta"
+              />
+            </div>
+          </div>
+        </>
+      )}
 
       <div className="flex justify-end gap-2 pt-2">
         <Button type="button" variant="outline" onClick={onCancel}>

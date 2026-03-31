@@ -9,11 +9,13 @@ import {
   FileText,
   FolderOpen,
   Bell,
+  Kanban,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const NAV = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/pipeline",  label: "Pipeline",  icon: Kanban },
   { href: "/accounts",  label: "Contas",    icon: Building2 },
   { href: "/contracts", label: "Contratos", icon: FileText },
   { href: "/documents", label: "Documentos",icon: FolderOpen },
