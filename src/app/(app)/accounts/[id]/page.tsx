@@ -13,6 +13,11 @@ import { ContractsTable } from "@/components/modules/contracts/ContractsTable"
 import { DocumentsList } from "@/components/modules/documents/DocumentsList"
 import { StatusBadge } from "@/components/shared/StatusBadge"
 import { PageHeader } from "@/components/shared/PageHeader"
+import { CommercialScore } from "@/components/modules/accounts/CommercialScore"
+import { NextBestAction } from "@/components/modules/accounts/NextBestAction"
+import { OpportunityPanel } from "@/components/modules/accounts/OpportunityPanel"
+import { MessageSuggestions } from "@/components/modules/accounts/MessageSuggestions"
+import { WhatsAppTimeline } from "@/components/modules/accounts/WhatsAppTimeline"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -119,6 +124,14 @@ export default function AccountDetailPage({
         }
       />
 
+      {/* Commercial intelligence strip */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <CommercialScore account={account} contracts={contracts} />
+        <div className="md:col-span-2">
+          <NextBestAction account={account} contracts={contracts} />
+        </div>
+      </div>
+
       {/* Info grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
         <InfoRow label="Status">
@@ -138,11 +151,53 @@ export default function AccountDetailPage({
             "—"
           )}
         </InfoRow>
+        <InfoRow label="Estágio pipeline">{account.pipeline_stage.replace("_", " ")}</InfoRow>
+        <InfoRow label="Último contato">
+          {account.last_contact_at
+            ? new Date(account.last_contact_at).toLocaleDateString("pt-BR")
+            : "—"}
+        </InfoRow>
+        {account.estimated_value != null && (
+          <InfoRow label="Valor estimado">
+            {account.estimated_value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+          </InfoRow>
+        )}
+        {account.frequency && (
+          <InfoRow label="Frequência">{account.frequency}</InfoRow>
+        )}
         {account.notes && (
           <div className="col-span-full">
             <InfoRow label="Notas">{account.notes}</InfoRow>
           </div>
         )}
+      </div>
+
+      <Separator className="my-6" />
+
+      {/* Two-column: Opportunities + Messages */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <div>
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-3">
+            Sinais de Oportunidade
+          </h2>
+          <OpportunityPanel account={account} contracts={contracts} />
+        </div>
+        <div>
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-3">
+            Sugestões de Mensagem
+          </h2>
+          <MessageSuggestions account={account} contracts={contracts} />
+        </div>
+      </div>
+
+      <Separator className="my-6" />
+
+      {/* WhatsApp Timeline */}
+      <div className="mb-8">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-3">
+          Histórico WhatsApp
+        </h2>
+        <WhatsAppTimeline tenantId={tenant.id} accountId={id} />
       </div>
 
       <Separator className="my-6" />
@@ -170,7 +225,7 @@ export default function AccountDetailPage({
 
       {/* Edit dialog */}
       <Dialog open={editing} onOpenChange={setEditing}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Editar conta</DialogTitle>
           </DialogHeader>
@@ -180,6 +235,7 @@ export default function AccountDetailPage({
             onSuccess={handleEditSuccess}
             onCancel={() => setEditing(false)}
             submitLabel="Salvar alterações"
+            showCrmFields
           />
         </DialogContent>
       </Dialog>

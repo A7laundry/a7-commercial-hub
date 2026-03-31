@@ -4,9 +4,15 @@ import { useRef, useState, useTransition } from "react"
 import Link from "next/link"
 import { movePipelineStage } from "@/app/(app)/pipeline/actions"
 import { PIPELINE_STAGES, STAGE_CONFIG, type PipelineBoard } from "@/hooks/pipeline/usePipeline"
+import {
+  computeCommercialScore,
+  computeOpportunitySignals,
+  SCORE_CONFIG,
+  daysSince,
+} from "@/lib/commercial-intelligence"
 import type { Account, PipelineStage } from "@/types"
 import { cn } from "@/lib/utils"
-import { Building2, DollarSign } from "lucide-react"
+import { DollarSign, Clock, AlertTriangle } from "lucide-react"
 
 type Props = {
   board: PipelineBoard
@@ -19,7 +25,6 @@ export function KanbanBoard({ board }: Props) {
   const [, startTransition] = useTransition()
   const dragSource = useRef<PipelineStage | null>(null)
 
-  // Sync prop changes into optimistic state
   if (board !== optimisticBoard && dragAccountId === null) {
     setOptimisticBoard(board)
   }
@@ -47,7 +52,6 @@ export function KanbanBoard({ board }: Props) {
     const account = optimisticBoard[sourceStage].find((a) => a.id === dragAccountId)
     if (!account) { setDragAccountId(null); return }
 
-    // Optimistic update
     setOptimisticBoard((prev) => {
       const next = { ...prev }
       next[sourceStage] = prev[sourceStage].filter((a) => a.id !== dragAccountId)
@@ -132,17 +136,12 @@ function AccountCard({
   onDragStart: () => void
   onDragEnd: () => void
 }) {
-  const statusColor = {
-    active: "bg-green-100 text-green-700",
-    at_risk: "bg-amber-100 text-amber-700",
-    lost: "bg-red-100 text-red-700",
-  }[account.commercial_status]
-
-  const statusLabel = {
-    active: "Ativo",
-    at_risk: "Em risco",
-    lost: "Perdido",
-  }[account.commercial_status]
+  // No contracts available on kanban board — score from account fields only
+  const score = computeCommercialScore(account, [])
+  const scoreCfg = SCORE_CONFIG[score]
+  const signals = computeOpportunitySignals(account, [])
+  const criticalSignal = signals.find((s) => s.severity === "critical")
+  const daysSinceContact = daysSince(account.last_contact_at)
 
   return (
     <div
@@ -152,9 +151,11 @@ function AccountCard({
       className={cn(
         "bg-card border rounded-md p-2.5 cursor-grab active:cursor-grabbing shadow-sm",
         "hover:shadow-md transition-all select-none",
+        score === "at_risk" && "border-red-200",
         isDragging && "opacity-40 rotate-1"
       )}
     >
+      {/* Name + score */}
       <div className="flex items-start justify-between gap-1 mb-1.5">
         <Link
           href={`/accounts/${account.id}`}
@@ -163,30 +164,49 @@ function AccountCard({
         >
           {account.name}
         </Link>
-        <span className={cn("text-[10px] px-1.5 py-0.5 rounded-full shrink-0 font-medium", statusColor)}>
-          {statusLabel}
+        <span className={cn(
+          "text-[10px] px-1.5 py-0.5 rounded-full shrink-0 font-medium",
+          scoreCfg.bg, scoreCfg.color
+        )}>
+          {scoreCfg.label}
         </span>
       </div>
 
-      <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
-        {account.segment && (
-          <span className="flex items-center gap-1">
-            <Building2 className="w-3 h-3" />
-            {account.segment}
+      {/* Metrics row */}
+      <div className="flex items-center gap-2 flex-wrap text-[10px] text-muted-foreground mb-1.5">
+        {daysSinceContact !== null && (
+          <span className={cn(
+            "flex items-center gap-1",
+            daysSinceContact > 30 && "text-red-500",
+            daysSinceContact > 14 && daysSinceContact <= 30 && "text-amber-500"
+          )}>
+            <Clock className="w-3 h-3" />
+            {daysSinceContact === 0 ? "hoje" : `${daysSinceContact}d`}
           </span>
         )}
         {account.estimated_value != null && (
-          <span className="flex items-center gap-1 ml-auto text-green-700 font-medium">
+          <span className="flex items-center gap-1 text-green-700 font-medium ml-auto">
             <DollarSign className="w-3 h-3" />
-            {(account.estimated_value / 1000).toFixed(0)}k
+            {account.estimated_value >= 1000
+              ? `${(account.estimated_value / 1000).toFixed(0)}k`
+              : account.estimated_value.toFixed(0)}
           </span>
         )}
       </div>
 
+      {/* Next action */}
       {account.next_action && (
-        <p className="mt-1.5 text-[10px] text-muted-foreground bg-muted/60 px-2 py-1 rounded line-clamp-1">
+        <p className="text-[10px] text-muted-foreground bg-muted/60 px-2 py-1 rounded line-clamp-1">
           → {account.next_action}
         </p>
+      )}
+
+      {/* Critical opportunity tag */}
+      {criticalSignal && (
+        <div className="mt-1.5 flex items-center gap-1 text-[10px] text-red-600 font-medium">
+          <AlertTriangle className="w-3 h-3 shrink-0" />
+          <span className="line-clamp-1">{criticalSignal.label}</span>
+        </div>
       )}
     </div>
   )

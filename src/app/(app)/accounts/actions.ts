@@ -40,6 +40,11 @@ export async function updateAccount(id: string, formData: FormData) {
   const supabase = await createClient()
   const tenantId = await getTenantId(supabase)
 
+  const estimatedValue = formData.get("estimated_value") as string
+  const lastContact = formData.get("last_contact_at") as string
+  const pipelineStage = formData.get("pipeline_stage") as string
+  const commercialStatus = formData.get("commercial_status") as string
+
   const { error } = await supabase
     .from("accounts")
     .update({
@@ -49,6 +54,12 @@ export async function updateAccount(id: string, formData: FormData) {
       contact_email: (formData.get("contact_email") as string) || null,
       status: formData.get("status") as string,
       notes: (formData.get("notes") as string) || null,
+      ...(pipelineStage && { pipeline_stage: pipelineStage }),
+      ...(commercialStatus && { commercial_status: commercialStatus }),
+      estimated_value: estimatedValue ? Number(estimatedValue) : null,
+      frequency: (formData.get("frequency") as string) || null,
+      last_contact_at: lastContact || null,
+      next_action: (formData.get("next_action") as string) || null,
     })
     .eq("id", id)
     .eq("tenant_id", tenantId)
