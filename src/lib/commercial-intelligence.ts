@@ -45,6 +45,57 @@ export function daysUntil(dateStr: string | null | undefined): number | null {
   return Math.floor(diff / (1000 * 60 * 60 * 24))
 }
 
+/**
+ * Parse frequency string → times per month.
+ * Examples: "semanal" → 4.3, "quinzenal" → 2, "mensal" → 1, "diário" → 30
+ * Falls back to 1 (mensal) when unrecognizable.
+ */
+export function parseFrequencyPerMonth(frequency: string | null | undefined): number {
+  if (!frequency) return 1
+
+  const f = frequency.toLowerCase().trim()
+
+  // explicit numeric: "3x/mês", "2x semana", "4 vezes", etc.
+  const nxMonth = f.match(/(\d+(?:\.\d+)?)\s*[x×\/]\s*m[eê]s/)
+  if (nxMonth) return parseFloat(nxMonth[1])
+
+  const nxWeek = f.match(/(\d+(?:\.\d+)?)\s*[x×\/]\s*sem/)
+  if (nxWeek) return parseFloat(nxWeek[1]) * 4.3
+
+  const nxDay = f.match(/(\d+(?:\.\d+)?)\s*[x×\/]\s*dia/)
+  if (nxDay) return parseFloat(nxDay[1]) * 30
+
+  // keywords
+  if (/diári|diario|daily/.test(f))                return 30
+  if (/3[x×]\s*sem|três\s*vez.*sem/.test(f))       return 13
+  if (/2[x×]\s*sem|duas?\s*vez.*sem/.test(f))      return 8.6
+  if (/seman|weekly|semana/.test(f))                return 4.3
+  if (/quinzenal|quinzena|biweekly|15\s*dias/.test(f)) return 2
+  if (/mensal|monthly|m[eê]s/.test(f))              return 1
+  if (/bimestral|bimestre|60\s*dias/.test(f))       return 0.5
+  if (/trimestral|trimestre|90\s*dias/.test(f))     return 0.33
+  if (/anual|annually|ano/.test(f))                 return 1 / 12
+
+  // bare number → treat as times per month
+  const bare = parseFloat(f)
+  if (!isNaN(bare) && bare > 0) return bare
+
+  return 1
+}
+
+/**
+ * LTV = estimated_value × frequency_per_month × avg_lifetime_months
+ * avg_lifetime_months defaults to 12 (one year) — reasonable for B2B laundry.
+ */
+export function computeLTV(
+  account: Account,
+  avgLifetimeMonths = 12
+): number | null {
+  if (account.estimated_value == null) return null
+  const freq = parseFrequencyPerMonth(account.frequency)
+  return account.estimated_value * freq * avgLifetimeMonths
+}
+
 // ── Commercial Score ───────────────────────────────────────────────────────────
 
 export function computeCommercialScore(

@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { computeCommercialScore, computeNextBestAction, SCORE_CONFIG, daysSince } from "@/lib/commercial-intelligence"
+import { computeCommercialScore, computeNextBestAction, computeLTV, SCORE_CONFIG, daysSince } from "@/lib/commercial-intelligence"
 import type { Account } from "@/types"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
@@ -53,6 +53,7 @@ function AccountCard({ account }: { account: Account }) {
   const nba = computeNextBestAction(account, [], score)
   const cfg = SCORE_CONFIG[score]
   const days = daysSince(account.last_contact_at)
+  const ltv = computeLTV(account)
 
   const priorityBorder = {
     urgent: "border-l-red-500",
@@ -79,12 +80,12 @@ function AccountCard({ account }: { account: Account }) {
 
         {/* Metrics */}
         <div className="space-y-1.5">
-          {account.estimated_value != null && (
+          {ltv != null && (
             <div className="flex items-center gap-1.5 text-xs">
               <DollarSign className="w-3 h-3 text-muted-foreground shrink-0" />
               <span className="text-muted-foreground">LTV:</span>
               <span className="font-semibold text-green-700">
-                {account.estimated_value.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 })}
+                {ltv.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 })}
               </span>
             </div>
           )}
