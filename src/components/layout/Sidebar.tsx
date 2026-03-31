@@ -11,17 +11,19 @@ import {
   Bell,
   Kanban,
   Upload,
+  Globe,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const NAV = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/pipeline",  label: "Pipeline",  icon: Kanban },
-  { href: "/accounts",  label: "Contas",    icon: Building2 },
-  { href: "/contracts", label: "Contratos", icon: FileText },
-  { href: "/documents", label: "Documentos",icon: FolderOpen },
-  { href: "/alerts",    label: "Alertas",   icon: Bell },
-  { href: "/import",    label: "Importar",  icon: Upload },
+  { href: "/dashboard",      label: "Dashboard",  icon: LayoutDashboard },
+  { href: "/pipeline",       label: "Pipeline",   icon: Kanban },
+  { href: "/accounts",       label: "Contas",     icon: Building2 },
+  { href: "/contracts",      label: "Contratos",  icon: FileText },
+  { href: "/documents",      label: "Documentos", icon: FolderOpen },
+  { href: "/alerts",         label: "Alertas",    icon: Bell },
+  { href: "/portal-clients", label: "Portal",     icon: Globe },
+  { href: "/import",         label: "Importar",   icon: Upload },
 ] as const
 
 export function Sidebar() {
