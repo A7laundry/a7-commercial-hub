@@ -132,6 +132,36 @@ export type PhoneMapping = {
   created_at: string
 }
 
+// ── Portal ────────────────────────────────────────────────────────────────────
+
+export type PortalClient = {
+  id: string
+  tenant_id: string
+  account_id: string
+  user_id: string | null
+  email: string
+  name: string | null
+  active: boolean
+  created_at: string
+}
+
+export type InvoiceStatus = "pending" | "paid" | "overdue" | "cancelled"
+
+export type Invoice = {
+  id: string
+  tenant_id: string
+  account_id: string
+  contract_id: string | null
+  title: string
+  amount: number
+  status: InvoiceStatus
+  due_date: string
+  paid_at: string | null
+  reference: string | null
+  notes: string | null
+  created_at: string
+}
+
 // ── Automation ────────────────────────────────────────────────────────────────
 
 export type AutomationTriggerType = "upsell" | "cross_sell" | "remarketing" | "reactivation"

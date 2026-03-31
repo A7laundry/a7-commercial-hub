@@ -31,10 +31,17 @@ export async function proxy(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname
   const isAuthRoute = pathname.startsWith("/login") || pathname.startsWith("/onboarding")
+  const isPortalAuth = pathname.startsWith("/portal/login")
+  const isPortalRoute = pathname.startsWith("/portal") && !isPortalAuth
   const isPublic = pathname.startsWith("/_next") || pathname.startsWith("/favicon")
 
-  if (!isPublic && !user && !isAuthRoute) {
-    return NextResponse.redirect(new URL("/login", request.url))
+  if (!isPublic && !user) {
+    if (isPortalRoute) {
+      return NextResponse.redirect(new URL("/portal/login", request.url))
+    }
+    if (!isAuthRoute && !isPortalAuth) {
+      return NextResponse.redirect(new URL("/login", request.url))
+    }
   }
 
   if (user && pathname === "/") {
