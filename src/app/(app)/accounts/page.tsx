@@ -1,12 +1,13 @@
 "use client"
 
 import { useState } from "react"
-import { Plus, Building2, Search } from "lucide-react"
+import { Plus, Building2, Search, LayoutGrid, List } from "lucide-react"
 import { useTenant } from "@/hooks/useTenant"
 import { useAccounts } from "@/hooks/accounts/useAccounts"
 import { useQueryClient } from "@tanstack/react-query"
 import { createAccount } from "./actions"
 import { AccountsTable } from "@/components/modules/accounts/AccountsTable"
+import { AccountCardGrid } from "@/components/modules/accounts/AccountCardGrid"
 import { AccountForm } from "@/components/modules/accounts/AccountForm"
 import { PageHeader } from "@/components/shared/PageHeader"
 import { EmptyState } from "@/components/shared/EmptyState"
@@ -25,6 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { cn } from "@/lib/utils"
 import type { Account } from "@/types"
 
 export default function AccountsPage() {
@@ -33,6 +35,7 @@ export default function AccountsPage() {
   const [search, setSearch] = useState("")
   const [status, setStatus] = useState<Account["status"] | "all">("all")
   const [creating, setCreating] = useState(false)
+  const [viewMode, setViewMode] = useState<"cards" | "table">("cards")
 
   const { data: accounts = [], isLoading, error } = useAccounts(tenant.id, {
     search,
@@ -82,6 +85,28 @@ export default function AccountsPage() {
             <SelectItem value="inactive">Inativo</SelectItem>
           </SelectContent>
         </Select>
+        <div className="flex items-center border rounded-md overflow-hidden shrink-0">
+          <button
+            type="button"
+            onClick={() => setViewMode("cards")}
+            className={cn(
+              "px-2.5 py-1.5 transition-colors",
+              viewMode === "cards" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"
+            )}
+          >
+            <LayoutGrid className="w-4 h-4" />
+          </button>
+          <button
+            type="button"
+            onClick={() => setViewMode("table")}
+            className={cn(
+              "px-2.5 py-1.5 transition-colors",
+              viewMode === "table" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"
+            )}
+          >
+            <List className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
       {/* Content */}
@@ -105,6 +130,8 @@ export default function AccountsPage() {
             ) : undefined
           }
         />
+      ) : viewMode === "cards" ? (
+        <AccountCardGrid accounts={accounts} isLoading={isLoading} />
       ) : (
         <AccountsTable accounts={accounts} isLoading={isLoading} />
       )}
