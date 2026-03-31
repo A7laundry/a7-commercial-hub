@@ -132,6 +132,36 @@ export type PhoneMapping = {
   created_at: string
 }
 
+// ── Campaigns ─────────────────────────────────────────────────────────────────
+
+export type CampaignType = "reactivation" | "upsell" | "follow_up" | "renewal" | "custom"
+export type CampaignStatus = "draft" | "active" | "completed" | "cancelled"
+export type CampaignRecipientStatus = "pending" | "sent" | "failed" | "no_phone"
+
+export type Campaign = {
+  id: string
+  tenant_id: string
+  name: string
+  type: CampaignType
+  status: CampaignStatus
+  message_template: string
+  recipient_count: number
+  sent_count: number
+  created_at: string
+  executed_at: string | null
+}
+
+export type CampaignRecipient = {
+  id: string
+  tenant_id: string
+  campaign_id: string
+  account_id: string
+  phone: string | null
+  status: CampaignRecipientStatus
+  sent_at: string | null
+  created_at: string
+}
+
 // ── Portal ────────────────────────────────────────────────────────────────────
 
 export type PortalClient = {

@@ -12,6 +12,7 @@ import {
   Kanban,
   Upload,
   Globe,
+  Megaphone,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -22,6 +23,7 @@ const NAV = [
   { href: "/contracts",      label: "Contratos",  icon: FileText },
   { href: "/documents",      label: "Documentos", icon: FolderOpen },
   { href: "/alerts",         label: "Alertas",    icon: Bell },
+  { href: "/campaigns",      label: "Campanhas",  icon: Megaphone },
   { href: "/portal-clients", label: "Portal",     icon: Globe },
   { href: "/import",         label: "Importar",   icon: Upload },
 ] as const
