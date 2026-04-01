@@ -2,7 +2,14 @@
 
 import { use, useState } from "react"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, Pencil, Trash2, BarChart2 } from "lucide-react"
+import Link from "next/link"
+import {
+  ArrowLeft, Pencil, Trash2, BarChart2,
+  Flame, Thermometer, Snowflake, AlertTriangle, TrendingUp,
+  DollarSign, Clock, Zap, AlertCircle, ArrowRight,
+  Building2, Mail, User, Tag, AlignLeft, Calendar, Target,
+  RefreshCw,
+} from "lucide-react"
 import { useTenant } from "@/hooks/useTenant"
 import { useAccount } from "@/hooks/accounts/useAccount"
 import { useContracts } from "@/hooks/contracts/useContracts"
@@ -11,33 +18,56 @@ import { updateAccount, deleteAccount } from "../actions"
 import { AccountForm } from "@/components/modules/accounts/AccountForm"
 import { ContractsTable } from "@/components/modules/contracts/ContractsTable"
 import { DocumentsList } from "@/components/modules/documents/DocumentsList"
-import { StatusBadge } from "@/components/shared/StatusBadge"
-import { PageHeader } from "@/components/shared/PageHeader"
-import { CommercialScore } from "@/components/modules/accounts/CommercialScore"
-import { NextBestAction } from "@/components/modules/accounts/NextBestAction"
 import { OpportunityPanel } from "@/components/modules/accounts/OpportunityPanel"
 import { MessageSuggestions } from "@/components/modules/accounts/MessageSuggestions"
 import { WhatsAppTimeline } from "@/components/modules/accounts/WhatsAppTimeline"
 import { Button } from "@/components/ui/button"
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
+  Dialog, DialogContent, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog"
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Separator } from "@/components/ui/separator"
-import Link from "next/link"
+import { cn } from "@/lib/utils"
+import {
+  computeCommercialScore,
+  computeNextBestAction,
+  computeLTV,
+  parseFrequencyPerMonth,
+  SCORE_CONFIG,
+} from "@/lib/commercial-intelligence"
+
+const SCORE_ICON = {
+  hot:     Flame,
+  warm:    Thermometer,
+  cold:    Snowflake,
+  at_risk: AlertTriangle,
+  upsell:  TrendingUp,
+}
+
+const PIPELINE_LABEL: Record<string, string> = {
+  lead:        "Lead",
+  in_service:  "Em serviço",
+  quote_sent:  "Proposta enviada",
+  negotiating: "Negociando",
+  closed:      "Fechado",
+  recurring:   "Recorrente",
+}
+
+const STATUS_LABEL: Record<string, string> = {
+  active:   "Ativo",
+  inactive: "Inativo",
+  prospect: "Prospect",
+}
+
+const COMMERCIAL_LABEL: Record<string, string> = {
+  active:   "Saudável",
+  at_risk:  "Em risco",
+  lost:     "Perdido",
+}
 
 export default function AccountDetailPage({
   params,
@@ -52,10 +82,7 @@ export default function AccountDetailPage({
   const [confirming, setConfirming] = useState(false)
 
   const { data: account, isLoading } = useAccount(tenant.id, id)
-  const { data: contracts = [], isLoading: contractsLoading } = useContracts(
-    tenant.id,
-    { accountId: id }
-  )
+  const { data: contracts = [], isLoading: contractsLoading } = useContracts(tenant.id, { accountId: id })
 
   async function handleDelete() {
     await deleteAccount(id)
@@ -70,165 +97,253 @@ export default function AccountDetailPage({
 
   if (isLoading) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-4 max-w-3xl">
         <Skeleton className="h-8 w-64" />
-        <Skeleton className="h-40 w-full" />
+        <Skeleton className="h-28 w-full" />
+        <Skeleton className="h-20 w-full" />
+        <Skeleton className="h-32 w-full" />
       </div>
     )
   }
 
   if (!account) {
-    return (
-      <p className="text-sm text-muted-foreground">Conta não encontrada.</p>
-    )
+    return <p className="text-sm text-muted-foreground">Conta não encontrada.</p>
   }
 
+  const score = computeCommercialScore(account, contracts)
+  const nba = computeNextBestAction(account, contracts, score)
+  const ltv = computeLTV(account)
+  const cfg = SCORE_CONFIG[score]
+  const ScoreIcon = SCORE_ICON[score]
+
+  const freqPerMonth = parseFrequencyPerMonth(account.frequency)
+  const avgLifetime = 12
+
+  const nbaStyle = {
+    urgent: { border: "border-red-200",   bg: "bg-red-50",     iconBg: "bg-red-100",   icon: AlertCircle, iconColor: "text-red-600",   badge: "bg-red-100 text-red-700",   label: "Urgente" },
+    high:   { border: "border-amber-200", bg: "bg-amber-50",   iconBg: "bg-amber-100", icon: Zap,         iconColor: "text-amber-600", badge: "bg-amber-100 text-amber-700", label: "Alta prioridade" },
+    normal: { border: "border-border",    bg: "bg-muted/30",   iconBg: "bg-muted",     icon: ArrowRight,  iconColor: "text-muted-foreground", badge: "bg-muted text-muted-foreground", label: "Recomendado" },
+  }[nba.priority]
+  const NbaIcon = nbaStyle.icon
+
+  const daysSinceContact = account.last_contact_at
+    ? Math.floor((Date.now() - new Date(account.last_contact_at).getTime()) / 86400000)
+    : null
+
   return (
-    <div>
-      <div className="mb-4">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => router.push("/accounts")}
-          className="text-muted-foreground"
-        >
-          <ArrowLeft className="w-4 h-4 mr-1" />
-          Contas
+    <div className="max-w-3xl space-y-5 pb-12">
+      {/* Back */}
+      <div className="flex items-center justify-between">
+        <Button variant="ghost" size="sm" onClick={() => router.push("/accounts")} className="text-muted-foreground -ml-2">
+          <ArrowLeft className="w-4 h-4 mr-1" /> Contas
         </Button>
-      </div>
-
-      <PageHeader
-        title={account.name}
-        actions={
-          <div className="flex gap-2">
-            <Link href={`/accounts/${id}/summary`}>
-              <Button variant="outline" size="sm">
-                <BarChart2 className="w-4 h-4 mr-1" />
-                Resumo executivo
-              </Button>
-            </Link>
-            <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
-              <Pencil className="w-4 h-4 mr-1" />
-              Editar
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-destructive hover:text-destructive"
-              onClick={() => setConfirming(true)}
-            >
-              <Trash2 className="w-4 h-4 mr-1" />
-              Excluir
-            </Button>
-          </div>
-        }
-      />
-
-      {/* Commercial intelligence strip */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <CommercialScore account={account} contracts={contracts} />
-        <div className="md:col-span-2">
-          <NextBestAction account={account} contracts={contracts} />
+        <div className="flex gap-2">
+          <Link href={`/accounts/${id}/summary`}>
+            <Button variant="outline" size="sm"><BarChart2 className="w-4 h-4 mr-1" />Resumo</Button>
+          </Link>
+          <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
+            <Pencil className="w-4 h-4 mr-1" />Editar
+          </Button>
+          <Button variant="outline" size="sm" className="text-destructive hover:text-destructive" onClick={() => setConfirming(true)}>
+            <Trash2 className="w-4 h-4 mr-1" />Excluir
+          </Button>
         </div>
       </div>
 
-      {/* Info grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-        <InfoRow label="Status">
-          <StatusBadge status={account.status} />
-        </InfoRow>
-        <InfoRow label="Segmento">{account.segment ?? "—"}</InfoRow>
-        <InfoRow label="Contato">{account.contact_name ?? "—"}</InfoRow>
-        <InfoRow label="Email">
-          {account.contact_email ? (
-            <a
-              href={`mailto:${account.contact_email}`}
-              className="text-primary hover:underline"
-            >
-              {account.contact_email}
-            </a>
+      {/* ── 1. HEADER COMERCIAL ─────────────────────────────────────────── */}
+      <div className={cn("rounded-xl border p-5", cfg.bg)}>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-xl font-bold leading-tight">{account.name}</h1>
+            {account.contact_name && (
+              <p className="text-sm text-muted-foreground mt-0.5">{account.contact_name}</p>
+            )}
+            <div className="flex items-center gap-2 mt-2 flex-wrap">
+              <span className={cn("inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full border", cfg.bg, cfg.color)}>
+                <ScoreIcon className="w-3.5 h-3.5" />
+                {cfg.label}
+              </span>
+              <span className="text-xs px-2 py-0.5 rounded-full bg-white/60 border text-muted-foreground font-medium">
+                {PIPELINE_LABEL[account.pipeline_stage] ?? account.pipeline_stage}
+              </span>
+              <span className={cn(
+                "text-xs px-2 py-0.5 rounded-full border font-medium",
+                account.status === "active" ? "bg-green-50 text-green-700 border-green-200" :
+                account.status === "prospect" ? "bg-blue-50 text-blue-700 border-blue-200" :
+                "bg-gray-50 text-gray-600 border-gray-200"
+              )}>
+                {STATUS_LABEL[account.status]}
+              </span>
+            </div>
+          </div>
+          <div className={cn("p-3 rounded-xl bg-white/50 border shrink-0")}>
+            <ScoreIcon className={cn("w-8 h-8", cfg.color)} />
+          </div>
+        </div>
+      </div>
+
+      {/* ── 2. AÇÃO AGORA ───────────────────────────────────────────────── */}
+      <div className={cn("rounded-xl border p-4", nbaStyle.border, nbaStyle.bg)}>
+        <div className="flex items-start gap-3">
+          <div className={cn("p-2.5 rounded-lg shrink-0", nbaStyle.iconBg)}>
+            <NbaIcon className={cn("w-5 h-5", nbaStyle.iconColor)} />
+          </div>
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Ação Agora</span>
+              <span className={cn("text-[10px] font-semibold px-2 py-0.5 rounded-full", nbaStyle.badge)}>
+                {nbaStyle.label}
+              </span>
+            </div>
+            <p className="text-sm font-bold">{nba.label}</p>
+            <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{nba.description}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* ── 3. VALOR DO CLIENTE (LTV) ───────────────────────────────────── */}
+      <div className="grid grid-cols-3 gap-3">
+        <div className="bg-card border rounded-xl p-4 col-span-1">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">LTV</p>
+          {ltv != null ? (
+            <>
+              <p className="text-2xl font-bold text-green-700">
+                {ltv.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 })}
+              </p>
+              <p className="text-[10px] text-muted-foreground mt-1">
+                R${account.estimated_value?.toLocaleString("pt-BR")} × {freqPerMonth}×/mês × {avgLifetime}m
+              </p>
+            </>
           ) : (
-            "—"
+            <p className="text-sm text-muted-foreground">—</p>
           )}
-        </InfoRow>
-        <InfoRow label="Estágio pipeline">{account.pipeline_stage.replace("_", " ")}</InfoRow>
-        <InfoRow label="Último contato">
-          {account.last_contact_at
-            ? new Date(account.last_contact_at).toLocaleDateString("pt-BR")
-            : "—"}
-        </InfoRow>
-        {account.estimated_value != null && (
-          <InfoRow label="Valor estimado">
-            {account.estimated_value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-          </InfoRow>
-        )}
-        {account.frequency && (
-          <InfoRow label="Frequência">{account.frequency}</InfoRow>
-        )}
-        {account.notes && (
-          <div className="col-span-full">
-            <InfoRow label="Notas">{account.notes}</InfoRow>
-          </div>
-        )}
-      </div>
-
-      <Separator className="my-6" />
-
-      {/* Two-column: Opportunities + Messages */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-        <div>
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-3">
-            Sinais de Oportunidade
-          </h2>
-          <OpportunityPanel account={account} contracts={contracts} />
         </div>
-        <div>
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-3">
-            Sugestões de Mensagem
-          </h2>
-          <MessageSuggestions account={account} contracts={contracts} />
+        <div className="bg-card border rounded-xl p-4">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Ticket</p>
+          <p className="text-2xl font-bold">
+            {account.estimated_value != null
+              ? account.estimated_value.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 })
+              : "—"}
+          </p>
+          {account.frequency && (
+            <p className="text-[10px] text-muted-foreground mt-1">{account.frequency}</p>
+          )}
+        </div>
+        <div className="bg-card border rounded-xl p-4">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Último contato</p>
+          <p className={cn(
+            "text-2xl font-bold",
+            daysSinceContact === null ? "text-muted-foreground" :
+            daysSinceContact > 30 ? "text-red-600" :
+            daysSinceContact > 14 ? "text-amber-600" : "text-foreground"
+          )}>
+            {daysSinceContact === null ? "—" : daysSinceContact === 0 ? "hoje" : `${daysSinceContact}d`}
+          </p>
+          {account.last_contact_at && (
+            <p className="text-[10px] text-muted-foreground mt-1">
+              {new Date(account.last_contact_at).toLocaleDateString("pt-BR")}
+            </p>
+          )}
         </div>
       </div>
 
-      <Separator className="my-6" />
+      {/* ── 4. BLOCO COMERCIAL ──────────────────────────────────────────── */}
+      <section>
+        <SectionTitle>Bloco Comercial</SectionTitle>
+        <div className="grid grid-cols-2 gap-3">
+          <InfoTile icon={Target} label="Pipeline">{PIPELINE_LABEL[account.pipeline_stage]}</InfoTile>
+          <InfoTile icon={TrendingUp} label="Status comercial">
+            <span className={cn(
+              "font-semibold",
+              account.commercial_status === "at_risk" ? "text-red-600" :
+              account.commercial_status === "lost" ? "text-gray-500" : "text-green-700"
+            )}>
+              {COMMERCIAL_LABEL[account.commercial_status] ?? account.commercial_status}
+            </span>
+          </InfoTile>
+          {account.next_action && (
+            <div className="col-span-2">
+              <InfoTile icon={ArrowRight} label="Próxima ação">{account.next_action}</InfoTile>
+            </div>
+          )}
+          {account.last_contact_at && (
+            <InfoTile icon={Calendar} label="Último contato">
+              {new Date(account.last_contact_at).toLocaleDateString("pt-BR")}
+            </InfoTile>
+          )}
+          {account.frequency && (
+            <InfoTile icon={RefreshCw} label="Frequência">{account.frequency}</InfoTile>
+          )}
+        </div>
+      </section>
 
-      {/* WhatsApp Timeline */}
-      <div className="mb-8">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-3">
-          Histórico WhatsApp
-        </h2>
+      {/* ── 5. OPORTUNIDADES ────────────────────────────────────────────── */}
+      <section>
+        <SectionTitle>Oportunidades</SectionTitle>
+        <OpportunityPanel account={account} contracts={contracts} />
+      </section>
+
+      {/* ── 6. TIMELINE ─────────────────────────────────────────────────── */}
+      <section>
+        <SectionTitle>Timeline WhatsApp</SectionTitle>
         <WhatsAppTimeline tenantId={tenant.id} accountId={id} />
-      </div>
+      </section>
 
-      <Separator className="my-6" />
+      {/* ── 7. MENSAGENS ────────────────────────────────────────────────── */}
+      <section>
+        <SectionTitle>Mensagens Sugeridas</SectionTitle>
+        <MessageSuggestions account={account} contracts={contracts} />
+      </section>
 
-      {/* Contracts section */}
-      <div>
-        <h2 className="text-lg font-semibold mb-4">
-          Contratos ({contracts.length})
-        </h2>
+      {/* ── 8. CONTRATOS ────────────────────────────────────────────────── */}
+      <section>
+        <SectionTitle>Contratos ({contracts.length})</SectionTitle>
         {contractsLoading ? (
           <Skeleton className="h-32 w-full" />
         ) : contracts.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            Nenhum contrato vinculado a esta conta.
-          </p>
+          <p className="text-sm text-muted-foreground">Nenhum contrato vinculado.</p>
         ) : (
           <ContractsTable contracts={contracts} />
         )}
-      </div>
+      </section>
 
-      <Separator className="my-6" />
+      {/* ── 9. DOCUMENTOS ───────────────────────────────────────────────── */}
+      <section>
+        <DocumentsList tenantId={tenant.id} accountId={id} />
+      </section>
 
-      {/* Documents section */}
-      <DocumentsList tenantId={tenant.id} accountId={id} />
+      {/* ── 10. CADASTRO ────────────────────────────────────────────────── */}
+      <section>
+        <SectionTitle>Cadastro</SectionTitle>
+        <div className="grid grid-cols-2 gap-3">
+          <InfoTile icon={Building2} label="Empresa">{account.name}</InfoTile>
+          <InfoTile icon={Tag} label="Segmento">{account.segment ?? "—"}</InfoTile>
+          <InfoTile icon={User} label="Contato">{account.contact_name ?? "—"}</InfoTile>
+          <InfoTile icon={Mail} label="Email">
+            {account.contact_email ? (
+              <a href={`mailto:${account.contact_email}`} className="text-primary hover:underline">
+                {account.contact_email}
+              </a>
+            ) : "—"}
+          </InfoTile>
+          {account.notes && (
+            <div className="col-span-2">
+              <InfoTile icon={AlignLeft} label="Notas">{account.notes}</InfoTile>
+            </div>
+          )}
+          <InfoTile icon={Clock} label="Criado em">
+            {new Date(account.created_at).toLocaleDateString("pt-BR")}
+          </InfoTile>
+          <InfoTile icon={Clock} label="Atualizado em">
+            {new Date(account.updated_at).toLocaleDateString("pt-BR")}
+          </InfoTile>
+        </div>
+      </section>
 
       {/* Edit dialog */}
       <Dialog open={editing} onOpenChange={setEditing}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Editar conta</DialogTitle>
-          </DialogHeader>
+          <DialogHeader><DialogTitle>Editar conta</DialogTitle></DialogHeader>
           <AccountForm
             initial={account}
             action={(formData) => updateAccount(id, formData)}
@@ -246,16 +361,12 @@ export default function AccountDetailPage({
           <AlertDialogHeader>
             <AlertDialogTitle>Excluir conta</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta ação é irreversível. Contratos vinculados não serão excluídos
-              automaticamente — remova-os antes ou verifique as dependências.
+              Esta ação é irreversível. Contratos vinculados não serão excluídos automaticamente.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-destructive hover:bg-destructive/90"
-              onClick={handleDelete}
-            >
+            <AlertDialogAction className="bg-destructive hover:bg-destructive/90" onClick={handleDelete}>
               Excluir
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -265,16 +376,31 @@ export default function AccountDetailPage({
   )
 }
 
-function InfoRow({
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function SectionTitle({ children }: { children: React.ReactNode }) {
+  return (
+    <h2 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3 pt-1">
+      {children}
+    </h2>
+  )
+}
+
+function InfoTile({
   label,
+  icon: Icon,
   children,
 }: {
   label: string
+  icon: React.ElementType
   children: React.ReactNode
 }) {
   return (
-    <div className="bg-muted/40 rounded-lg p-3">
-      <p className="text-xs text-muted-foreground mb-1">{label}</p>
+    <div className="bg-muted/40 border rounded-xl p-3">
+      <div className="flex items-center gap-1.5 mb-1">
+        <Icon className="w-3 h-3 text-muted-foreground" />
+        <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">{label}</p>
+      </div>
       <div className="text-sm font-medium">{children}</div>
     </div>
   )
