@@ -36,7 +36,8 @@ export function useOpportunities(tenantId: string) {
           .from("accounts")
           .select("*")
           .eq("tenant_id", tenantId)
-          .in("status", ["active", "prospect"]),
+          .in("status", ["active", "prospect"])
+          .limit(10000),
         supabase
           .from("contracts")
           .select("*")

@@ -42,6 +42,7 @@ export function usePipeline(tenantId: string) {
         .select("*")
         .eq("tenant_id", tenantId)
         .order("name")
+        .limit(10000)
 
       if (error) throw error
 

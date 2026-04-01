@@ -103,7 +103,8 @@ export function useDashboardData(tenantId: string) {
         supabase
           .from("accounts")
           .select("id, name, status")
-          .eq("tenant_id", tenantId),
+          .eq("tenant_id", tenantId)
+          .limit(10000),
 
         supabase
           .from("contracts")
