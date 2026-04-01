@@ -17,23 +17,86 @@ async function getTenantId(supabase: Awaited<ReturnType<typeof createClient>>) {
   return data.tenant_id as string
 }
 
-export async function createAccount(formData: FormData) {
-  const supabase = await createClient()
-  const tenantId = await getTenantId(supabase)
+export type CreateAccountInput = {
+  clientType: 'pf' | 'pj'
+  name: string
+  phone: string
+  email: string
+  segment?: string
+  pipeline_stage?: string
+  estimated_value?: string
+  frequency?: string
+  source?: string
+  contact_name?: string
+  cnpj?: string
+  cpf?: string
+  tags?: string[]
+  notes?: string
+}
 
-  const { error } = await supabase.from("accounts").insert({
-    tenant_id: tenantId,
-    name: formData.get("name") as string,
-    segment: (formData.get("segment") as string) || null,
-    contact_name: (formData.get("contact_name") as string) || null,
-    contact_email: (formData.get("contact_email") as string) || null,
-    status: (formData.get("status") as string) || "active",
-    notes: (formData.get("notes") as string) || null,
-  })
+function normalizePhone(raw: string): string {
+  const digits = raw.replace(/\D/g, "")
+  if (digits.length >= 10 && digits.length <= 11) {
+    return `+55${digits}`
+  }
+  return digits
+}
 
-  if (error) return { error: error.message }
-  revalidatePath("/accounts")
-  return { error: null }
+export async function createAccountFull(
+  data: CreateAccountInput
+): Promise<{ error: string | null; accountId: string | null; phone: string | null }> {
+  try {
+    const supabase = await createClient()
+    const tenantId = await getTenantId(supabase)
+
+    const estimatedValue = data.estimated_value
+      ? Number(data.estimated_value)
+      : null
+
+    const { data: inserted, error: insertError } = await supabase
+      .from("accounts")
+      .insert({
+        tenant_id: tenantId,
+        name: data.name,
+        contact_email: data.email,
+        contact_name: data.contact_name || null,
+        segment: data.segment || null,
+        pipeline_stage: data.pipeline_stage || "lead",
+        commercial_status: "active",
+        status: "active",
+        estimated_value: isNaN(estimatedValue as number) ? null : estimatedValue,
+        frequency: data.frequency || null,
+        notes: data.notes || null,
+        source: data.source || null,
+        client_type: data.clientType,
+        cnpj: data.cnpj || null,
+        cpf: data.cpf || null,
+        tags: data.tags || null,
+      })
+      .select("id")
+      .single()
+
+    if (insertError) {
+      return { error: insertError.message, accountId: null, phone: null }
+    }
+
+    const accountId = inserted.id as string
+    const normalizedPhone = normalizePhone(data.phone)
+
+    // Upsert phone — if number already mapped, keep existing; don't fail account creation
+    await supabase
+      .from("phone_mappings")
+      .upsert(
+        { tenant_id: tenantId, account_id: accountId, phone: normalizedPhone },
+        { onConflict: "tenant_id,phone", ignoreDuplicates: true }
+      )
+
+    revalidatePath("/accounts")
+    return { error: null, accountId, phone: normalizedPhone }
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unknown error"
+    return { error: message, accountId: null, phone: null }
+  }
 }
 
 export async function updateAccount(id: string, formData: FormData) {

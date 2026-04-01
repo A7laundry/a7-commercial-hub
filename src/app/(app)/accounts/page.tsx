@@ -5,30 +5,30 @@ import { Plus, LayoutGrid, TableProperties } from "lucide-react"
 import { useTenant } from "@/hooks/useTenant"
 import { useAccounts } from "@/hooks/accounts/useAccounts"
 import { useQueryClient } from "@tanstack/react-query"
-import { createAccount } from "./actions"
+import { createAccountFull } from "./actions"
 import { AccountCardGrid } from "@/components/modules/accounts/AccountCardGrid"
 import { AccountsSpreadsheet } from "@/components/modules/accounts/AccountsSpreadsheet"
-import { AccountForm } from "@/components/modules/accounts/AccountForm"
+import { AccountCreateWizard } from "@/components/modules/accounts/AccountCreateWizard"
 import { PageHeader } from "@/components/shared/PageHeader"
 import { Button } from "@/components/ui/button"
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog"
 import { cn } from "@/lib/utils"
+import { useRouter } from "next/navigation"
 
 type ViewMode = "cards" | "spreadsheet"
 
 export default function AccountsPage() {
   const { tenant } = useTenant()
+  const router = useRouter()
   const qc = useQueryClient()
   const [creating, setCreating] = useState(false)
   const [viewMode, setViewMode] = useState<ViewMode>("spreadsheet")
 
-  // cards view still uses the old hook (it has its own filters)
   const { data: accounts = [], isLoading } = useAccounts(tenant.id, {})
 
-  function handleSuccess() {
-    setCreating(false)
+  function handleSuccess(accountId: string) {
     qc.invalidateQueries({ queryKey: ["accounts", tenant.id] })
     qc.invalidateQueries({ queryKey: ["accounts_table", tenant.id] })
   }
@@ -94,15 +94,18 @@ export default function AccountsPage() {
         )}
       </div>
 
-      {/* Create dialog */}
+      {/* Create wizard dialog */}
       <Dialog open={creating} onOpenChange={setCreating}>
         <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>Novo cliente</DialogTitle></DialogHeader>
-          <AccountForm
-            action={createAccount}
-            onSuccess={handleSuccess}
+          <DialogHeader>
+            <DialogTitle>Novo cliente</DialogTitle>
+          </DialogHeader>
+          <AccountCreateWizard
+            createFn={createAccountFull}
+            onSuccess={(accountId) => {
+              handleSuccess(accountId)
+            }}
             onCancel={() => setCreating(false)}
-            submitLabel="Criar cliente"
           />
         </DialogContent>
       </Dialog>

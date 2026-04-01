@@ -47,6 +47,12 @@ export type Account = {
   next_action: string | null
   estimated_value: number | null
   frequency: string | null
+  // Enrichment fields
+  client_type?: 'pf' | 'pj'
+  source?: string | null
+  tags?: string[]
+  cpf?: string | null
+  cnpj?: string | null
   // Joined phone mappings (optional, present when queried with join)
   phone_mappings?: { phone: string }[]
 }
