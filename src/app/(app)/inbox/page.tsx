@@ -151,7 +151,7 @@ export default function InboxPage() {
                   href={`/accounts/${selected.accountId}`}
                   className="ml-auto text-xs text-primary hover:underline"
                 >
-                  Ver conta →
+                  Ver cliente →
                 </a>
               )}
             </div>

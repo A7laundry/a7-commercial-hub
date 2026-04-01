@@ -39,7 +39,7 @@ export default function AccountsPage() {
       viewMode === "spreadsheet" ? "h-[calc(100vh-3.5rem)]" : ""
     )}>
       <PageHeader
-        title="Contas"
+        title="Clientes"
         description="Gerencie seus clientes e parceiros"
         actions={
           <div className="flex items-center gap-2">
@@ -77,7 +77,7 @@ export default function AccountsPage() {
 
             <Button size="sm" onClick={() => setCreating(true)}>
               <Plus className="w-4 h-4 mr-1" />
-              Nova conta
+              Novo cliente
             </Button>
           </div>
         }
@@ -97,12 +97,12 @@ export default function AccountsPage() {
       {/* Create dialog */}
       <Dialog open={creating} onOpenChange={setCreating}>
         <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>Nova conta</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>Novo cliente</DialogTitle></DialogHeader>
           <AccountForm
             action={createAccount}
             onSuccess={handleSuccess}
             onCancel={() => setCreating(false)}
-            submitLabel="Criar conta"
+            submitLabel="Criar cliente"
           />
         </DialogContent>
       </Dialog>

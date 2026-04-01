@@ -107,7 +107,7 @@ export default function AccountDetailPage({
   }
 
   if (!account) {
-    return <p className="text-sm text-muted-foreground">Conta não encontrada.</p>
+    return <p className="text-sm text-muted-foreground">Cliente não encontrado.</p>
   }
 
   const score = computeCommercialScore(account, contracts)
@@ -342,7 +342,7 @@ export default function AccountDetailPage({
       {/* Edit dialog */}
       <Dialog open={editing} onOpenChange={setEditing}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>Editar conta</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>Editar cliente</DialogTitle></DialogHeader>
           <AccountForm
             initial={account}
             action={(formData) => updateAccount(id, formData)}
@@ -358,7 +358,7 @@ export default function AccountDetailPage({
       <AlertDialog open={confirming} onOpenChange={setConfirming}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Excluir conta</AlertDialogTitle>
+            <AlertDialogTitle>Excluir cliente</AlertDialogTitle>
             <AlertDialogDescription>
               Esta ação é irreversível. Contratos vinculados não serão excluídos automaticamente.
             </AlertDialogDescription>

@@ -44,7 +44,7 @@ export default function PipelinePage() {
             <h1 className="text-lg font-semibold">Pipeline Comercial</h1>
             {stats && (
               <p className="text-sm text-muted-foreground mt-0.5">
-                {stats.totalAccounts} contas ·{" "}
+                {stats.totalAccounts} clientes ·{" "}
                 <span className="text-green-600 font-medium">
                   {formatCurrency(stats.totalEstimatedValue, "BRL")} estimado
                 </span>

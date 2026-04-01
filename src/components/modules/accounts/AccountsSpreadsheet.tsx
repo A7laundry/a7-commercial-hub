@@ -117,7 +117,7 @@ export function AccountsSpreadsheet({ tenantId }: Props) {
         )}
 
         <span className="ml-auto text-xs text-muted-foreground">
-          {isFetching && !isLoading ? "Atualizando..." : `${total.toLocaleString("pt-BR")} contas`}
+          {isFetching && !isLoading ? "Atualizando..." : `${total.toLocaleString("pt-BR")} clientes`}
         </span>
       </div>
 
@@ -227,7 +227,7 @@ export function AccountsSpreadsheet({ tenantId }: Props) {
             ) : accounts.length === 0 ? (
               <tr>
                 <td colSpan={10} className="text-center py-12 text-muted-foreground">
-                  Nenhuma conta encontrada com esses filtros.
+                  Nenhum cliente encontrado com esses filtros.
                 </td>
               </tr>
             ) : (

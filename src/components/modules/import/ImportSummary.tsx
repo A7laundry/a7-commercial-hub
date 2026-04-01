@@ -32,7 +32,7 @@ export function ImportSummary({ importResult, stats }: Props) {
         <div>
           <p className="text-lg font-bold text-green-800">Importação concluída!</p>
           <p className="text-sm text-green-700 mt-0.5">
-            <strong>{importResult.imported}</strong> conta{importResult.imported !== 1 ? "s" : ""} importada{importResult.imported !== 1 ? "s" : ""} com sucesso.
+            <strong>{importResult.imported}</strong> cliente{importResult.imported !== 1 ? "s" : ""} importado{importResult.imported !== 1 ? "s" : ""} com sucesso.
             {importResult.skipped > 0 && ` ${importResult.skipped} ignorada${importResult.skipped > 1 ? "s" : ""} (duplicatas ou já existentes).`}
           </p>
         </div>
@@ -40,7 +40,7 @@ export function ImportSummary({ importResult, stats }: Props) {
           <Link href="/accounts">
             <Button variant="outline" size="sm" className="gap-1.5">
               <Users className="w-3.5 h-3.5" />
-              Ver contas
+              Ver clientes
             </Button>
           </Link>
           <Link href="/pipeline">

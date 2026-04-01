@@ -21,7 +21,7 @@ const NAV = [
   { href: "/dashboard",      label: "Dashboard",  icon: LayoutDashboard },
   { href: "/pipeline",       label: "Pipeline",   icon: Kanban },
   { href: "/inbox",          label: "Inbox",      icon: MessageSquare },
-  { href: "/accounts",       label: "Contas",     icon: Building2 },
+  { href: "/accounts",       label: "Clientes",   icon: Building2 },
   { href: "/contracts",      label: "Contratos",  icon: FileText },
   { href: "/documents",      label: "Documentos", icon: FolderOpen },
   { href: "/alerts",         label: "Alertas",    icon: Bell },

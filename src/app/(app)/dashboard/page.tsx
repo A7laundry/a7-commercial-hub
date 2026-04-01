@@ -36,9 +36,9 @@ export default function DashboardPage() {
       {/* KPI Row */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
         <KpiCard
-          title="Contas"
+          title="Clientes"
           value={isLoading ? null : data!.totalAccounts}
-          sub={isLoading ? null : `${data!.activeAccounts} ativas`}
+          sub={isLoading ? null : `${data!.activeAccounts} ativos`}
           icon={Building2}
           href="/accounts"
           isLoading={isLoading}

@@ -38,7 +38,7 @@ export function AccountsAtRiskCard({ accounts }: { accounts: AccountRisk[] }) {
               href="/accounts"
               className="text-xs font-normal text-primary hover:underline flex items-center gap-1"
             >
-              Ver contas
+              Ver clientes
               <ArrowRight className="h-3 w-3" />
             </Link>
           )}
@@ -47,7 +47,7 @@ export function AccountsAtRiskCard({ accounts }: { accounts: AccountRisk[] }) {
       <CardContent className="pt-0">
         {accounts.length === 0 ? (
           <p className="text-sm text-muted-foreground py-4 text-center">
-            Nenhuma conta requer atenção no momento.
+            Nenhum cliente requer atenção no momento.
           </p>
         ) : (
           <div className="space-y-2">

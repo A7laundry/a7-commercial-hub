@@ -43,7 +43,7 @@ export default function AccountSummaryPage({
   }
 
   if (!data) {
-    return <p className="text-sm text-muted-foreground">Conta não encontrada.</p>
+    return <p className="text-sm text-muted-foreground">Cliente não encontrado.</p>
   }
 
   const {
@@ -96,7 +96,7 @@ export default function AccountSummaryPage({
         <Link href={`/accounts/${id}`}>
           <Button variant="outline" size="sm">
             <ExternalLink className="w-4 h-4 mr-1" />
-            Ver conta completa
+            Ver cliente completo
           </Button>
         </Link>
       </div>

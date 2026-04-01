@@ -326,7 +326,7 @@ export function AccountSelector({ tenantId, selected, onSelectionChange, onCampa
               </div>
             ) : displayAccounts.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-8">
-                Nenhuma conta encontrada com esses filtros.
+                Nenhum cliente encontrado com esses filtros.
               </p>
             ) : (
               displayAccounts.map((account) => (
