@@ -10,6 +10,7 @@ import { ExpiringContractsCard } from "@/components/modules/dashboard/ExpiringCo
 import { ExpiringDocsCard } from "@/components/modules/dashboard/ExpiringDocsCard"
 import { RecentAlertsCard } from "@/components/modules/dashboard/RecentAlertsCard"
 import { AccountsAtRiskCard } from "@/components/modules/dashboard/AccountsAtRiskCard"
+import { OpportunitiesFeedCard } from "@/components/modules/dashboard/OpportunitiesFeedCard"
 import {
   Building2,
   FileText,
@@ -86,6 +87,11 @@ export default function DashboardPage() {
           <UrgentActionsCard actions={data!.urgentActions} />
         </div>
       )}
+
+      {/* Opportunities feed — full width */}
+      <div className="mb-6">
+        <OpportunitiesFeedCard tenantId={tenant.id} />
+      </div>
 
       {/* Mid row: Expiring Contracts + Expiring Docs */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
