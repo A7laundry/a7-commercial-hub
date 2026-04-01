@@ -1,147 +1,103 @@
 "use client"
 
 import { useState } from "react"
-import { Plus, Building2, Search, LayoutGrid, List } from "lucide-react"
+import { Plus, LayoutGrid, TableProperties } from "lucide-react"
 import { useTenant } from "@/hooks/useTenant"
 import { useAccounts } from "@/hooks/accounts/useAccounts"
 import { useQueryClient } from "@tanstack/react-query"
 import { createAccount } from "./actions"
-import { AccountsTable } from "@/components/modules/accounts/AccountsTable"
 import { AccountCardGrid } from "@/components/modules/accounts/AccountCardGrid"
+import { AccountsSpreadsheet } from "@/components/modules/accounts/AccountsSpreadsheet"
 import { AccountForm } from "@/components/modules/accounts/AccountForm"
 import { PageHeader } from "@/components/shared/PageHeader"
-import { EmptyState } from "@/components/shared/EmptyState"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
+  Dialog, DialogContent, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { cn } from "@/lib/utils"
-import type { Account } from "@/types"
+
+type ViewMode = "cards" | "spreadsheet"
 
 export default function AccountsPage() {
   const { tenant } = useTenant()
   const qc = useQueryClient()
-  const [search, setSearch] = useState("")
-  const [status, setStatus] = useState<Account["status"] | "all">("all")
   const [creating, setCreating] = useState(false)
-  const [viewMode, setViewMode] = useState<"cards" | "table">("cards")
+  const [viewMode, setViewMode] = useState<ViewMode>("spreadsheet")
 
-  const { data: accounts = [], isLoading, error } = useAccounts(tenant.id, {
-    search,
-    status,
-  })
+  // cards view still uses the old hook (it has its own filters)
+  const { data: accounts = [], isLoading } = useAccounts(tenant.id, {})
 
   function handleSuccess() {
     setCreating(false)
     qc.invalidateQueries({ queryKey: ["accounts", tenant.id] })
+    qc.invalidateQueries({ queryKey: ["accounts_table", tenant.id] })
   }
 
   return (
-    <div>
+    <div className={cn(
+      "flex flex-col",
+      viewMode === "spreadsheet" ? "h-[calc(100vh-3.5rem)]" : ""
+    )}>
       <PageHeader
         title="Contas"
         description="Gerencie seus clientes e parceiros"
         actions={
-          <Button onClick={() => setCreating(true)}>
-            <Plus className="w-4 h-4 mr-2" />
-            Nova conta
-          </Button>
+          <div className="flex items-center gap-2">
+            {/* View toggle */}
+            <div className="flex items-center border rounded-md overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setViewMode("cards")}
+                title="Cards"
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-1.5 text-xs transition-colors",
+                  viewMode === "cards"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:bg-muted"
+                )}
+              >
+                <LayoutGrid className="w-3.5 h-3.5" />
+                Cards
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode("spreadsheet")}
+                title="Planilha"
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-1.5 text-xs transition-colors",
+                  viewMode === "spreadsheet"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:bg-muted"
+                )}
+              >
+                <TableProperties className="w-3.5 h-3.5" />
+                Planilha
+              </button>
+            </div>
+
+            <Button size="sm" onClick={() => setCreating(true)}>
+              <Plus className="w-4 h-4 mr-1" />
+              Nova conta
+            </Button>
+          </div>
         }
       />
 
-      {/* Filters */}
-      <div className="flex items-center gap-3 mb-5">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar contas..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9"
-          />
-        </div>
-        <Select
-          value={status}
-          onValueChange={(v) => setStatus(v as Account["status"] | "all")}
-        >
-          <SelectTrigger className="w-40">
-            <SelectValue placeholder="Todos" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos</SelectItem>
-            <SelectItem value="active">Ativo</SelectItem>
-            <SelectItem value="prospect">Prospect</SelectItem>
-            <SelectItem value="inactive">Inativo</SelectItem>
-          </SelectContent>
-        </Select>
-        <div className="flex items-center border rounded-md overflow-hidden shrink-0">
-          <button
-            type="button"
-            onClick={() => setViewMode("cards")}
-            className={cn(
-              "px-2.5 py-1.5 transition-colors",
-              viewMode === "cards" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"
-            )}
-          >
-            <LayoutGrid className="w-4 h-4" />
-          </button>
-          <button
-            type="button"
-            onClick={() => setViewMode("table")}
-            className={cn(
-              "px-2.5 py-1.5 transition-colors",
-              viewMode === "table" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"
-            )}
-          >
-            <List className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
-
       {/* Content */}
-      {error ? (
-        <p className="text-sm text-destructive">Erro ao carregar contas.</p>
-      ) : !isLoading && accounts.length === 0 ? (
-        <EmptyState
-          icon={Building2}
-          title="Nenhuma conta encontrada"
-          description={
-            search || status !== "all"
-              ? "Tente ajustar os filtros."
-              : "Crie sua primeira conta para começar."
-          }
-          action={
-            !search && status === "all" ? (
-              <Button size="sm" onClick={() => setCreating(true)}>
-                <Plus className="w-4 h-4 mr-1" />
-                Nova conta
-              </Button>
-            ) : undefined
-          }
-        />
-      ) : viewMode === "cards" ? (
-        <AccountCardGrid accounts={accounts} isLoading={isLoading} />
-      ) : (
-        <AccountsTable accounts={accounts} isLoading={isLoading} />
-      )}
+      <div className={cn("flex-1 overflow-hidden", viewMode === "cards" ? "overflow-auto" : "")}>
+        {viewMode === "cards" ? (
+          <div className="pb-6">
+            <AccountCardGrid accounts={accounts} isLoading={isLoading} />
+          </div>
+        ) : (
+          <AccountsSpreadsheet tenantId={tenant.id} />
+        )}
+      </div>
 
       {/* Create dialog */}
       <Dialog open={creating} onOpenChange={setCreating}>
         <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Nova conta</DialogTitle>
-          </DialogHeader>
+          <DialogHeader><DialogTitle>Nova conta</DialogTitle></DialogHeader>
           <AccountForm
             action={createAccount}
             onSuccess={handleSuccess}
