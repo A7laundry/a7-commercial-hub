@@ -73,18 +73,48 @@ export async function batchImportAccounts(
   const CHUNK = 100
   const errors: string[] = []
   let imported = 0
+  const insertedAccounts: { id: string; name: string }[] = []
 
   for (let i = 0; i < inserts.length; i += CHUNK) {
     const chunk = inserts.slice(i, i + CHUNK)
     const { error, data } = await supabase
       .from("accounts")
       .insert(chunk)
-      .select("id")
+      .select("id, name")
 
     if (error) {
       errors.push(`Chunk ${Math.floor(i / CHUNK) + 1}: ${error.message}`)
     } else {
       imported += data?.length ?? chunk.length
+      if (data) insertedAccounts.push(...data)
+    }
+  }
+
+  // Save phone_mappings for accounts that have a phone
+  if (insertedAccounts.length > 0) {
+    const nameToId = new Map(insertedAccounts.map((a) => [a.name.toLowerCase(), a.id]))
+    const phoneMappings = newRows
+      .filter((r) => r.phone)
+      .map((r) => {
+        const accountId = nameToId.get(r.name.toLowerCase())
+        if (!accountId) return null
+        return { tenant_id: tenantId, account_id: accountId, phone: r.phone! }
+      })
+      .filter(Boolean) as { tenant_id: string; account_id: string; phone: string }[]
+
+    if (phoneMappings.length > 0) {
+      // Deduplicate by phone before inserting
+      const seen = new Set<string>()
+      const unique = phoneMappings.filter((p) => {
+        if (seen.has(p.phone)) return false
+        seen.add(p.phone)
+        return true
+      })
+      for (let i = 0; i < unique.length; i += CHUNK) {
+        await supabase
+          .from("phone_mappings")
+          .upsert(unique.slice(i, i + CHUNK), { onConflict: "tenant_id,phone", ignoreDuplicates: true })
+      }
     }
   }
 
