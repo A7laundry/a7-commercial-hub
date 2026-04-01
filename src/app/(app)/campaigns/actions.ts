@@ -102,6 +102,29 @@ export async function executeCampaign(campaignId: string) {
   const { error: msgError } = await supabase.from("whatsapp_messages").insert(messages)
   if (msgError) return { error: msgError.message }
 
+  // Try Meta Cloud API for each recipient (fire-and-forget)
+  const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID
+  const accessToken = process.env.WHATSAPP_ACCESS_TOKEN
+  if (phoneNumberId && accessToken) {
+    await Promise.allSettled(
+      pendingWithPhone.map((r) =>
+        fetch(`https://graph.facebook.com/v19.0/${phoneNumberId}/messages`, {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            messaging_product: "whatsapp",
+            to: r.phone.replace(/\D/g, ""),
+            type: "text",
+            text: { body: campaign.message_template },
+          }),
+        })
+      )
+    )
+  }
+
   // Mark recipients as sent
   await supabase
     .from("campaign_recipients")
@@ -123,6 +146,44 @@ export async function executeCampaign(campaignId: string) {
 
   revalidatePath("/campaigns")
   return { error: null, sent: pendingWithPhone.length }
+}
+
+export async function getCampaignStats(tenantId: string) {
+  const supabase = await createClient()
+
+  const [campaignsRes, recipientsRes] = await Promise.all([
+    supabase
+      .from("campaigns")
+      .select("id, status, sent_count, type, executed_at")
+      .eq("tenant_id", tenantId),
+    supabase
+      .from("campaign_recipients")
+      .select("status, campaign_id")
+      .eq("tenant_id", tenantId),
+  ])
+
+  const campaigns = campaignsRes.data ?? []
+  const recipients = recipientsRes.data ?? []
+
+  const totalCampaigns = campaigns.length
+  const activeCampaigns = campaigns.filter((c) => c.status === "active").length
+  const draftCampaigns = campaigns.filter((c) => c.status === "draft").length
+  const totalSent = campaigns.reduce((sum, c) => sum + (c.sent_count ?? 0), 0)
+  const totalRecipients = recipients.length
+  const sentRecipients = recipients.filter((r) => r.status === "sent").length
+  const noPhoneRecipients = recipients.filter((r) => r.status === "no_phone").length
+  const successRate = totalRecipients > 0 ? Math.round((sentRecipients / totalRecipients) * 100) : 0
+
+  return {
+    totalCampaigns,
+    activeCampaigns,
+    draftCampaigns,
+    totalSent,
+    totalRecipients,
+    sentRecipients,
+    noPhoneRecipients,
+    successRate,
+  }
 }
 
 export async function deleteCampaign(id: string) {

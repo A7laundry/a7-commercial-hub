@@ -8,10 +8,11 @@ import { createCampaign } from "./actions"
 import { AccountSelector } from "@/components/modules/campaigns/AccountSelector"
 import { CampaignComposer } from "@/components/modules/campaigns/CampaignComposer"
 import { CampaignCard } from "@/components/modules/campaigns/CampaignCard"
+import { CampaignDashboard } from "@/components/modules/campaigns/CampaignDashboard"
 import { PageHeader } from "@/components/shared/PageHeader"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import { Megaphone, Send, X, History } from "lucide-react"
+import { Megaphone, Send, X, History, BarChart2 } from "lucide-react"
 import type { CampaignType } from "@/types"
 
 type Toast = { msg: string; ok: boolean } | null
@@ -25,7 +26,7 @@ export default function CampaignsPage() {
   const [composing, setComposing] = useState(false)
   const [toast, setToast] = useState<Toast>(null)
   const [isPending, startTransition] = useTransition()
-  const [view, setView] = useState<"selector" | "history">("selector")
+  const [view, setView] = useState<"selector" | "history" | "dashboard">("selector")
 
   function showToast(msg: string, ok: boolean) {
     setToast({ msg, ok })
@@ -88,6 +89,15 @@ export default function CampaignsPage() {
             </span>
           )}
         </Button>
+        <Button
+          variant={view === "dashboard" ? "default" : "outline"}
+          size="sm"
+          onClick={() => setView("dashboard")}
+          className="gap-2"
+        >
+          <BarChart2 className="w-3.5 h-3.5" />
+          Dashboard
+        </Button>
       </div>
 
       {/* Main content */}
@@ -149,6 +159,10 @@ export default function CampaignsPage() {
                 </div>
               </div>
             )}
+          </div>
+        ) : view === "dashboard" ? (
+          <div className="overflow-y-auto pb-6">
+            <CampaignDashboard />
           </div>
         ) : (
           /* History view */

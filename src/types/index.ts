@@ -134,7 +134,16 @@ export type PhoneMapping = {
 
 // ── Campaigns ─────────────────────────────────────────────────────────────────
 
-export type CampaignType = "reactivation" | "upsell" | "follow_up" | "renewal" | "custom"
+export type CampaignType =
+  | "reactivation"
+  | "upsell"
+  | "follow_up"
+  | "renewal"
+  | "custom"
+  | "birthday"
+  | "risk"
+  | "acquisition"
+  | "recurrence"
 export type CampaignStatus = "draft" | "active" | "completed" | "cancelled"
 export type CampaignRecipientStatus = "pending" | "sent" | "failed" | "no_phone"
 

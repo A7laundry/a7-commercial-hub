@@ -30,12 +30,16 @@ import {
   Check,
 } from "lucide-react"
 
-const TYPE_LABELS = {
+const TYPE_LABELS: Record<string, string> = {
   reactivation: "Reativação",
   follow_up:    "Follow-up",
   upsell:       "Upsell",
   renewal:      "Renovação",
-  custom:       "Personalizada",
+  custom:       "Livre",
+  birthday:     "Aniversário",
+  risk:         "Retenção",
+  acquisition:  "Prospecção",
+  recurrence:   "Recorrência",
 }
 
 const STATUS_CONFIG = {
@@ -112,7 +116,7 @@ export function CampaignCard({ campaign, onToast }: Props) {
               {statusCfg.label}
             </span>
             <span className="text-[10px] text-muted-foreground border rounded-full px-1.5 py-0.5">
-              {TYPE_LABELS[campaign.type]}
+              {TYPE_LABELS[campaign.type] ?? campaign.type}
             </span>
           </div>
           <div className="flex items-center gap-4 mt-1.5 text-xs text-muted-foreground">
