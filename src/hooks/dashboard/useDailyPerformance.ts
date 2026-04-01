@@ -61,6 +61,15 @@ export type OutcomeBreakdown = {
   revenue: number
 }
 
+export type NewAccountEntry = {
+  id: string
+  name: string
+  client_type: string | null
+  pipeline_stage: string
+  estimated_value: number | null
+  segment: string | null
+}
+
 export type DailyPerformanceData = {
   date: string // YYYY-MM-DD
   // WhatsApp
@@ -90,6 +99,8 @@ export type DailyPerformanceData = {
   followUpPendingCount: number
   operatorBreakdown: OperatorStat[]
   outcomeBreakdown: OutcomeBreakdown[]
+  // New accounts registered today
+  newAccounts: NewAccountEntry[]
 }
 
 // ── Internal constants ────────────────────────────────────────────────────────
@@ -123,6 +134,7 @@ export function useDailyPerformance(tenantId: string, date: string) {
         pipelineSnapshotRes,
         dailyGoalRes,
         outcomesRes,
+        newAccountsRes,
       ] = await Promise.all([
         // 1. WhatsApp messages today
         supabase
@@ -175,6 +187,15 @@ export function useDailyPerformance(tenantId: string, date: string) {
           .eq("date", date)
           .order("created_at", { ascending: false })
           .limit(500),
+
+        // 7. New accounts registered today
+        supabase
+          .from("accounts")
+          .select("id, name, client_type, pipeline_stage, estimated_value, segment")
+          .eq("tenant_id", tenantId)
+          .gte("created_at", dayStart)
+          .lte("created_at", dayEnd)
+          .order("created_at", { ascending: false }),
       ])
 
       const waMessages = waMessagesRes.data ?? []
@@ -182,6 +203,14 @@ export function useDailyPerformance(tenantId: string, date: string) {
       const lostToday = lostTodayRes.data ?? []
       const pipelineSnapshot = pipelineSnapshotRes.data ?? []
       const outcomes = outcomesRes.data ?? []
+      const newAccounts: NewAccountEntry[] = (newAccountsRes.data ?? []).map((a) => ({
+        id: a.id,
+        name: a.name,
+        client_type: a.client_type ?? null,
+        pipeline_stage: a.pipeline_stage,
+        estimated_value: a.estimated_value ?? null,
+        segment: a.segment ?? null,
+      }))
 
       // ── WhatsApp metrics ──────────────────────────────────────────────────
 
@@ -372,6 +401,7 @@ export function useDailyPerformance(tenantId: string, date: string) {
         followUpPendingCount,
         operatorBreakdown,
         outcomeBreakdown,
+        newAccounts,
       }
     },
     staleTime: 30_000,

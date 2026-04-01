@@ -24,6 +24,7 @@ import {
   Trash2,
   Plus,
   Medal,
+  UserPlus,
 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -872,7 +873,71 @@ ${goalBlock}`
         </CardContent>
       </Card>
 
-      {/* ── SECTION 8: Define Goal ── */}
+      {/* ── SECTION 8: New Accounts Registered Today ── */}
+      <Card className="mb-6">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base font-semibold flex items-center gap-2">
+            <UserPlus className="w-4 h-4 text-blue-500" />
+            Novos Cadastros
+            {!isLoading && (
+              <span className="ml-auto text-sm font-normal text-muted-foreground">
+                {data?.newAccounts?.length ?? 0} hoje
+              </span>
+            )}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <Skeleton className="h-20 w-full" />
+          ) : !data?.newAccounts || data.newAccounts.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Nenhum cliente cadastrado hoje.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b text-left text-xs text-muted-foreground">
+                    <th className="pb-2 font-medium">Nome</th>
+                    <th className="pb-2 font-medium">Tipo</th>
+                    <th className="pb-2 font-medium">Segmento</th>
+                    <th className="pb-2 font-medium">Estágio</th>
+                    <th className="pb-2 font-medium text-right">Valor Est.</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.newAccounts.map((acc) => (
+                    <tr key={acc.id} className="border-b last:border-0 hover:bg-muted/30">
+                      <td className="py-1.5 font-medium">{acc.name}</td>
+                      <td className="py-1.5">
+                        <span className={cn(
+                          "text-xs px-1.5 py-0.5 rounded font-medium",
+                          acc.client_type === "pj"
+                            ? "bg-purple-100 text-purple-700"
+                            : "bg-blue-100 text-blue-700"
+                        )}>
+                          {acc.client_type === "pj" ? "PJ" : "PF"}
+                        </span>
+                      </td>
+                      <td className="py-1.5 text-muted-foreground">{acc.segment ?? "—"}</td>
+                      <td className="py-1.5">
+                        <span className="text-xs px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">
+                          {STAGE_CONFIG[acc.pipeline_stage]?.label ?? acc.pipeline_stage}
+                        </span>
+                      </td>
+                      <td className="py-1.5 text-right">
+                        {acc.estimated_value != null
+                          ? formatCurrency(acc.estimated_value)
+                          : <span className="text-muted-foreground">—</span>}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* ── SECTION 9: Define Goal ── */}
       <Card className="mb-6">
         <CardHeader className="pb-2">
           <CardTitle className="text-base font-semibold">Definir Meta do Dia</CardTitle>
