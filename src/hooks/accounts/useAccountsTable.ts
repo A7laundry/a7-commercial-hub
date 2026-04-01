@@ -91,7 +91,7 @@ export function useAccountsTable(tenantId: string, params: TableParams) {
       // --- data query ---
       let dataQ = supabase
         .from("accounts")
-        .select("*, phone_mappings(phone)")
+        .select("*")
         .eq("tenant_id", tenantId)
 
       dataQ = applyFilters(dataQ, filters)
@@ -107,8 +107,33 @@ export function useAccountsTable(tenantId: string, params: TableParams) {
       const total = countRes.count ?? 0
       const accounts = (dataRes.data ?? []) as Account[]
 
+      if (accounts.length === 0) {
+        return { accounts, total, pages: Math.ceil(total / pageSize) }
+      }
+
+      // --- fetch phones for this page separately ---
+      const accountIds = accounts.map((a) => a.id)
+      const { data: phoneMappings } = await supabase
+        .from("phone_mappings")
+        .select("account_id, phone")
+        .in("account_id", accountIds)
+
+      const phoneByAccount = new Map<string, string>()
+      for (const pm of phoneMappings ?? []) {
+        if (!phoneByAccount.has(pm.account_id)) {
+          phoneByAccount.set(pm.account_id, pm.phone)
+        }
+      }
+
+      const accountsWithPhone = accounts.map((a) => ({
+        ...a,
+        phone_mappings: phoneByAccount.has(a.id)
+          ? [{ phone: phoneByAccount.get(a.id)! }]
+          : [],
+      }))
+
       return {
-        accounts,
+        accounts: accountsWithPhone,
         total,
         pages: Math.ceil(total / pageSize),
       }
