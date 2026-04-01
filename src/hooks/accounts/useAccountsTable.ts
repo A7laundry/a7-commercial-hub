@@ -20,6 +20,7 @@ export type TableFilters = {
   valueMax: string
   frequency: string
   segment: string
+  noPhone: boolean
 }
 
 export type TableParams = {
@@ -45,6 +46,7 @@ export const DEFAULT_FILTERS: TableFilters = {
   valueMax: "",
   frequency: "",
   segment: "",
+  noPhone: false,
 }
 
 export const DEFAULT_PARAMS: TableParams = {
@@ -64,6 +66,17 @@ export function useAccountsTable(tenantId: string, params: TableParams) {
       const from = (page - 1) * pageSize
       const to = from + pageSize - 1
 
+      // --- noPhone: get account_ids that DO have a phone mapping ---
+      let idsWithPhone: string[] | null = null
+      if (filters.noPhone) {
+        const { data: phoned } = await supabase
+          .from("phone_mappings")
+          .select("account_id")
+          .eq("tenant_id", tenantId)
+          .limit(10000)
+        idsWithPhone = (phoned ?? []).map((r) => r.account_id)
+      }
+
       // --- count query ---
       let countQ = supabase
         .from("accounts")
@@ -71,14 +84,20 @@ export function useAccountsTable(tenantId: string, params: TableParams) {
         .eq("tenant_id", tenantId)
 
       countQ = applyFilters(countQ, filters)
+      if (idsWithPhone !== null) {
+        if (idsWithPhone.length > 0) countQ = countQ.not("id", "in", `(${idsWithPhone.join(",")})`)
+      }
 
       // --- data query ---
       let dataQ = supabase
         .from("accounts")
-        .select("*")
+        .select("*, phone_mappings(phone)")
         .eq("tenant_id", tenantId)
 
       dataQ = applyFilters(dataQ, filters)
+      if (idsWithPhone !== null) {
+        if (idsWithPhone.length > 0) dataQ = dataQ.not("id", "in", `(${idsWithPhone.join(",")})`)
+      }
       dataQ = dataQ
         .order(sort.field, { ascending: sort.dir === "asc" })
         .range(from, to)

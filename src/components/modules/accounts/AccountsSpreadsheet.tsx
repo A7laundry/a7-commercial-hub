@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils"
 import {
   ChevronUp, ChevronDown, ChevronsUpDown,
   ChevronLeft, ChevronRight,
-  Search, SlidersHorizontal, X,
+  Search, SlidersHorizontal, X, Phone,
 } from "lucide-react"
 
 const PIPELINE_LABEL: Record<string, string> = {
@@ -68,7 +68,7 @@ export function AccountsSpreadsheet({ tenantId }: Props) {
   }
 
   const hasActiveFilters = Object.entries(params.filters).some(
-    ([k, v]) => k !== "search" && v !== "all" && v !== ""
+    ([k, v]) => k !== "search" && v !== "all" && v !== "" && v !== false
   )
 
   // ── render ────────────────────────────────────────────────────────────────
@@ -101,9 +101,24 @@ export function AccountsSpreadsheet({ tenantId }: Props) {
           Filtros
           {hasActiveFilters && (
             <span className="ml-1 bg-white/30 rounded-full px-1.5 py-0.5 text-[10px] font-bold">
-              {Object.entries(params.filters).filter(([k, v]) => k !== "search" && v !== "all" && v !== "").length}
+              {Object.entries(params.filters).filter(([k, v]) => k !== "search" && v !== "all" && v !== "" && v !== false).length}
             </span>
           )}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setFilter("noPhone", !params.filters.noPhone)}
+          className={cn(
+            "flex items-center gap-1.5 text-xs px-3 h-8 rounded-md border transition-colors",
+            params.filters.noPhone
+              ? "bg-red-600 text-white border-red-600"
+              : "bg-card text-muted-foreground hover:bg-muted"
+          )}
+          title="Mostrar apenas clientes sem telefone"
+        >
+          <Phone className="w-3.5 h-3.5" />
+          Sem telefone
         </button>
 
         {hasActiveFilters && (
@@ -123,7 +138,7 @@ export function AccountsSpreadsheet({ tenantId }: Props) {
 
       {/* Filters panel */}
       {showFilters && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 p-3 bg-muted/40 rounded-lg border">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-2 p-3 bg-muted/40 rounded-lg border">
           <FilterSelect
             label="Score"
             value={params.filters.score}
@@ -193,6 +208,22 @@ export function AccountsSpreadsheet({ tenantId }: Props) {
               onChange={(e) => setFilter("valueMax", e.target.value)}
             />
           </div>
+          <div className="space-y-1 flex flex-col justify-end">
+            <label className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Telefone</label>
+            <button
+              type="button"
+              onClick={() => setFilter("noPhone", !params.filters.noPhone)}
+              className={cn(
+                "h-7 text-xs px-2 rounded-md border transition-colors flex items-center gap-1.5",
+                params.filters.noPhone
+                  ? "bg-red-600 text-white border-red-600"
+                  : "bg-background text-muted-foreground hover:bg-muted"
+              )}
+            >
+              <Phone className="w-3 h-3" />
+              Sem telefone
+            </button>
+          </div>
         </div>
       )}
 
@@ -202,6 +233,7 @@ export function AccountsSpreadsheet({ tenantId }: Props) {
           <thead>
             <tr className="bg-muted/60 border-b sticky top-0 z-10">
               <Th field="name" label="Nome" sort={params.sort} onSort={setSort} className="min-w-[180px]" />
+              <Th field={null} label="Telefone" sort={params.sort} onSort={setSort} className="w-36" />
               <Th field={null} label="Score" sort={params.sort} onSort={setSort} className="w-20" />
               <Th field="pipeline_stage" label="Pipeline" sort={params.sort} onSort={setSort} className="w-28" />
               <Th field="commercial_status" label="Comercial" sort={params.sort} onSort={setSort} className="w-24" />
@@ -217,7 +249,7 @@ export function AccountsSpreadsheet({ tenantId }: Props) {
             {isLoading ? (
               Array.from({ length: 20 }).map((_, i) => (
                 <tr key={i} className="border-b">
-                  {Array.from({ length: 10 }).map((_, j) => (
+                  {Array.from({ length: 11 }).map((_, j) => (
                     <td key={j} className="px-3 py-1.5">
                       <div className="h-3 bg-muted/60 rounded animate-pulse" style={{ width: `${40 + Math.random() * 40}%` }} />
                     </td>
@@ -226,7 +258,7 @@ export function AccountsSpreadsheet({ tenantId }: Props) {
               ))
             ) : accounts.length === 0 ? (
               <tr>
-                <td colSpan={10} className="text-center py-12 text-muted-foreground">
+                <td colSpan={11} className="text-center py-12 text-muted-foreground">
                   Nenhum cliente encontrado com esses filtros.
                 </td>
               </tr>
@@ -242,7 +274,7 @@ export function AccountsSpreadsheet({ tenantId }: Props) {
       {/* Pagination */}
       <div className="flex items-center justify-between text-xs text-muted-foreground shrink-0">
         <span>
-          Página {params.page} de {pages} · {total.toLocaleString("pt-BR")} contas
+          Página {params.page} de {pages} · {total.toLocaleString("pt-BR")} clientes
         </span>
         <div className="flex items-center gap-1">
           <PageBtn onClick={() => setPage(1)} disabled={params.page === 1}>«</PageBtn>
@@ -285,21 +317,41 @@ export function AccountsSpreadsheet({ tenantId }: Props) {
 
 // ── Row ────────────────────────────────────────────────────────────────────────
 
+function formatPhone(phone: string): string {
+  const digits = phone.replace(/\D/g, "")
+  // +5512999998888 → (12) 99999-8888  or  +551239998888 → (12) 3999-8888
+  const local = digits.startsWith("55") ? digits.slice(2) : digits
+  if (local.length === 11) return `(${local.slice(0, 2)}) ${local.slice(2, 7)}-${local.slice(7)}`
+  if (local.length === 10) return `(${local.slice(0, 2)}) ${local.slice(2, 6)}-${local.slice(6)}`
+  return phone
+}
+
 function AccountRow({ account, idx }: { account: Account; idx: number }) {
   const score = computeCommercialScore(account, [])
   const ltv = computeLTV(account)
   const cfg = SCORE_CONFIG[score]
   const days = daysSince(account.last_contact_at)
+  const phone = account.phone_mappings?.[0]?.phone ?? null
+  const hasPhone = !!phone
 
   return (
     <tr className={cn(
       "border-b hover:bg-primary/5 transition-colors cursor-pointer group",
-      idx % 2 === 0 ? "bg-background" : "bg-muted/20"
+      !hasPhone
+        ? "bg-red-50 hover:bg-red-100"
+        : idx % 2 === 0 ? "bg-background" : "bg-muted/20"
     )}>
       <td className="px-3 py-1.5 font-medium">
         <Link href={`/accounts/${account.id}`} className="hover:text-primary hover:underline block truncate max-w-[200px]">
           {account.name}
         </Link>
+      </td>
+      <td className="px-3 py-1.5">
+        {hasPhone ? (
+          <span className="tabular-nums text-muted-foreground">{formatPhone(phone!)}</span>
+        ) : (
+          <span className="text-red-500 font-medium text-[10px]">— sem tel.</span>
+        )}
       </td>
       <td className="px-3 py-1.5">
         <span className={cn("text-[10px] font-semibold px-1.5 py-0.5 rounded-full whitespace-nowrap", cfg.bg, cfg.color)}>

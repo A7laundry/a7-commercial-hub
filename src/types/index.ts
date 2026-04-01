@@ -47,6 +47,8 @@ export type Account = {
   next_action: string | null
   estimated_value: number | null
   frequency: string | null
+  // Joined phone mappings (optional, present when queried with join)
+  phone_mappings?: { phone: string }[]
 }
 
 export type ContractStatus = "draft" | "active" | "expiring" | "expired" | "cancelled"
