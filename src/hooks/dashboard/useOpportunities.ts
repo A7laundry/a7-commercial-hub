@@ -5,6 +5,7 @@ import {
   computeNextBestAction,
   computeOpportunitySignals,
   computeLTV,
+  getMessageSuggestions,
   daysSince,
 } from "@/lib/commercial-intelligence"
 import { deriveContractStatus } from "@/lib/utils"
@@ -21,6 +22,7 @@ export type OpportunityItem = {
   detail: string | null
   ltv: number | null
   href: string
+  messageText: string | null
 }
 
 export function useOpportunities(tenantId: string) {
@@ -52,6 +54,7 @@ export function useOpportunities(tenantId: string) {
         const nba = computeNextBestAction(account, contracts, score)
         const signals = computeOpportunitySignals(account, contracts)
         const ltv = computeLTV(account)
+        const suggestions = getMessageSuggestions(account, score, contracts)
 
         for (const signal of signals) {
           const actionTypeMap: Record<string, OpportunityItem["actionType"]> = {
@@ -83,6 +86,14 @@ export function useOpportunities(tenantId: string) {
             action = "Reativar contato"
           }
 
+          const msgType = actionType === "follow_up" ? "follow_up"
+            : actionType === "upsell" ? "upsell"
+            : actionType === "renewal" ? "renewal"
+            : "reactivation"
+          const suggestion = suggestions.find((s) => s.type === msgType)
+            ?? suggestions[0]
+            ?? null
+
           items.push({
             id: `${account.id}-${signal.id}`,
             accountId: account.id,
@@ -94,6 +105,7 @@ export function useOpportunities(tenantId: string) {
             detail: account.contact_name ?? null,
             ltv,
             href: `/accounts/${account.id}`,
+            messageText: suggestion?.text ?? null,
           })
         }
       }
