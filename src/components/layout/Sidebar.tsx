@@ -14,11 +14,13 @@ import {
   Globe,
   Megaphone,
   MessageSquare,
+  BarChart3,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const NAV = [
-  { href: "/dashboard",      label: "Dashboard",  icon: LayoutDashboard },
+  { href: "/dashboard",       label: "Dashboard",   icon: LayoutDashboard },
+  { href: "/dashboard/daily", label: "Desempenho",  icon: BarChart3 },
   { href: "/pipeline",       label: "Pipeline",   icon: Kanban },
   { href: "/inbox",          label: "Inbox",      icon: MessageSquare },
   { href: "/accounts",       label: "Clientes",   icon: Building2 },

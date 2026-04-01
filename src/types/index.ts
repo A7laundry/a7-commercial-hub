@@ -53,6 +53,9 @@ export type Account = {
   tags?: string[]
   cpf?: string | null
   cnpj?: string | null
+  // Daily performance fields
+  loss_reason?: 'only_quote' | 'no_response' | 'out_of_area' | 'info_only' | 'price' | 'other' | null
+  unit?: string | null
   // Joined phone mappings (optional, present when queried with join)
   phone_mappings?: { phone: string }[]
 }
