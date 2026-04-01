@@ -1,7 +1,8 @@
 "use client"
 
+import { useEffect, useRef } from "react"
 import { useAccountWhatsApp } from "@/hooks/accounts/useAccountWhatsApp"
-import { MessageSquare, ArrowDownLeft, ArrowUpRight } from "lucide-react"
+import { MessageSquare } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 type Props = {
@@ -11,12 +12,17 @@ type Props = {
 
 export function WhatsAppTimeline({ tenantId, accountId }: Props) {
   const { data: messages = [], isLoading } = useAccountWhatsApp(tenantId, accountId)
+  const bottomRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" })
+  }, [messages.length])
 
   if (isLoading) {
     return (
-      <div className="space-y-2">
+      <div className="space-y-2 px-2">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="h-12 bg-muted/50 rounded-md animate-pulse" />
+          <div key={i} className={cn("h-12 bg-muted/50 rounded-2xl animate-pulse", i % 2 === 0 ? "ml-12" : "mr-12")} />
         ))}
       </div>
     )
@@ -26,16 +32,17 @@ export function WhatsAppTimeline({ tenantId, accountId }: Props) {
     return (
       <div className="flex flex-col items-center justify-center py-8 text-center text-muted-foreground">
         <MessageSquare className="w-8 h-8 mb-2 opacity-30" />
-        <p className="text-sm">Nenhuma mensagem WhatsApp registrada.</p>
-        <p className="text-xs mt-1 opacity-70">As mensagens aparecem após integração do webhook.</p>
+        <p className="text-sm">Nenhuma mensagem registrada.</p>
+        <p className="text-xs mt-1 opacity-70">As mensagens aparecem após o primeiro envio.</p>
       </div>
     )
   }
 
   return (
-    <div className="space-y-2">
-      {messages.map((msg) => {
-        const isInbound = msg.direction === "inbound"
+    <div className="space-y-2 max-h-80 overflow-y-auto px-2 py-2">
+      {messages.map((msg, i) => {
+        const isOutbound = msg.direction === "outbound"
+        const isLast = i === messages.length - 1
         const date = new Date(msg.received_at)
         const timeStr = date.toLocaleString("pt-BR", {
           day: "2-digit",
@@ -47,34 +54,27 @@ export function WhatsAppTimeline({ tenantId, accountId }: Props) {
         return (
           <div
             key={msg.id}
-            className={cn(
-              "flex gap-3 p-3 rounded-md border text-sm",
-              isInbound
-                ? "bg-muted/30 border-border"
-                : "bg-primary/5 border-primary/20"
-            )}
+            className={cn("flex flex-col gap-0.5", isOutbound ? "items-end" : "items-start")}
           >
-            <div className="shrink-0 mt-0.5">
-              {isInbound ? (
-                <ArrowDownLeft className="w-4 h-4 text-muted-foreground" />
-              ) : (
-                <ArrowUpRight className="w-4 h-4 text-primary" />
+            <div
+              className={cn(
+                "max-w-[80%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed",
+                isOutbound
+                  ? "bg-primary text-primary-foreground rounded-br-sm"
+                  : "bg-muted text-foreground rounded-bl-sm",
+                isLast && "ring-2 ring-offset-1",
+                isLast && isOutbound ? "ring-primary/30" : isLast ? "ring-muted-foreground/20" : ""
               )}
+            >
+              {msg.message_text}
             </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-0.5">
-                <span className="text-xs font-medium text-muted-foreground">
-                  {isInbound ? "Recebida" : "Enviada"}
-                </span>
-                <span className="text-xs text-muted-foreground/60">·</span>
-                <span className="text-xs text-muted-foreground/60">{msg.phone}</span>
-                <span className="text-xs text-muted-foreground/60 ml-auto">{timeStr}</span>
-              </div>
-              <p className="text-sm leading-snug line-clamp-2">{msg.message_text}</p>
-            </div>
+            <span className="text-[10px] text-muted-foreground px-1">
+              {isOutbound ? "Você" : "Cliente"} · {timeStr}
+            </span>
           </div>
         )
       })}
+      <div ref={bottomRef} />
     </div>
   )
 }

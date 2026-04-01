@@ -13,12 +13,14 @@ import {
   Upload,
   Globe,
   Megaphone,
+  MessageSquare,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const NAV = [
   { href: "/dashboard",      label: "Dashboard",  icon: LayoutDashboard },
   { href: "/pipeline",       label: "Pipeline",   icon: Kanban },
+  { href: "/inbox",          label: "Inbox",      icon: MessageSquare },
   { href: "/accounts",       label: "Contas",     icon: Building2 },
   { href: "/contracts",      label: "Contratos",  icon: FileText },
   { href: "/documents",      label: "Documentos", icon: FolderOpen },

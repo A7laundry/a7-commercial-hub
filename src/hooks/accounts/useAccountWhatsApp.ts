@@ -13,8 +13,8 @@ export function useAccountWhatsApp(tenantId: string, accountId: string) {
         .select("*")
         .eq("tenant_id", tenantId)
         .eq("account_id", accountId)
-        .order("received_at", { ascending: false })
-        .limit(20)
+        .order("received_at", { ascending: true })
+        .limit(50)
 
       if (error) throw error
       return (data ?? []) as WhatsAppMessage[]

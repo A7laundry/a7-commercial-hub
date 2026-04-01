@@ -11,6 +11,7 @@ import { ExpiringDocsCard } from "@/components/modules/dashboard/ExpiringDocsCar
 import { RecentAlertsCard } from "@/components/modules/dashboard/RecentAlertsCard"
 import { AccountsAtRiskCard } from "@/components/modules/dashboard/AccountsAtRiskCard"
 import { OpportunitiesFeedCard } from "@/components/modules/dashboard/OpportunitiesFeedCard"
+import { ActionCenterCard } from "@/components/modules/dashboard/ActionCenterCard"
 import {
   Building2,
   FileText,
@@ -87,6 +88,11 @@ export default function DashboardPage() {
           <UrgentActionsCard actions={data!.urgentActions} />
         </div>
       )}
+
+      {/* Action Center — full width */}
+      <div className="mb-6">
+        <ActionCenterCard />
+      </div>
 
       {/* Opportunities feed — full width */}
       <div className="mb-6">

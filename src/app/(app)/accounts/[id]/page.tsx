@@ -19,8 +19,8 @@ import { AccountForm } from "@/components/modules/accounts/AccountForm"
 import { ContractsTable } from "@/components/modules/contracts/ContractsTable"
 import { DocumentsList } from "@/components/modules/documents/DocumentsList"
 import { OpportunityPanel } from "@/components/modules/accounts/OpportunityPanel"
-import { MessageSuggestions } from "@/components/modules/accounts/MessageSuggestions"
 import { WhatsAppTimeline } from "@/components/modules/accounts/WhatsAppTimeline"
+import { QuickActions } from "@/components/modules/accounts/QuickActions"
 import { Button } from "@/components/ui/button"
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
@@ -283,16 +283,15 @@ export default function AccountDetailPage({
         <OpportunityPanel account={account} contracts={contracts} />
       </section>
 
-      {/* ── 6. TIMELINE ─────────────────────────────────────────────────── */}
+      {/* ── 6. QUICK ACTIONS + TIMELINE ─────────────────────────────────── */}
+      <section>
+        <SectionTitle>Ações Rápidas</SectionTitle>
+        <QuickActions account={account} />
+      </section>
+
       <section>
         <SectionTitle>Timeline WhatsApp</SectionTitle>
         <WhatsAppTimeline tenantId={tenant.id} accountId={id} />
-      </section>
-
-      {/* ── 7. MENSAGENS ────────────────────────────────────────────────── */}
-      <section>
-        <SectionTitle>Mensagens Sugeridas</SectionTitle>
-        <MessageSuggestions account={account} contracts={contracts} />
       </section>
 
       {/* ── 8. CONTRATOS ────────────────────────────────────────────────── */}
