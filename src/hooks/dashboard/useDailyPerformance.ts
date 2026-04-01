@@ -12,6 +12,26 @@ export const LOSS_REASON_LABELS: Record<string, string> = {
   other: "Outro motivo",
 }
 
+// ── Outcome labels & constants ────────────────────────────────────────────────
+
+export const OUTCOME_LABELS: Record<string, string> = {
+  sale: "Venda",
+  quote_only: "Só orçamento",
+  no_response: "Sem retorno",
+  out_of_area: "Fora da área",
+  info_only: "Só informação",
+  lost_price: "Perdeu por preço",
+  follow_up_pending: "Follow-up pendente",
+}
+
+export const OUTCOME_NEGATIVE = [
+  "quote_only",
+  "no_response",
+  "out_of_area",
+  "info_only",
+  "lost_price",
+]
+
 // ── Output types ──────────────────────────────────────────────────────────────
 
 export type PipelineCount = { stage: string; label: string; count: number }
@@ -23,6 +43,22 @@ export type DailyGoal = {
   goal_contacts: number
   goal_sales: number
   goal_revenue: number
+}
+
+export type OperatorStat = {
+  operator: string
+  contacts: number
+  sales: number
+  revenue: number
+  convRate: number   // sales/contacts as 0–100 integer
+  topOutcome: string // most frequent non-sale outcome type label
+}
+
+export type OutcomeBreakdown = {
+  type: string
+  label: string
+  count: number
+  revenue: number
 }
 
 export type DailyPerformanceData = {
@@ -43,6 +79,17 @@ export type DailyPerformanceData = {
   unitBreakdown: UnitBreakdown[]
   // Goal
   goal: DailyGoal | null
+  // Interaction outcomes
+  outcomes: any[]
+  totalOutcomes: number
+  salesFromOutcomes: number
+  revenueFromOutcomes: number
+  conversionContactToSale: number   // outcomes with type=sale / total outcomes (0 if no outcomes)
+  conversionAttendedToSale: number  // sales / (total - no_response - out_of_area)
+  quoteOnlyCount: number
+  followUpPendingCount: number
+  operatorBreakdown: OperatorStat[]
+  outcomeBreakdown: OutcomeBreakdown[]
 }
 
 // ── Internal constants ────────────────────────────────────────────────────────
@@ -75,6 +122,7 @@ export function useDailyPerformance(tenantId: string, date: string) {
         lostTodayRes,
         pipelineSnapshotRes,
         dailyGoalRes,
+        outcomesRes,
       ] = await Promise.all([
         // 1. WhatsApp messages today
         supabase
@@ -118,12 +166,22 @@ export function useDailyPerformance(tenantId: string, date: string) {
           .eq("tenant_id", tenantId)
           .eq("date", date)
           .maybeSingle(),
+
+        // 6. Interaction outcomes for the day
+        supabase
+          .from("interaction_outcomes")
+          .select("id, operator_name, unit, outcome_type, revenue_amount, account_id, account_name")
+          .eq("tenant_id", tenantId)
+          .eq("date", date)
+          .order("created_at", { ascending: false })
+          .limit(500),
       ])
 
       const waMessages = waMessagesRes.data ?? []
       const closedToday = closedTodayRes.data ?? []
       const lostToday = lostTodayRes.data ?? []
       const pipelineSnapshot = pipelineSnapshotRes.data ?? []
+      const outcomes = outcomesRes.data ?? []
 
       // ── WhatsApp metrics ──────────────────────────────────────────────────
 
@@ -200,6 +258,98 @@ export function useDailyPerformance(tenantId: string, date: string) {
         ([unit, { sales, revenue }]) => ({ unit, sales, revenue }),
       )
 
+      // ── Interaction outcome metrics ───────────────────────────────────────
+
+      const totalOutcomes = outcomes.length
+      const salesFromOutcomes = outcomes.filter((o) => o.outcome_type === "sale").length
+      const revenueFromOutcomes = outcomes
+        .filter((o) => o.outcome_type === "sale")
+        .reduce((sum, o) => sum + (o.revenue_amount ?? 0), 0)
+
+      const noResponse = outcomes.filter(
+        (o) => o.outcome_type === "no_response" || o.outcome_type === "out_of_area",
+      ).length
+
+      const conversionContactToSale =
+        totalOutcomes > 0 ? Math.round((salesFromOutcomes / totalOutcomes) * 100) : 0
+
+      const attended = totalOutcomes - noResponse
+      const conversionAttendedToSale =
+        attended > 0 ? Math.round((salesFromOutcomes / attended) * 100) : 0
+
+      const quoteOnlyCount = outcomes.filter((o) => o.outcome_type === "quote_only").length
+      const followUpPendingCount = outcomes.filter(
+        (o) => o.outcome_type === "follow_up_pending",
+      ).length
+
+      // Operator breakdown
+      const operatorMap = new Map<
+        string,
+        { contacts: number; sales: number; revenue: number; nonSaleTypes: string[] }
+      >()
+      for (const o of outcomes) {
+        const op = o.operator_name ?? "Desconhecido"
+        const existing = operatorMap.get(op) ?? {
+          contacts: 0,
+          sales: 0,
+          revenue: 0,
+          nonSaleTypes: [],
+        }
+        existing.contacts += 1
+        if (o.outcome_type === "sale") {
+          existing.sales += 1
+          existing.revenue += o.revenue_amount ?? 0
+        } else if (o.outcome_type) {
+          existing.nonSaleTypes.push(o.outcome_type)
+        }
+        operatorMap.set(op, existing)
+      }
+
+      const operatorBreakdown: OperatorStat[] = Array.from(operatorMap.entries())
+        .map(([operator, stats]) => {
+          // Find most frequent non-sale outcome type
+          const typeFreq = new Map<string, number>()
+          for (const t of stats.nonSaleTypes) {
+            typeFreq.set(t, (typeFreq.get(t) ?? 0) + 1)
+          }
+          let topOutcomeType = ""
+          let topCount = 0
+          for (const [t, c] of typeFreq.entries()) {
+            if (c > topCount) {
+              topCount = c
+              topOutcomeType = t
+            }
+          }
+          return {
+            operator,
+            contacts: stats.contacts,
+            sales: stats.sales,
+            revenue: stats.revenue,
+            convRate: Math.round((stats.sales / stats.contacts) * 100),
+            topOutcome: topOutcomeType ? (OUTCOME_LABELS[topOutcomeType] ?? topOutcomeType) : "—",
+          }
+        })
+        .sort((a, b) => b.sales - a.sales)
+
+      // Outcome breakdown
+      const outcomeTypeMap = new Map<string, { count: number; revenue: number }>()
+      for (const o of outcomes) {
+        const t = o.outcome_type ?? "unknown"
+        const existing = outcomeTypeMap.get(t) ?? { count: 0, revenue: 0 }
+        existing.count += 1
+        existing.revenue += o.revenue_amount ?? 0
+        outcomeTypeMap.set(t, existing)
+      }
+
+      const outcomeBreakdown: OutcomeBreakdown[] = Array.from(outcomeTypeMap.entries())
+        .map(([type, { count, revenue }]) => ({
+          type,
+          label: OUTCOME_LABELS[type] ?? type,
+          count,
+          revenue,
+        }))
+        .sort((a, b) => b.count - a.count)
+
       return {
         date,
         waContactsTotal,
@@ -212,6 +362,16 @@ export function useDailyPerformance(tenantId: string, date: string) {
         lossReasons,
         unitBreakdown,
         goal: dailyGoalRes.data ?? null,
+        outcomes,
+        totalOutcomes,
+        salesFromOutcomes,
+        revenueFromOutcomes,
+        conversionContactToSale,
+        conversionAttendedToSale,
+        quoteOnlyCount,
+        followUpPendingCount,
+        operatorBreakdown,
+        outcomeBreakdown,
       }
     },
     staleTime: 30_000,
