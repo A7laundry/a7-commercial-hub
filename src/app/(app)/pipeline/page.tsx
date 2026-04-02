@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import { useState, useTransition, useEffect } from "react"
 import { useTenant } from "@/hooks/useTenant"
 import { usePipeline } from "@/hooks/pipeline/usePipeline"
 import { useDeals, useDealsRefetch } from "@/hooks/deals/useDeals"
@@ -21,6 +21,9 @@ export default function PipelinePage() {
   const { data: dealsData, isPending: dealsLoading, refetch: refetchDeals } = useDeals(tenant.id)
   const invalidateDeals = useDealsRefetch(tenant.id)
 
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => { setMounted(true) }, [])
+
   const [activeTab, setActiveTab] = useState<"contas" | "oportunidades">("contas")
   const [createDealOpen, setCreateDealOpen] = useState(false)
   const [triggerResult, setTriggerResult] = useState<{ count: number } | null>(null)
@@ -35,12 +38,14 @@ export default function PipelinePage() {
     })
   }
 
-  const isLoading = activeTab === "contas" ? pipelineLoading : dealsLoading
+  const isLoading = !mounted || (activeTab === "contas" ? pipelineLoading : dealsLoading)
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64 text-muted-foreground text-sm">
-        {activeTab === "contas" ? "Carregando pipeline..." : "Carregando oportunidades..."}
+        {mounted
+          ? (activeTab === "contas" ? "Carregando pipeline..." : "Carregando oportunidades...")
+          : "Carregando pipeline..."}
       </div>
     )
   }

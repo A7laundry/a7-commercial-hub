@@ -19,8 +19,8 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="pt-BR" className={`${geist.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col">
+    <html lang="pt-BR" className={`${geist.variable} h-full antialiased`} suppressHydrationWarning>
+      <body className="min-h-full flex flex-col" suppressHydrationWarning>
         <ReactQueryProvider>{children}</ReactQueryProvider>
       </body>
     </html>
