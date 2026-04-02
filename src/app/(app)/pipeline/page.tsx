@@ -14,8 +14,11 @@ import { formatCurrency } from "@/lib/utils"
 
 export default function PipelinePage() {
   const { tenant } = useTenant()
-  const { data: pipelineData, isLoading: pipelineLoading, refetch: refetchPipeline } = usePipeline(tenant.id)
-  const { data: dealsData, isLoading: dealsLoading, refetch: refetchDeals } = useDeals(tenant.id)
+  // isPending (not isLoading) is SSR-safe in React Query v5:
+  // isLoading = isPending && isFetching — isFetching is false on server, so isLoading=false server-side
+  // isPending = status==='pending' — true on both server and client when no cached data → consistent render
+  const { data: pipelineData, isPending: pipelineLoading, refetch: refetchPipeline } = usePipeline(tenant.id)
+  const { data: dealsData, isPending: dealsLoading, refetch: refetchDeals } = useDeals(tenant.id)
   const invalidateDeals = useDealsRefetch(tenant.id)
 
   const [activeTab, setActiveTab] = useState<"contas" | "oportunidades">("contas")
