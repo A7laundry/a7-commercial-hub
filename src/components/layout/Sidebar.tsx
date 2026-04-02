@@ -15,11 +15,13 @@ import {
   Megaphone,
   MessageSquare,
   BarChart3,
+  BookOpen,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const NAV = [
   { href: "/dashboard",       label: "Dashboard",   icon: LayoutDashboard },
+  { href: "/guide",           label: "Guia de início", icon: BookOpen },
   { href: "/dashboard/daily", label: "Desempenho",  icon: BarChart3 },
   { href: "/pipeline",       label: "Pipeline",   icon: Kanban },
   { href: "/inbox",          label: "Inbox",      icon: MessageSquare },
