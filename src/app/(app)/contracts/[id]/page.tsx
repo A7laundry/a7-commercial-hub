@@ -46,7 +46,7 @@ export default function ContractDetailPage({
   const [editing, setEditing] = useState(false)
   const [confirming, setConfirming] = useState(false)
 
-  const { data: contract, isLoading } = useContract(tenant.id, id)
+  const { data: contract, isPending: isLoading } = useContract(tenant.id, id)
   const { data: accounts = [] } = useAccounts(tenant.id)
 
   async function handleDelete() {

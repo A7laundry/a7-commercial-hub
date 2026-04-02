@@ -26,7 +26,7 @@ export default function AccountSummaryPage({
   const { tenant } = useTenant()
   const router = useRouter()
 
-  const { data, isLoading } = useAccountSummary(tenant.id, id)
+  const { data, isPending: isLoading } = useAccountSummary(tenant.id, id)
 
   if (isLoading) {
     return (

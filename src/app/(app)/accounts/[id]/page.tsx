@@ -81,7 +81,7 @@ export default function AccountDetailPage({
   const [editing, setEditing] = useState(false)
   const [confirming, setConfirming] = useState(false)
 
-  const { data: account, isLoading } = useAccount(tenant.id, id)
+  const { data: account, isPending: isLoading } = useAccount(tenant.id, id)
   const { data: contracts = [], isLoading: contractsLoading } = useContracts(tenant.id, { accountId: id })
 
   async function handleDelete() {
