@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils"
 export default function InboxPage() {
   const { tenant } = useTenant()
   const qc = useQueryClient()
-  const { data: conversations = [], isLoading } = useInbox(tenant.id)
+  const { data: conversations = [], isPending: isLoading } = useInbox(tenant.id)
 
   const [selectedKey, setSelectedKey] = useState<string | null>(null)
   const [search, setSearch] = useState("")

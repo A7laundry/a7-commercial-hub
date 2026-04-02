@@ -33,7 +33,7 @@ export default function DocumentsPage() {
   const [docTypeFilter, setDocTypeFilter] = useState("all")
   const [uploading, setUploading] = useState(false)
 
-  const { data: allDocuments = [], isLoading, error } = useDocuments(tenant.id, {
+  const { data: allDocuments = [], isPending: isLoading, error } = useDocuments(tenant.id, {
     docType: docTypeFilter !== "all" ? docTypeFilter : undefined,
   })
 

@@ -20,7 +20,7 @@ type Toast = { msg: string; ok: boolean } | null
 export default function CampaignsPage() {
   const { tenant } = useTenant()
   const qc = useQueryClient()
-  const { data: campaigns = [], isLoading } = useCampaigns(tenant.id)
+  const { data: campaigns = [], isPending: isLoading } = useCampaigns(tenant.id)
 
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [composing, setComposing] = useState(false)

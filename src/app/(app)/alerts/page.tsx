@@ -25,7 +25,7 @@ export default function AlertsPage() {
   const [statusFilter, setStatusFilter] = useState<AlertStatus | "all">("all")
   const [generating, startGenerate] = useTransition()
 
-  const { data: alerts = [], isLoading, error } = useAlerts(tenant.id, {
+  const { data: alerts = [], isPending: isLoading, error } = useAlerts(tenant.id, {
     status: statusFilter,
   })
 

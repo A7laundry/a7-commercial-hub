@@ -33,7 +33,7 @@ export default function ContractsPage() {
   const [statusFilter, setStatusFilter] = useState<Contract["status"] | "all">("all")
   const [creating, setCreating] = useState(false)
 
-  const { data: allContracts = [], isLoading, error } = useContracts(tenant.id)
+  const { data: allContracts = [], isPending: isLoading, error } = useContracts(tenant.id)
   const { data: accounts = [] } = useAccounts(tenant.id)
 
   const contracts =

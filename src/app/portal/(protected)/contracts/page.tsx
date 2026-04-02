@@ -16,7 +16,7 @@ const STATUS_CONFIG = {
 
 export default function PortalContractsPage() {
   const { account, tenant } = usePortalSession()
-  const { data: contracts = [], isLoading } = usePortalContracts(tenant.id, account.id)
+  const { data: contracts = [], isPending: isLoading } = usePortalContracts(tenant.id, account.id)
 
   return (
     <div className="space-y-4">

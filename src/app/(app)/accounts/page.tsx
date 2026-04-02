@@ -26,7 +26,7 @@ export default function AccountsPage() {
   const [creating, setCreating] = useState(false)
   const [viewMode, setViewMode] = useState<ViewMode>("spreadsheet")
 
-  const { data: accounts = [], isLoading } = useAccounts(tenant.id, {})
+  const { data: accounts = [], isPending: isLoading } = useAccounts(tenant.id, {})
 
   function handleSuccess(accountId: string) {
     qc.invalidateQueries({ queryKey: ["accounts", tenant.id] })

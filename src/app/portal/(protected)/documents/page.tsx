@@ -18,7 +18,7 @@ const STATUS_CONFIG = {
 
 export default function PortalDocumentsPage() {
   const { account, tenant } = usePortalSession()
-  const { data: documents = [], isLoading } = usePortalDocuments(tenant.id, account.id)
+  const { data: documents = [], isPending: isLoading } = usePortalDocuments(tenant.id, account.id)
   const [downloading, setDownloading] = useState<string | null>(null)
 
   async function handleDownload(storagePath: string, name: string, docId: string) {

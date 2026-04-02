@@ -24,7 +24,7 @@ import Link from "next/link"
 
 export default function DashboardPage() {
   const { tenant } = useTenant()
-  const { data, isLoading } = useDashboardData(tenant.id)
+  const { data, isPending: isLoading } = useDashboardData(tenant.id)
 
   return (
     <div>

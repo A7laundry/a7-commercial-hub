@@ -122,7 +122,7 @@ export default function DailyPerformancePage() {
     notes: "",
   })
 
-  const { data, isLoading } = useDailyPerformance(tenant.id, selectedDate)
+  const { data, isPending: isLoading } = useDailyPerformance(tenant.id, selectedDate)
   const saveGoalMutation = useSaveDailyGoal(tenant.id, selectedDate)
   const logOutcomeMutation = useLogOutcome(tenant.id, selectedDate)
   const deleteOutcomeMutation = useDeleteOutcome(tenant.id, selectedDate)

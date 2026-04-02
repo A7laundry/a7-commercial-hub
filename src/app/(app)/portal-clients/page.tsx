@@ -56,7 +56,7 @@ import {
 export default function PortalClientsPage() {
   const { tenant } = useTenant()
   const qc = useQueryClient()
-  const { data: clients = [], isLoading } = usePortalClients(tenant.id)
+  const { data: clients = [], isPending: isLoading } = usePortalClients(tenant.id)
   const { data: accounts = [] } = useAccounts(tenant.id)
 
   const [inviteOpen, setInviteOpen] = useState(false)

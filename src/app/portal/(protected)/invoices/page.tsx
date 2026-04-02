@@ -15,7 +15,7 @@ const STATUS_CONFIG = {
 
 export default function PortalInvoicesPage() {
   const { account, tenant } = usePortalSession()
-  const { data: invoices = [], isLoading } = usePortalInvoices(tenant.id, account.id)
+  const { data: invoices = [], isPending: isLoading } = usePortalInvoices(tenant.id, account.id)
 
   const totalPending = invoices.filter((i) => i.status === "pending" || i.status === "overdue").reduce((s, i) => s + i.amount, 0)
   const totalPaid    = invoices.filter((i) => i.status === "paid").reduce((s, i) => s + i.amount, 0)
