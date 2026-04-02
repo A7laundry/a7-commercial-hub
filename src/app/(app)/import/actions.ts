@@ -62,7 +62,12 @@ export async function batchImportAccounts(
     contact_email: r.contact_email,
     status: r.status,
     notes: r.notes,
-    pipeline_stage: r.pipeline_stage,
+    // P0 FIX: imported accounts do NOT enter the pipeline automatically.
+    // pipeline_stage is only set if the normalizer explicitly provides one
+    // AND it is not the generic 'lead' default from legacy data.
+    ...(r.pipeline_stage && r.pipeline_stage !== "lead"
+      ? { pipeline_stage: r.pipeline_stage }
+      : {}),
     commercial_status: r.commercial_status,
     estimated_value: r.estimated_value,
     frequency: r.frequency,

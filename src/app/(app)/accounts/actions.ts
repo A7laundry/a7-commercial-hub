@@ -61,7 +61,9 @@ export async function createAccountFull(
         contact_email: data.email,
         contact_name: data.contact_name || null,
         segment: data.segment || null,
-        pipeline_stage: data.pipeline_stage || "lead",
+        // P0 FIX: No default pipeline_stage — accounts must be explicitly placed in pipeline.
+        // Pass pipeline_stage only if explicitly provided by the caller.
+        ...(data.pipeline_stage ? { pipeline_stage: data.pipeline_stage } : {}),
         commercial_status: "active",
         status: "active",
         estimated_value: isNaN(estimatedValue as number) ? null : estimatedValue,
@@ -130,6 +132,55 @@ export async function updateAccount(id: string, formData: FormData) {
   if (error) return { error: error.message }
   revalidatePath(`/accounts/${id}`)
   revalidatePath("/accounts")
+  return { error: null }
+}
+
+// Valid loss reasons — must match accounts.loss_reason CHECK in DB
+const VALID_LOSS_REASONS = [
+  "price",
+  "no_response",
+  "out_of_area",
+  "competitor",
+  "budget",
+  "timing",
+  "other",
+] as const
+
+export type LossReason = typeof VALID_LOSS_REASONS[number]
+
+/**
+ * P0 FIX: Mark account as LOST with mandatory loss_reason.
+ * This is the ONLY server action that sets commercial_status=lost.
+ * Using updateAccount() to set lost is blocked by this separation.
+ */
+export async function markAccountLost(
+  id: string,
+  loss_reason: LossReason,
+  loss_notes?: string
+): Promise<{ error: string | null }> {
+  if (!loss_reason || !VALID_LOSS_REASONS.includes(loss_reason)) {
+    return { error: `loss_reason obrigatório. Valores válidos: ${VALID_LOSS_REASONS.join(", ")}` }
+  }
+
+  const supabase = await createClient()
+  const tenantId = await getTenantId(supabase)
+
+  const { error } = await supabase
+    .from("accounts")
+    .update({
+      commercial_status: "lost",
+      pipeline_stage: "closed",
+      loss_reason,
+      notes: loss_notes ?? null,
+    })
+    .eq("id", id)
+    .eq("tenant_id", tenantId)
+
+  if (error) return { error: error.message }
+
+  revalidatePath(`/accounts/${id}`)
+  revalidatePath("/accounts")
+  revalidatePath("/pipeline")
   return { error: null }
 }
 
