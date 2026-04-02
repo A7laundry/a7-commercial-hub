@@ -51,7 +51,12 @@ const ENV_SCHEMA: EnvVar[] = [
   {
     key: "WHATSAPP_VERIFY_TOKEN",
     required: false,
-    description: "Meta webhook verify token — ingest disabled without this",
+    description: "Meta webhook verify token — used for GET challenge verification",
+  },
+  {
+    key: "WHATSAPP_APP_SECRET",
+    required: false,
+    description: "Meta App Secret — used for HMAC-SHA256 webhook signature verification (POST ingest)",
   },
   {
     key: "WHATSAPP_API_KEY",

@@ -43,7 +43,7 @@ async function verifyMetaSignature(
   rawBody: string,
   signatureHeader: string | null
 ): Promise<boolean> {
-  const secret = process.env.WHATSAPP_VERIFY_TOKEN
+  const secret = process.env.WHATSAPP_APP_SECRET
   if (!secret) return false
   if (!signatureHeader) return false
 

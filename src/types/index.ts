@@ -212,6 +212,42 @@ export type Invoice = {
   created_at: string
 }
 
+// ── Deals ─────────────────────────────────────────────────────────────────────
+
+export type DealStage = 'new' | 'contacted' | 'qualified' | 'proposal' | 'negotiation' | 'won' | 'lost'
+
+export type DealLossReason = 'price' | 'no_response' | 'out_of_area' | 'competitor' | 'budget' | 'timing' | 'other'
+
+export type Deal = {
+  id: string
+  tenant_id: string
+  account_id: string
+  title: string
+  value: number | null
+  stage: DealStage
+  assigned_to: string | null
+  expected_close_date: string | null
+  won_at: string | null
+  lost_at: string | null
+  loss_reason: DealLossReason | null
+  notes: string | null
+  created_at: string
+  updated_at: string
+  // joined
+  account_name?: string
+}
+
+export type DealStageHistory = {
+  id: string
+  deal_id: string
+  tenant_id: string
+  from_stage: DealStage | null
+  to_stage: DealStage
+  changed_by: string | null
+  changed_at: string
+  notes: string | null
+}
+
 // ── Automation ────────────────────────────────────────────────────────────────
 
 export type AutomationTriggerType = "upsell" | "cross_sell" | "remarketing" | "reactivation"
