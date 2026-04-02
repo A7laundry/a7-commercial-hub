@@ -9,7 +9,6 @@ import { DealsKanban } from "@/components/modules/deals/DealsKanban"
 import { CreateDealDialog } from "@/components/modules/deals/CreateDealDialog"
 import { checkAutomationTriggers } from "./actions"
 import { Button } from "@/components/ui/button"
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { RefreshCw, Zap, Plus } from "lucide-react"
 import { formatCurrency } from "@/lib/utils"
 
@@ -143,16 +142,21 @@ export default function PipelinePage() {
         )}
 
         {/* Tab switcher */}
-        <div className="mt-3">
-          <Tabs
-            value={activeTab}
-            onValueChange={(v) => setActiveTab(v as "contas" | "oportunidades")}
-          >
-            <TabsList>
-              <TabsTrigger value="contas">Contas</TabsTrigger>
-              <TabsTrigger value="oportunidades">Oportunidades</TabsTrigger>
-            </TabsList>
-          </Tabs>
+        <div className="mt-3 flex gap-1 bg-muted p-1 rounded-lg w-fit">
+          {(["contas", "oportunidades"] as const).map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={[
+                "px-3 py-1 text-sm rounded-md transition-colors",
+                activeTab === tab
+                  ? "bg-background text-foreground shadow-sm font-medium"
+                  : "text-muted-foreground hover:text-foreground",
+              ].join(" ")}
+            >
+              {tab === "contas" ? "Contas" : "Oportunidades"}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -172,16 +176,18 @@ export default function PipelinePage() {
         )}
       </div>
 
-      {/* Create deal dialog */}
-      <CreateDealDialog
-        open={createDealOpen}
-        onOpenChange={setCreateDealOpen}
-        tenantId={tenant.id}
-        onCreated={() => {
-          refetchDeals()
-          invalidateDeals()
-        }}
-      />
+      {/* Create deal dialog — mounted only when open to avoid SSR portal mismatch */}
+      {createDealOpen && (
+        <CreateDealDialog
+          open={createDealOpen}
+          onOpenChange={setCreateDealOpen}
+          tenantId={tenant.id}
+          onCreated={() => {
+            refetchDeals()
+            invalidateDeals()
+          }}
+        />
+      )}
     </div>
   )
 }
