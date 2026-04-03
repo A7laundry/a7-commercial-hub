@@ -1,7 +1,9 @@
 "use client"
 
+import { useState } from "react"
 import { useTenant } from "@/hooks/useTenant"
 import { useDashboardData } from "@/hooks/dashboard/useDashboardData"
+import { useDashboardPeriod, type PeriodType } from "@/hooks/dashboard/useDashboardPeriod"
 import { useDeals } from "@/hooks/deals/useDeals"
 import { PageHeader } from "@/components/shared/PageHeader"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -23,6 +25,11 @@ import {
   TrendingUp,
   TrendingDown,
   Wallet,
+  Trophy,
+  Handshake,
+  UserPlus,
+  AlertTriangle,
+  BarChart3,
 } from "lucide-react"
 import { formatCurrency } from "@/lib/utils"
 import Link from "next/link"
@@ -32,6 +39,8 @@ export default function DashboardPage() {
   const { tenant } = useTenant()
   const { data, isPending: isLoading } = useDashboardData(tenant.id)
   const { data: dealsData, isPending: dealsLoading } = useDeals(tenant.id)
+  const [period, setPeriod] = useState<PeriodType>("month")
+  const { data: periodData, isPending: periodLoading } = useDashboardPeriod(tenant.id, period)
 
   return (
     <div>
@@ -71,6 +80,94 @@ export default function DashboardPage() {
             conversionRate={dealsData?.stats.conversionRate ?? 0}
           />
         </motion.div>
+      </div>
+
+      {/* Period Activity Section */}
+      <div className="mb-6">
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <div className="flex items-center gap-2">
+                <BarChart3 className="w-4 h-4 text-primary" />
+                <CardTitle className="text-sm font-semibold">
+                  Atividade{periodData ? ` — ${periodData.periodLabel}` : ""}
+                </CardTitle>
+              </div>
+              {/* Segmented period selector */}
+              <div className="flex items-center rounded-lg border bg-muted/40 p-0.5 gap-0.5">
+                {(["week", "month", "quarter"] as PeriodType[]).map((p) => {
+                  const labels: Record<PeriodType, string> = { week: "Semana", month: "Mês", quarter: "Trimestre" }
+                  return (
+                    <button
+                      key={p}
+                      type="button"
+                      onClick={() => setPeriod(p)}
+                      className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${
+                        period === p
+                          ? "bg-background shadow-sm text-foreground"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {labels[p]}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+              {/* Deals criados */}
+              <PeriodStatBlock
+                label="Deals criados"
+                icon={Handshake}
+                isLoading={periodLoading}
+                primary={periodData?.dealsCreated ?? 0}
+                secondary={periodData ? formatCurrency(periodData.dealsCreatedValue, "BRL") : "—"}
+                secondaryLabel="em valor"
+              />
+              {/* Deals ganhos */}
+              <PeriodStatBlock
+                label="Deals ganhos"
+                icon={Trophy}
+                isLoading={periodLoading}
+                primary={periodData?.dealsWon ?? 0}
+                secondary={periodData ? formatCurrency(periodData.dealsWonValue, "BRL") : "—"}
+                secondaryLabel="receita fechada"
+                highlight="positive"
+              />
+              {/* Taxa de conversão */}
+              <PeriodStatBlock
+                label="Taxa de conversão"
+                icon={TrendingUp}
+                isLoading={periodLoading}
+                primary={`${periodData?.conversionRate ?? 0}%`}
+                secondary={periodData ? `${periodData.dealsWon}G / ${periodData.dealsLost}P` : "—"}
+                secondaryLabel="ganhos vs perdidos"
+                highlight={periodData && periodData.conversionRate >= 50 ? "positive" : periodData && periodData.conversionRate > 0 ? "warning" : undefined}
+              />
+              {/* Novas contas */}
+              <PeriodStatBlock
+                label="Novas contas"
+                icon={UserPlus}
+                isLoading={periodLoading}
+                primary={periodData?.newAccounts ?? 0}
+                secondary="cadastradas"
+                secondaryLabel="no período"
+              />
+              {/* Alertas gerados */}
+              <PeriodStatBlock
+                label="Alertas gerados"
+                icon={AlertTriangle}
+                isLoading={periodLoading}
+                primary={periodData?.alertsGenerated ?? 0}
+                secondary="disparados"
+                secondaryLabel="pelo sistema"
+                highlight={periodData && periodData.alertsGenerated > 0 ? "warning" : undefined}
+              />
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Urgent Actions — full width */}
@@ -165,6 +262,56 @@ function DealsKpiCard({
         </CardContent>
       </Card>
     </Link>
+  )
+}
+
+// ── Period Stat Block ──────────────────────────────────────────────────────────
+
+function PeriodStatBlock({
+  label,
+  icon: Icon,
+  isLoading,
+  primary,
+  secondary,
+  secondaryLabel,
+  highlight,
+}: {
+  label: string
+  icon: React.ElementType
+  isLoading: boolean
+  primary: string | number
+  secondary: string
+  secondaryLabel: string
+  highlight?: "positive" | "warning"
+}) {
+  const primaryClass =
+    highlight === "positive"
+      ? "text-green-600"
+      : highlight === "warning"
+      ? "text-amber-600"
+      : "text-foreground"
+
+  return (
+    <div className="flex flex-col gap-1">
+      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+        <Icon className="w-3.5 h-3.5 shrink-0" />
+        <span>{label}</span>
+      </div>
+      {isLoading ? (
+        <>
+          <Skeleton className="h-7 w-16" />
+          <Skeleton className="h-3 w-20" />
+        </>
+      ) : (
+        <>
+          <div className={`text-2xl font-bold leading-none ${primaryClass}`}>{primary}</div>
+          <p className="text-[11px] text-muted-foreground leading-tight">
+            <span className="font-medium">{secondary}</span>{" "}
+            {secondaryLabel}
+          </p>
+        </>
+      )}
+    </div>
   )
 }
 
