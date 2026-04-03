@@ -502,7 +502,7 @@ function DealCard({
       {/* Title + stale alert */}
       <div className="flex items-start gap-1 mb-1">
         <Link
-          href={`/accounts/${deal.account_id}`}
+          href={`/deals/${deal.id}`}
           className="flex-1 text-xs font-medium leading-tight hover:text-primary transition-colors line-clamp-2"
           onClick={(e) => e.stopPropagation()}
         >

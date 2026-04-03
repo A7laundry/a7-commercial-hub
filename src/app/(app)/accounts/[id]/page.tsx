@@ -287,9 +287,10 @@ export default function AccountDetailPage({
         ) : (
           <div className="space-y-2">
             {accountDeals.map((deal) => (
-              <div
+              <Link
                 key={deal.id}
-                className="flex items-center justify-between rounded-lg border bg-card px-4 py-3 text-sm"
+                href={`/deals/${deal.id}`}
+                className="flex items-center justify-between rounded-lg border bg-card px-4 py-3 text-sm hover:bg-muted/40 transition-colors"
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <span className={`w-2 h-2 rounded-full shrink-0 ${deal.stageColor}`} />
@@ -309,7 +310,7 @@ export default function AccountDetailPage({
                     {deal.stageLabel}
                   </span>
                 </div>
-              </div>
+              </Link>
             ))}
             <OpportunityPanel account={account} contracts={contracts} />
           </div>
