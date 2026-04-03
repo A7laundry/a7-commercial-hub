@@ -36,7 +36,7 @@ type ComposerState = {
 export function ActionCenterCard() {
   const { tenant } = useTenant()
   const qc = useQueryClient()
-  const { data: accounts = [], isLoading } = useAccounts(tenant.id, {})
+  const { data: accounts = [], isPending: isLoading } = useAccounts(tenant.id, {})
 
   const [composer, setComposer] = useState<ComposerState | null>(null)
   const [sending, setSending] = useState(false)

@@ -44,7 +44,7 @@ const PIPELINE_LABELS: Record<PipelineStage, string> = {
 type Tab = "smart" | "manual"
 
 export function AccountSelector({ tenantId, selected, onSelectionChange, onCampaignTypeHint }: Props) {
-  const { data: allAccounts = [], isLoading } = useAccounts(tenantId)
+  const { data: allAccounts = [], isPending: isLoading } = useAccounts(tenantId)
   const [tab, setTab] = useState<Tab>("smart")
   const [activePresetId, setActivePresetId] = useState<string | null>(null)
   const [filters, setFilters] = useState<Filters>({

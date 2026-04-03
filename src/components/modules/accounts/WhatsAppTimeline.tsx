@@ -11,7 +11,7 @@ type Props = {
 }
 
 export function WhatsAppTimeline({ tenantId, accountId }: Props) {
-  const { data: messages = [], isLoading } = useAccountWhatsApp(tenantId, accountId)
+  const { data: messages = [], isPending: isLoading } = useAccountWhatsApp(tenantId, accountId)
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {

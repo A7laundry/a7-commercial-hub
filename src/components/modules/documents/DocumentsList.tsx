@@ -19,7 +19,7 @@ export function DocumentsList({ tenantId, accountId, contractId }: DocumentsList
   const qc = useQueryClient()
   const [uploading, setUploading] = useState(false)
 
-  const { data: documents = [], isLoading } = useDocuments(tenantId, {
+  const { data: documents = [], isPending: isLoading } = useDocuments(tenantId, {
     accountId,
     contractId,
   })

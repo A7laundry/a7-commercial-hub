@@ -42,7 +42,7 @@ const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
 
 export function CampaignDashboard() {
   const { tenant } = useTenant()
-  const { data, isLoading } = useCampaignDashboard(tenant.id)
+  const { data, isPending: isLoading } = useCampaignDashboard(tenant.id)
 
   if (isLoading) {
     return (

@@ -25,7 +25,7 @@ type Props = {
 }
 
 export function OpportunitiesFeedCard({ tenantId }: Props) {
-  const { data: items = [], isLoading } = useOpportunities(tenantId)
+  const { data: items = [], isPending: isLoading } = useOpportunities(tenantId)
   const [copiedId, setCopiedId] = useState<string | null>(null)
 
   async function copyMessage(id: string, text: string, e: React.MouseEvent) {

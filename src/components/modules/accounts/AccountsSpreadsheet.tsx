@@ -33,7 +33,7 @@ export function AccountsSpreadsheet({ tenantId }: Props) {
   const [params, setParams] = useState<TableParams>(DEFAULT_PARAMS)
   const [showFilters, setShowFilters] = useState(false)
 
-  const { data, isLoading, isFetching } = useAccountsTable(tenantId, params)
+  const { data, isPending: isLoading, isFetching } = useAccountsTable(tenantId, params)
   const accounts = data?.accounts ?? []
   const total = data?.total ?? 0
   const pages = data?.pages ?? 1
