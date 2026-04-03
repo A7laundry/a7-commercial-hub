@@ -17,8 +17,10 @@ import {
   BarChart3,
   BookOpen,
   Target,
+  ChevronLeft,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useSidebarCollapsed } from "./AppShell"
 
 type NavItem = {
   href: string
@@ -41,15 +43,15 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: "Operações",
     items: [
-      { href: "/deals",    label: "Oportunidades",    icon: Target,   badge: "Novo" },
+      { href: "/deals",    label: "Oportunidades",     icon: Target,   badge: "Novo" },
       { href: "/pipeline", label: "Pipeline (Carteira)", icon: Kanban },
     ],
   },
   {
     label: "Clientes",
     items: [
-      { href: "/accounts",  label: "Contas",     icon: Building2 },
-      { href: "/contracts", label: "Contratos",  icon: FileText },
+      { href: "/accounts",  label: "Contas",    icon: Building2 },
+      { href: "/contracts", label: "Contratos", icon: FileText },
     ],
   },
   {
@@ -62,9 +64,9 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: "Gestão",
     items: [
-      { href: "/documents",      label: "Documentos", icon: FolderOpen },
-      { href: "/alerts",         label: "Alertas",    icon: Bell },
-      { href: "/dashboard/daily",label: "Desempenho", icon: BarChart3 },
+      { href: "/documents",       label: "Documentos", icon: FolderOpen },
+      { href: "/alerts",          label: "Alertas",    icon: Bell },
+      { href: "/dashboard/daily", label: "Desempenho", icon: BarChart3 },
     ],
   },
   {
@@ -80,23 +82,42 @@ const NAV_GROUPS: NavGroup[] = [
 export function Sidebar() {
   const pathname = usePathname()
   const { tenant } = useTenant()
+  const { collapsed, toggle } = useSidebarCollapsed()
 
   return (
-    <aside className="w-60 h-screen bg-card border-r border-border flex flex-col fixed left-0 top-0 z-30">
+    <aside
+      className={cn(
+        "h-screen bg-sidebar border-r border-sidebar-border flex flex-col fixed left-0 top-0 z-30 transition-all duration-300",
+        collapsed ? "w-[68px]" : "w-60"
+      )}
+    >
       {/* Brand */}
-      <div className="h-14 flex items-center gap-3 px-4 border-b border-border shrink-0">
-        <div className="w-7 h-7 rounded-md bg-primary flex items-center justify-center shrink-0">
-          <span className="text-primary-foreground text-xs font-bold">A7</span>
-        </div>
-        <span className="text-sm font-semibold truncate">{tenant.name}</span>
+      <div className="h-14 flex items-center justify-between px-4 border-b border-sidebar-border shrink-0">
+        {!collapsed && (
+          <span className="text-base font-bold text-sidebar-primary-foreground tracking-tight font-heading truncate">
+            A7X
+          </span>
+        )}
+        <button
+          onClick={toggle}
+          className={cn(
+            "flex items-center justify-center w-7 h-7 rounded-md text-sidebar-foreground hover:bg-sidebar-accent transition-colors shrink-0",
+            collapsed && "mx-auto"
+          )}
+          aria-label={collapsed ? "Expandir menu" : "Recolher menu"}
+        >
+          <ChevronLeft
+            className={cn("w-4 h-4 transition-transform duration-300", collapsed && "rotate-180")}
+          />
+        </button>
       </div>
 
       {/* Nav */}
       <nav className="flex-1 py-3 px-2 overflow-y-auto space-y-4">
         {NAV_GROUPS.map((group, gi) => (
           <div key={gi}>
-            {group.label && (
-              <p className="px-3 mb-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">
+            {group.label && !collapsed && (
+              <p className="px-3 mb-1 text-[10px] font-semibold uppercase tracking-widest text-sidebar-foreground/40">
                 {group.label}
               </p>
             )}
@@ -107,19 +128,25 @@ export function Sidebar() {
                   <Link
                     key={href}
                     href={href}
+                    title={collapsed ? label : undefined}
                     className={cn(
                       "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
+                      collapsed && "justify-center px-2",
                       active
-                        ? "bg-primary/10 text-primary"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                        ? "bg-sidebar-primary text-sidebar-primary-foreground"
+                        : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                     )}
                   >
                     <Icon className="w-4 h-4 shrink-0" />
-                    <span className="flex-1 truncate">{label}</span>
-                    {badge && (
-                      <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground leading-none">
-                        {badge}
-                      </span>
+                    {!collapsed && (
+                      <>
+                        <span className="flex-1 truncate">{label}</span>
+                        {badge && (
+                          <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-sidebar-primary text-sidebar-primary-foreground leading-none">
+                            {badge}
+                          </span>
+                        )}
+                      </>
                     )}
                   </Link>
                 )
@@ -128,6 +155,13 @@ export function Sidebar() {
           </div>
         ))}
       </nav>
+
+      {/* Footer: tenant name */}
+      {!collapsed && (
+        <div className="px-4 py-3 border-t border-sidebar-border shrink-0">
+          <p className="text-xs text-sidebar-foreground/60 truncate">{tenant.name}</p>
+        </div>
+      )}
     </aside>
   )
 }

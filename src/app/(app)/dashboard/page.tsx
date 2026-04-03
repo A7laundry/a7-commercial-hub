@@ -20,9 +20,12 @@ import {
   Bell,
   FileX,
   Target,
+  TrendingUp,
+  TrendingDown,
 } from "lucide-react"
 import { formatCurrency } from "@/lib/utils"
 import Link from "next/link"
+import { motion } from "framer-motion"
 
 export default function DashboardPage() {
   const { tenant } = useTenant()
@@ -38,56 +41,34 @@ export default function DashboardPage() {
 
       {/* KPI Row — 6 cards including deals pipeline */}
       <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-6">
-        <KpiCard
-          title="Clientes"
-          value={isLoading ? null : data!.totalAccounts}
-          sub={isLoading ? null : `${data!.activeAccounts} ativos`}
-          icon={Building2}
-          href="/accounts"
-          isLoading={isLoading}
-        />
-        <KpiCard
-          title="Contratos ativos"
-          value={isLoading ? null : data!.activeContracts}
-          sub={isLoading ? null : `${(data!.expiringContracts + data!.expiredContracts)} com atenção`}
-          icon={FileText}
-          href="/contracts"
-          isLoading={isLoading}
-        />
-        <KpiCard
-          title="Vencendo em breve"
-          value={isLoading ? null : data!.expiringContracts}
-          sub="próximos 30 dias"
-          icon={Clock}
-          href="/contracts?status=expiring"
-          highlight={!isLoading && data!.expiringContracts > 0 ? "warning" : undefined}
-          isLoading={isLoading}
-        />
-        <KpiCard
-          title="Alertas abertos"
-          value={isLoading ? null : data!.openAlerts}
-          sub="requerem ação"
-          icon={Bell}
-          href="/alerts"
-          highlight={!isLoading && data!.openAlerts > 0 ? "critical" : undefined}
-          isLoading={isLoading}
-        />
-        <KpiCard
-          title="Docs vencidos"
-          value={isLoading ? null : data!.expiredDocuments}
-          sub={isLoading ? null : `${data!.expiringDocuments} vencendo`}
-          icon={FileX}
-          href="/documents"
-          highlight={!isLoading && data!.expiredDocuments > 0 ? "critical" : undefined}
-          isLoading={isLoading}
-        />
-        {/* Deals pipeline KPI */}
-        <DealsKpiCard
-          isLoading={dealsLoading}
-          total={dealsData?.stats.total ?? 0}
-          totalValue={dealsData?.stats.totalValue ?? 0}
-          conversionRate={dealsData?.stats.conversionRate ?? 0}
-        />
+        {[
+          { title: "Clientes", value: isLoading ? null : data!.totalAccounts, sub: isLoading ? null : `${data!.activeAccounts} ativos`, icon: Building2, href: "/accounts", highlight: undefined as "warning" | "critical" | undefined },
+          { title: "Contratos ativos", value: isLoading ? null : data!.activeContracts, sub: isLoading ? null : `${(data!.expiringContracts + data!.expiredContracts)} com atenção`, icon: FileText, href: "/contracts", highlight: undefined as "warning" | "critical" | undefined },
+          { title: "Vencendo em breve", value: isLoading ? null : data!.expiringContracts, sub: "próximos 30 dias", icon: Clock, href: "/contracts?status=expiring", highlight: (!isLoading && data!.expiringContracts > 0 ? "warning" : undefined) as "warning" | "critical" | undefined },
+          { title: "Alertas abertos", value: isLoading ? null : data!.openAlerts, sub: "requerem ação", icon: Bell, href: "/alerts", highlight: (!isLoading && data!.openAlerts > 0 ? "critical" : undefined) as "warning" | "critical" | undefined },
+          { title: "Docs vencidos", value: isLoading ? null : data!.expiredDocuments, sub: isLoading ? null : `${data!.expiringDocuments} vencendo`, icon: FileX, href: "/documents", highlight: (!isLoading && data!.expiredDocuments > 0 ? "critical" : undefined) as "warning" | "critical" | undefined },
+        ].map((kpi, i) => (
+          <motion.div
+            key={kpi.title}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35, delay: i * 0.07 }}
+          >
+            <KpiCard {...kpi} isLoading={isLoading} />
+          </motion.div>
+        ))}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, delay: 5 * 0.07 }}
+        >
+          <DealsKpiCard
+            isLoading={dealsLoading}
+            total={dealsData?.stats.total ?? 0}
+            totalValue={dealsData?.stats.totalValue ?? 0}
+            conversionRate={dealsData?.stats.conversionRate ?? 0}
+          />
+        </motion.div>
       </div>
 
       {/* Urgent Actions — full width */}
