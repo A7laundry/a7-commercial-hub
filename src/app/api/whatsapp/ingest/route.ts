@@ -171,15 +171,33 @@ async function handleMetaWebhook(
             continue
           }
 
-          // Resolve account by phone
+          // Resolve account by phone — check phone_mappings first
           const { data: mapping } = await admin
             .from("phone_mappings")
             .select("account_id, tenant_id")
             .eq("phone", from)
             .maybeSingle()
 
-          const tenant_id = mapping?.tenant_id ?? null
+          let tenant_id = mapping?.tenant_id ?? null
           const account_id = mapping?.account_id ?? null
+
+          // If no phone_mapping, identify tenant via whatsapp_tenant_config
+          // (maps the business phoneNumberId → tenant_id)
+          if (!tenant_id) {
+            const phoneNumberId = metadata?.phone_number_id as string | undefined
+            if (phoneNumberId) {
+              const { data: tenantConfig } = await admin
+                .from("whatsapp_tenant_config")
+                .select("tenant_id")
+                .eq("phone_number_id", phoneNumberId)
+                .maybeSingle()
+              tenant_id = tenantConfig?.tenant_id ?? null
+            }
+            // Last resort: single-tenant fallback via env var
+            if (!tenant_id && process.env.WHATSAPP_TENANT_ID) {
+              tenant_id = process.env.WHATSAPP_TENANT_ID
+            }
+          }
 
           if (!tenant_id) {
             logger.warn({

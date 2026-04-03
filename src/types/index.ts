@@ -132,6 +132,10 @@ export type WhatsAppMessage = {
   wa_message_id: string | null
   received_at: string
   processed: boolean
+  send_status: "pending" | "sent" | "delivered" | "failed"
+  send_attempts: number
+  last_error: string | null
+  delivered_at: string | null
   created_at: string
 }
 
@@ -140,7 +144,9 @@ export type PhoneMapping = {
   tenant_id: string
   phone: string
   account_id: string
+  source: "auto" | "manual" | "import"
   created_at: string
+  updated_at: string
 }
 
 // ── Campaigns ─────────────────────────────────────────────────────────────────
