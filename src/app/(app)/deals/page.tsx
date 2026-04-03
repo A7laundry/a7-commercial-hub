@@ -97,6 +97,7 @@ export default function DealsPage() {
         {dealsData?.board ? (
           <DealsKanban
             board={dealsData.board}
+            tenantId={tenant.id}
             onRefetch={() => {
               refetchDeals()
               invalidateDeals()

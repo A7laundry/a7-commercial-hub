@@ -72,6 +72,7 @@ export type DashboardData = {
   openAlerts: number
   expiredDocuments: number
   expiringDocuments: number
+  totalCarteiraValue: number
 
   // Widgets
   urgentActions: UrgentAction[]
@@ -102,7 +103,7 @@ export function useDashboardData(tenantId: string) {
       const [accountsRes, contractsRes, documentsRes, alertsRes, openAlertsCountRes] = await Promise.all([
         supabase
           .from("accounts")
-          .select("id, name, status")
+          .select("id, name, status, estimated_value")
           .eq("tenant_id", tenantId)
           .limit(10000),
 
@@ -188,6 +189,7 @@ export function useDashboardData(tenantId: string) {
 
       // ── KPI counts ────────────────────────────────────────────────────────
 
+      const totalCarteiraValue = accounts.reduce((sum, a) => sum + ((a.estimated_value as number | null) ?? 0), 0)
       const activeAccounts = accounts.filter((a) => a.status === "active").length
       const activeContracts = contracts.filter((c) => c.status === "active").length
       const expiringContracts = contracts.filter((c) => c.status === "expiring").length
@@ -347,6 +349,7 @@ export function useDashboardData(tenantId: string) {
         openAlerts,
         expiredDocuments,
         expiringDocuments,
+        totalCarteiraValue,
         urgentActions,
         expiringContractsList,
         expiringDocsList,

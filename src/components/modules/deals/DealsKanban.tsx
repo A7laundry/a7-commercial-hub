@@ -2,8 +2,9 @@
 
 import { useRef, useState, useTransition } from "react"
 import Link from "next/link"
-import { Clock, DollarSign, CheckCircle, XCircle } from "lucide-react"
+import { Clock, DollarSign, CheckCircle, XCircle, ArrowRight, History } from "lucide-react"
 import { DEAL_STAGES, DEAL_STAGE_CONFIG, type DealsBoard } from "@/hooks/deals/useDeals"
+import { useDealHistory } from "@/hooks/deals/useDealHistory"
 import { updateDealStage, markDealWon, markDealLost } from "@/app/(app)/deals/actions"
 import type { Deal, DealStage, DealLossReason } from "@/types"
 import { cn, formatCurrency } from "@/lib/utils"
@@ -40,9 +41,10 @@ const LOSS_REASON_LABELS: Record<DealLossReason, string> = {
 type Props = {
   board: DealsBoard
   onRefetch: () => void
+  tenantId: string
 }
 
-export function DealsKanban({ board, onRefetch }: Props) {
+export function DealsKanban({ board, onRefetch, tenantId }: Props) {
   const [optimisticBoard, setOptimisticBoard] = useState<DealsBoard>(board)
   const [dragDealId, setDragDealId] = useState<string | null>(null)
   const [dragOverStage, setDragOverStage] = useState<DealStage | null>(null)
@@ -57,6 +59,11 @@ export function DealsKanban({ board, onRefetch }: Props) {
   const [lossNotes, setLossNotes] = useState("")
   const [lostPending, setLostPending] = useState(false)
   const [lostError, setLostError] = useState<string | null>(null)
+
+  // History sheet state
+  const [historyDealId, setHistoryDealId] = useState<string | null>(null)
+  const [historyDeal, setHistoryDeal] = useState<Deal | null>(null)
+  const { data: historyEntries = [], isPending: historyLoading } = useDealHistory(tenantId, historyDealId)
 
   // Won confirm state
   const [wonConfirmOpen, setWonConfirmOpen] = useState(false)
@@ -253,6 +260,10 @@ export function DealsKanban({ board, onRefetch }: Props) {
                     isTerminal={isTerminal}
                     onDragStart={() => handleDragStart(deal, stage)}
                     onDragEnd={handleDragEnd}
+                    onHistoryClick={() => {
+                      setHistoryDeal(deal)
+                      setHistoryDealId(deal.id)
+                    }}
                   />
                 ))}
                 {deals.length === 0 && (
@@ -302,6 +313,74 @@ export function DealsKanban({ board, onRefetch }: Props) {
           </div>
         </div>
       )}
+
+      {/* Deal history sheet */}
+      <Sheet open={Boolean(historyDealId)} onOpenChange={(open) => {
+        if (!open) { setHistoryDealId(null); setHistoryDeal(null) }
+      }}>
+        <SheetContent side="right" className="w-80">
+          <SheetHeader>
+            <SheetTitle className="flex items-center gap-2 text-sm">
+              <History className="w-4 h-4 text-muted-foreground" />
+              Histórico de estágios
+            </SheetTitle>
+            {historyDeal && (
+              <SheetDescription className="text-xs truncate">
+                {historyDeal.title}
+              </SheetDescription>
+            )}
+          </SheetHeader>
+
+          <div className="px-4 py-3 flex-1 overflow-y-auto">
+            {historyLoading ? (
+              <p className="text-sm text-muted-foreground">Carregando...</p>
+            ) : historyEntries.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Nenhum histórico registrado.</p>
+            ) : (
+              <ol className="relative border-l border-muted-foreground/20 space-y-5 ml-2">
+                {historyEntries.map((entry) => {
+                  const toCfg = DEAL_STAGE_CONFIG[entry.to_stage]
+                  return (
+                    <li key={entry.id} className="ml-4">
+                      <div className={cn("absolute -left-[5px] w-2.5 h-2.5 rounded-full border-2 border-background", toCfg?.dot ?? "bg-muted")} />
+                      <div className="flex items-center gap-1.5 text-xs font-medium">
+                        {entry.fromLabel && (
+                          <>
+                            <span className="text-muted-foreground">{entry.fromLabel}</span>
+                            <ArrowRight className="w-3 h-3 text-muted-foreground/60" />
+                          </>
+                        )}
+                        <span>{entry.toLabel}</span>
+                      </div>
+                      <time className="text-[10px] text-muted-foreground">
+                        {new Date(entry.changed_at).toLocaleString("pt-BR", {
+                          day: "2-digit", month: "2-digit", year: "2-digit",
+                          hour: "2-digit", minute: "2-digit",
+                        })}
+                      </time>
+                      {entry.notes && (
+                        <p className="text-xs text-muted-foreground mt-0.5 italic">{entry.notes}</p>
+                      )}
+                    </li>
+                  )
+                })}
+              </ol>
+            )}
+          </div>
+
+          {historyDeal && (
+            <SheetFooter>
+              <Link
+                href={`/accounts/${historyDeal.account_id}`}
+                className="text-xs text-primary hover:underline"
+                onClick={() => { setHistoryDealId(null); setHistoryDeal(null) }}
+              >
+                Ver conta →
+              </Link>
+            </SheetFooter>
+          )}
+        </SheetContent>
+      </Sheet>
 
       {/* Lost reason sheet */}
       <Sheet open={lostSheetOpen} onOpenChange={(open) => {
@@ -394,12 +473,14 @@ function DealCard({
   isTerminal,
   onDragStart,
   onDragEnd,
+  onHistoryClick,
 }: {
   deal: Deal
   isDragging: boolean
   isTerminal: boolean
   onDragStart: () => void
   onDragEnd: () => void
+  onHistoryClick: () => void
 }) {
   const now = new Date()
   const updatedAt = new Date(deal.updated_at)
@@ -439,7 +520,7 @@ function DealCard({
         </p>
       )}
 
-      {/* Value + days */}
+      {/* Value + days + history */}
       <div className="flex items-center gap-2 flex-wrap text-[10px] text-muted-foreground">
         {deal.value != null && (
           <span className="flex items-center gap-1 text-green-700 font-medium">
@@ -455,6 +536,14 @@ function DealCard({
         )}>
           {daysSinceUpdate === 0 ? "hoje" : `${daysSinceUpdate}d`}
         </span>
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); onHistoryClick() }}
+          className="p-0.5 rounded hover:bg-muted/70 text-muted-foreground/60 hover:text-muted-foreground transition-colors"
+          title="Ver histórico"
+        >
+          <History className="w-3 h-3" />
+        </button>
       </div>
     </div>
   )
