@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useTenant } from "@/hooks/useTenant"
+import { useOpenAlertsCount } from "@/hooks/alerts/useOpenAlertsCount"
 import {
   LayoutDashboard,
   Building2,
@@ -83,6 +84,7 @@ export function Sidebar() {
   const pathname = usePathname()
   const { tenant } = useTenant()
   const { collapsed, toggle } = useSidebarCollapsed()
+  const { data: openAlertsCount = 0 } = useOpenAlertsCount(tenant.id)
 
   return (
     <aside
@@ -124,6 +126,7 @@ export function Sidebar() {
             <div className="space-y-0.5">
               {group.items.map(({ href, label, icon: Icon, badge }) => {
                 const active = pathname === href || pathname.startsWith(`${href}/`)
+                const alertBadge = href === "/alerts" && openAlertsCount > 0 ? openAlertsCount : null
                 return (
                   <Link
                     key={href}
@@ -141,7 +144,12 @@ export function Sidebar() {
                     {!collapsed && (
                       <>
                         <span className="flex-1 truncate">{label}</span>
-                        {badge && (
+                        {alertBadge && (
+                          <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-red-500 text-white leading-none">
+                            {alertBadge > 99 ? "99+" : alertBadge}
+                          </span>
+                        )}
+                        {badge && !alertBadge && (
                           <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-sidebar-primary text-sidebar-primary-foreground leading-none">
                             {badge}
                           </span>

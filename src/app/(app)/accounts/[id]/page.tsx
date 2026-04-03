@@ -19,6 +19,7 @@ import { AccountForm } from "@/components/modules/accounts/AccountForm"
 import { ContractsTable } from "@/components/modules/contracts/ContractsTable"
 import { DocumentsList } from "@/components/modules/documents/DocumentsList"
 import { OpportunityPanel } from "@/components/modules/accounts/OpportunityPanel"
+import { useAccountDeals } from "@/hooks/deals/useAccountDeals"
 import { WhatsAppTimeline } from "@/components/modules/accounts/WhatsAppTimeline"
 import { QuickActions } from "@/components/modules/accounts/QuickActions"
 import { Button } from "@/components/ui/button"
@@ -83,6 +84,7 @@ export default function AccountDetailPage({
 
   const { data: account, isPending: isLoading } = useAccount(tenant.id, id)
   const { data: contracts = [], isPending: contractsLoading } = useContracts(tenant.id, { accountId: id })
+  const { data: accountDeals = [] } = useAccountDeals(tenant.id, id)
 
   async function handleDelete() {
     await deleteAccount(id)
@@ -279,8 +281,39 @@ export default function AccountDetailPage({
 
       {/* ── 5. OPORTUNIDADES ────────────────────────────────────────────── */}
       <section>
-        <SectionTitle>Oportunidades</SectionTitle>
-        <OpportunityPanel account={account} contracts={contracts} />
+        <SectionTitle>Oportunidades ({accountDeals.length})</SectionTitle>
+        {accountDeals.length === 0 ? (
+          <OpportunityPanel account={account} contracts={contracts} />
+        ) : (
+          <div className="space-y-2">
+            {accountDeals.map((deal) => (
+              <div
+                key={deal.id}
+                className="flex items-center justify-between rounded-lg border bg-card px-4 py-3 text-sm"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <span className={`w-2 h-2 rounded-full shrink-0 ${deal.stageColor}`} />
+                  <span className="font-medium truncate">{deal.title}</span>
+                </div>
+                <div className="flex items-center gap-4 shrink-0 ml-3">
+                  {deal.value != null && (
+                    <span className="text-muted-foreground text-xs">
+                      {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }).format(deal.value)}
+                    </span>
+                  )}
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                    deal.stage === "won" ? "bg-green-100 text-green-700" :
+                    deal.stage === "lost" ? "bg-red-100 text-red-700" :
+                    "bg-muted text-muted-foreground"
+                  }`}>
+                    {deal.stageLabel}
+                  </span>
+                </div>
+              </div>
+            ))}
+            <OpportunityPanel account={account} contracts={contracts} />
+          </div>
+        )}
       </section>
 
       {/* ── 6. QUICK ACTIONS + TIMELINE ─────────────────────────────────── */}
