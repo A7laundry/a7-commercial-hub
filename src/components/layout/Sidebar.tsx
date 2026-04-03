@@ -21,20 +21,20 @@ import {
 import { cn } from "@/lib/utils"
 
 const NAV = [
-  { href: "/dashboard",       label: "Dashboard",   icon: LayoutDashboard },
-  { href: "/guide",           label: "Guia de início", icon: BookOpen },
-  { href: "/dashboard/daily", label: "Desempenho",  icon: BarChart3 },
-  { href: "/pipeline",       label: "Pipeline",        icon: Kanban },
-  { href: "/deals",          label: "Oportunidades",   icon: Target },
-  { href: "/inbox",          label: "Inbox",           icon: MessageSquare },
-  { href: "/accounts",       label: "Clientes",   icon: Building2 },
-  { href: "/contracts",      label: "Contratos",  icon: FileText },
-  { href: "/documents",      label: "Documentos", icon: FolderOpen },
-  { href: "/alerts",         label: "Alertas",    icon: Bell },
-  { href: "/campaigns",      label: "Campanhas",  icon: Megaphone },
-  { href: "/portal-clients", label: "Portal",     icon: Globe },
-  { href: "/import",         label: "Importar",   icon: Upload },
-] as const
+  { href: "/dashboard",       label: "Dashboard",          icon: LayoutDashboard },
+  { href: "/guide",           label: "Guia de início",     icon: BookOpen },
+  { href: "/dashboard/daily", label: "Desempenho",         icon: BarChart3 },
+  { href: "/pipeline",        label: "Pipeline (Carteira)", icon: Kanban },
+  { href: "/deals",           label: "Oportunidades",      icon: Target,       badge: "Novo" },
+  { href: "/inbox",           label: "Inbox",              icon: MessageSquare },
+  { href: "/accounts",        label: "Clientes",           icon: Building2 },
+  { href: "/contracts",       label: "Contratos",          icon: FileText },
+  { href: "/documents",       label: "Documentos",         icon: FolderOpen },
+  { href: "/alerts",          label: "Alertas",            icon: Bell },
+  { href: "/campaigns",       label: "Campanhas",          icon: Megaphone },
+  { href: "/portal-clients",  label: "Portal",             icon: Globe },
+  { href: "/import",          label: "Importar",           icon: Upload },
+]
 
 export function Sidebar() {
   const pathname = usePathname()
@@ -52,7 +52,8 @@ export function Sidebar() {
 
       {/* Nav */}
       <nav className="flex-1 py-3 px-2 space-y-0.5 overflow-y-auto">
-        {NAV.map(({ href, label, icon: Icon }) => {
+        {NAV.map(({ href, label, icon: Icon, ...rest }) => {
+          const badge = "badge" in rest ? rest.badge : undefined
           const active = pathname === href || pathname.startsWith(`${href}/`)
           return (
             <Link
@@ -66,7 +67,12 @@ export function Sidebar() {
               )}
             >
               <Icon className="w-4 h-4 shrink-0" />
-              {label}
+              <span className="flex-1 truncate">{label}</span>
+              {badge && (
+                <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground leading-none">
+                  {badge}
+                </span>
+              )}
             </Link>
           )
         })}

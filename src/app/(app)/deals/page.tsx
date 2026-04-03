@@ -6,7 +6,7 @@ import { useDeals, useDealsRefetch } from "@/hooks/deals/useDeals"
 import { DealsKanban } from "@/components/modules/deals/DealsKanban"
 import { CreateDealDialog } from "@/components/modules/deals/CreateDealDialog"
 import { Button } from "@/components/ui/button"
-import { RefreshCw, Plus } from "lucide-react"
+import { RefreshCw, Plus, Target } from "lucide-react"
 import { formatCurrency } from "@/lib/utils"
 
 export default function DealsPage() {
@@ -95,10 +95,18 @@ export default function DealsPage() {
             }}
           />
         ) : (
-          <div className="flex flex-col items-center justify-center h-full text-center gap-3">
-            <p className="text-muted-foreground text-sm">Nenhuma oportunidade ainda.</p>
-            <Button size="sm" onClick={() => setCreateDealOpen(true)} className="gap-1.5">
-              <Plus className="w-3.5 h-3.5" />
+          <div className="flex flex-col items-center justify-center h-full text-center gap-4 max-w-sm mx-auto">
+            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+              <Target className="w-6 h-6 text-primary" />
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-foreground">Você ainda não tem oportunidades.</p>
+              <p className="text-sm text-muted-foreground">
+                Crie sua primeira oportunidade agora e comece a organizar seu funil de vendas.
+              </p>
+            </div>
+            <Button onClick={() => setCreateDealOpen(true)} className="gap-1.5">
+              <Plus className="w-4 h-4" />
               Criar primeira oportunidade
             </Button>
           </div>
