@@ -38,6 +38,11 @@ export default function DealsPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-lg font-semibold">Oportunidades</h1>
+            {!stats && (
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Funil de vendas · Do primeiro contato ao fechamento
+              </p>
+            )}
             {stats && (
               <p className="text-sm text-muted-foreground mt-0.5">
                 {stats.total} oportunidade{stats.total !== 1 ? "s" : ""} ·{" "}

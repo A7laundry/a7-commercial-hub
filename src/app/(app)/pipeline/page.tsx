@@ -59,9 +59,14 @@ export default function PipelinePage() {
       <div className="px-6 py-4 border-b border-border bg-background shrink-0">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-lg font-semibold">Pipeline Comercial</h1>
+            <h1 className="text-lg font-semibold">Pipeline (Carteira)</h1>
 
             {/* Stats line per active tab */}
+            {activeTab === "contas" && !pipelineStats && (
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Gestão de carteira · Acompanhe o relacionamento com seus clientes
+              </p>
+            )}
             {activeTab === "contas" && pipelineStats && (
               <p className="text-sm text-muted-foreground mt-0.5">
                 {pipelineStats.totalAccounts} clientes ·{" "}

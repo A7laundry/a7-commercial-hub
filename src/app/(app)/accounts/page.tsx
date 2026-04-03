@@ -24,7 +24,7 @@ export default function AccountsPage() {
   const router = useRouter()
   const qc = useQueryClient()
   const [creating, setCreating] = useState(false)
-  const [viewMode, setViewMode] = useState<ViewMode>("spreadsheet")
+  const [viewMode, setViewMode] = useState<ViewMode>("cards")
 
   const { data: accounts = [], isPending: isLoading } = useAccounts(tenant.id, {})
 
