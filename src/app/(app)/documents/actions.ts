@@ -42,6 +42,24 @@ export async function createDocumentRecord(formData: FormData) {
   return { error: null }
 }
 
+export async function updateDocument(
+  id: string,
+  data: { name?: string; doc_type?: string; expires_at?: string | null }
+) {
+  const supabase = await createClient()
+  const { tenantId } = await getTenantId(supabase)
+
+  const { error } = await supabase
+    .from("documents")
+    .update(data)
+    .eq("id", id)
+    .eq("tenant_id", tenantId)
+
+  if (error) return { error: error.message }
+  revalidatePath("/documents")
+  return { error: null }
+}
+
 export async function deleteDocument(id: string, storagePath: string) {
   const supabase = await createClient()
   const { tenantId } = await getTenantId(supabase)

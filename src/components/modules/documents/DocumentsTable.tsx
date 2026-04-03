@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useTransition } from "react"
+import { useRouter } from "next/navigation"
 import { Trash2, Download } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { deleteDocument } from "@/app/(app)/documents/actions"
@@ -35,6 +36,7 @@ type DocumentsTableProps = {
 }
 
 export function DocumentsTable({ documents, isLoading, onDeleted }: DocumentsTableProps) {
+  const router = useRouter()
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
   const supabase = createClient()
@@ -85,7 +87,11 @@ export function DocumentsTable({ documents, isLoading, onDeleted }: DocumentsTab
           </thead>
           <tbody>
             {documents.map((doc) => (
-              <tr key={doc.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
+              <tr
+                key={doc.id}
+                className="border-b last:border-0 hover:bg-muted/30 transition-colors cursor-pointer"
+                onClick={() => router.push(`/documents/${doc.id}`)}
+              >
                 <td className="py-3 px-4 font-medium max-w-[200px] truncate">{doc.name}</td>
                 <td className="py-3 px-4 text-muted-foreground">
                   {DOC_TYPE_LABELS[doc.doc_type] ?? doc.doc_type}
@@ -97,7 +103,7 @@ export function DocumentsTable({ documents, isLoading, onDeleted }: DocumentsTab
                   <DocumentStatusBadge expires_at={doc.expires_at} />
                 </td>
                 <td className="py-3 px-4 text-muted-foreground">{formatFileSize(doc.size_bytes)}</td>
-                <td className="py-3 px-4">
+                <td className="py-3 px-4" onClick={(e) => e.stopPropagation()}>
                   <div className="flex gap-1 justify-end">
                     <Button
                       variant="ghost"
