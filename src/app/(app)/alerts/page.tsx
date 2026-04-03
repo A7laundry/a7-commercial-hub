@@ -34,6 +34,7 @@ export default function AlertsPage() {
     startGenerate(async () => {
       await generateAlerts()
       qc.invalidateQueries({ queryKey: ["alerts", tenant.id] })
+      qc.invalidateQueries({ queryKey: ["alerts:open-count", tenant.id] })
     })
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tenant.id])
@@ -42,6 +43,7 @@ export default function AlertsPage() {
     startGenerate(async () => {
       await generateAlerts()
       qc.invalidateQueries({ queryKey: ["alerts", tenant.id] })
+      qc.invalidateQueries({ queryKey: ["alerts:open-count", tenant.id] })
     })
   }
 
