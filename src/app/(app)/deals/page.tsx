@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react"
 import { useTenant } from "@/hooks/useTenant"
-import { useDeals, useDealsRefetch } from "@/hooks/deals/useDeals"
+import { useDeals, useDealsRefetch, DEAL_STAGE_CONFIG } from "@/hooks/deals/useDeals"
+import type { DealStage } from "@/types"
 import { DealsKanban } from "@/components/modules/deals/DealsKanban"
 import { CreateDealDialog } from "@/components/modules/deals/CreateDealDialog"
 import { Button } from "@/components/ui/button"
@@ -81,7 +82,9 @@ export default function DealsPage() {
           <div className="flex gap-4 mt-3 overflow-x-auto pb-0.5">
             {Object.entries(stats.byStage).map(([stage, s]) => (
               <div key={stage} className="shrink-0 text-center">
-                <div className="text-xs text-muted-foreground capitalize">{stage}</div>
+                <div className="text-xs text-muted-foreground">
+                  {DEAL_STAGE_CONFIG[stage as DealStage]?.label ?? stage}
+                </div>
                 <div className="text-sm font-semibold">{s.count}</div>
               </div>
             ))}

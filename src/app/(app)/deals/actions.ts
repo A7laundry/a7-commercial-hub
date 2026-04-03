@@ -102,6 +102,7 @@ export async function createDeal(data: CreateDealInput): Promise<{ error: string
   })
 
   revalidatePath("/pipeline")
+  revalidatePath("/deals")
   return { error: null, deal: deal as Deal }
 }
 
@@ -182,6 +183,7 @@ export async function updateDealStage(
   })
 
   revalidatePath("/pipeline")
+  revalidatePath("/deals")
   return { error: null }
 }
 
@@ -251,6 +253,7 @@ export async function markDealWon(dealId: string): Promise<{ error: string | nul
   })
 
   revalidatePath("/pipeline")
+  revalidatePath("/deals")
   return { error: null }
 }
 
@@ -330,6 +333,7 @@ export async function markDealLost(
   })
 
   revalidatePath("/pipeline")
+  revalidatePath("/deals")
   return { error: null }
 }
 
@@ -382,6 +386,7 @@ export async function updateDeal(
   })
 
   revalidatePath("/pipeline")
+  revalidatePath("/deals")
   return { error: null }
 }
 
@@ -439,6 +444,7 @@ export async function deleteDeal(dealId: string): Promise<{ error: string | null
   })
 
   revalidatePath("/pipeline")
+  revalidatePath("/deals")
   return { error: null }
 }
 

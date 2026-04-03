@@ -99,7 +99,7 @@ export function useDashboardData(tenantId: string) {
   return useQuery<DashboardData>({
     queryKey: ["dashboard", tenantId],
     queryFn: async () => {
-      const [accountsRes, contractsRes, documentsRes, alertsRes] = await Promise.all([
+      const [accountsRes, contractsRes, documentsRes, alertsRes, openAlertsCountRes] = await Promise.all([
         supabase
           .from("accounts")
           .select("id, name, status")
@@ -123,12 +123,20 @@ export function useDashboardData(tenantId: string) {
           .eq("tenant_id", tenantId)
           .order("created_at", { ascending: false })
           .limit(20),
+
+        // Separate count query — avoids underreporting from the .limit(20) above
+        supabase
+          .from("alerts")
+          .select("*", { count: "exact", head: true })
+          .eq("tenant_id", tenantId)
+          .eq("status", "open"),
       ])
 
       const accounts = accountsRes.data ?? []
       const rawContracts = contractsRes.data ?? []
       const rawDocuments = documentsRes.data ?? []
       const rawAlerts = alertsRes.data ?? []
+      const trueOpenAlertsCount = openAlertsCountRes.count ?? 0
 
       // ── Process contracts ─────────────────────────────────────────────────
 
@@ -184,7 +192,7 @@ export function useDashboardData(tenantId: string) {
       const activeContracts = contracts.filter((c) => c.status === "active").length
       const expiringContracts = contracts.filter((c) => c.status === "expiring").length
       const expiredContracts = contracts.filter((c) => c.status === "expired").length
-      const openAlerts = recentAlerts.filter((a) => a.status === "open").length
+      const openAlerts = trueOpenAlertsCount
       const expiredDocuments = documents.filter((d) => d.status === "expired").length
       const expiringDocuments = documents.filter((d) => d.status === "expiring").length
 
@@ -346,6 +354,6 @@ export function useDashboardData(tenantId: string) {
         accountsAtRisk,
       }
     },
-    staleTime: 60_000, // 1 min — dashboard data is aggregated, not real-time
+    staleTime: 15_000, // 15s — low enough to reflect recent deal/alert changes
   })
 }

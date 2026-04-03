@@ -3,7 +3,8 @@
 import { useState, useTransition, useEffect } from "react"
 import { useTenant } from "@/hooks/useTenant"
 import { usePipeline } from "@/hooks/pipeline/usePipeline"
-import { useDeals, useDealsRefetch } from "@/hooks/deals/useDeals"
+import { useDeals, useDealsRefetch, DEAL_STAGE_CONFIG } from "@/hooks/deals/useDeals"
+import type { DealStage } from "@/types"
 import { KanbanBoard } from "@/components/modules/pipeline/KanbanBoard"
 import { DealsKanban } from "@/components/modules/deals/DealsKanban"
 import { CreateDealDialog } from "@/components/modules/deals/CreateDealDialog"
@@ -11,6 +12,15 @@ import { checkAutomationTriggers } from "./actions"
 import { Button } from "@/components/ui/button"
 import { RefreshCw, Zap, Plus } from "lucide-react"
 import { formatCurrency } from "@/lib/utils"
+
+const PIPELINE_STAGE_LABEL: Record<string, string> = {
+  lead:        "Lead",
+  in_service:  "Em serviço",
+  quote_sent:  "Proposta enviada",
+  negotiating: "Negociando",
+  closed:      "Fechado",
+  recurring:   "Recorrente",
+}
 
 export default function PipelinePage() {
   const { tenant } = useTenant()
@@ -136,7 +146,9 @@ export default function PipelinePage() {
           <div className="flex gap-4 mt-3 overflow-x-auto pb-0.5">
             {Object.entries(pipelineStats.byStage).map(([stage, s]) => (
               <div key={stage} className="shrink-0 text-center">
-                <div className="text-xs text-muted-foreground">{stage.replace("_", " ")}</div>
+                <div className="text-xs text-muted-foreground">
+                  {PIPELINE_STAGE_LABEL[stage] ?? stage}
+                </div>
                 <div className="text-sm font-semibold">{s.count}</div>
               </div>
             ))}
@@ -147,7 +159,9 @@ export default function PipelinePage() {
           <div className="flex gap-4 mt-3 overflow-x-auto pb-0.5">
             {Object.entries(dealsStats.byStage).map(([stage, s]) => (
               <div key={stage} className="shrink-0 text-center">
-                <div className="text-xs text-muted-foreground capitalize">{stage}</div>
+                <div className="text-xs text-muted-foreground">
+                  {DEAL_STAGE_CONFIG[stage as DealStage]?.label ?? stage}
+                </div>
                 <div className="text-sm font-semibold">{s.count}</div>
               </div>
             ))}
