@@ -16,6 +16,7 @@ import {
   MessageSquare,
   BarChart3,
   BookOpen,
+  Target,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -23,8 +24,9 @@ const NAV = [
   { href: "/dashboard",       label: "Dashboard",   icon: LayoutDashboard },
   { href: "/guide",           label: "Guia de início", icon: BookOpen },
   { href: "/dashboard/daily", label: "Desempenho",  icon: BarChart3 },
-  { href: "/pipeline",       label: "Pipeline",   icon: Kanban },
-  { href: "/inbox",          label: "Inbox",      icon: MessageSquare },
+  { href: "/pipeline",       label: "Pipeline",        icon: Kanban },
+  { href: "/deals",          label: "Oportunidades",   icon: Target },
+  { href: "/inbox",          label: "Inbox",           icon: MessageSquare },
   { href: "/accounts",       label: "Clientes",   icon: Building2 },
   { href: "/contracts",      label: "Contratos",  icon: FileText },
   { href: "/documents",      label: "Documentos", icon: FolderOpen },
