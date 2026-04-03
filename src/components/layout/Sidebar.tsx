@@ -20,20 +20,61 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-const NAV = [
-  { href: "/dashboard",       label: "Dashboard",          icon: LayoutDashboard },
-  { href: "/guide",           label: "Guia de início",     icon: BookOpen },
-  { href: "/dashboard/daily", label: "Desempenho",         icon: BarChart3 },
-  { href: "/pipeline",        label: "Pipeline (Carteira)", icon: Kanban },
-  { href: "/deals",           label: "Oportunidades",      icon: Target,       badge: "Novo" },
-  { href: "/inbox",           label: "Inbox",              icon: MessageSquare },
-  { href: "/accounts",        label: "Clientes",           icon: Building2 },
-  { href: "/contracts",       label: "Contratos",          icon: FileText },
-  { href: "/documents",       label: "Documentos",         icon: FolderOpen },
-  { href: "/alerts",          label: "Alertas",            icon: Bell },
-  { href: "/campaigns",       label: "Campanhas",          icon: Megaphone },
-  { href: "/portal-clients",  label: "Portal",             icon: Globe },
-  { href: "/import",          label: "Importar",           icon: Upload },
+type NavItem = {
+  href: string
+  label: string
+  icon: React.ElementType
+  badge?: string
+}
+
+type NavGroup = {
+  label?: string
+  items: NavItem[]
+}
+
+const NAV_GROUPS: NavGroup[] = [
+  {
+    items: [
+      { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    ],
+  },
+  {
+    label: "Operações",
+    items: [
+      { href: "/deals",    label: "Oportunidades",    icon: Target,   badge: "Novo" },
+      { href: "/pipeline", label: "Pipeline (Carteira)", icon: Kanban },
+    ],
+  },
+  {
+    label: "Clientes",
+    items: [
+      { href: "/accounts",  label: "Contas",     icon: Building2 },
+      { href: "/contracts", label: "Contratos",  icon: FileText },
+    ],
+  },
+  {
+    label: "Comunicação",
+    items: [
+      { href: "/inbox",     label: "Inbox",     icon: MessageSquare },
+      { href: "/campaigns", label: "Campanhas", icon: Megaphone },
+    ],
+  },
+  {
+    label: "Gestão",
+    items: [
+      { href: "/documents",      label: "Documentos", icon: FolderOpen },
+      { href: "/alerts",         label: "Alertas",    icon: Bell },
+      { href: "/dashboard/daily",label: "Desempenho", icon: BarChart3 },
+    ],
+  },
+  {
+    label: "Sistema",
+    items: [
+      { href: "/portal-clients", label: "Portal B2B", icon: Globe },
+      { href: "/import",         label: "Importar",   icon: Upload },
+      { href: "/guide",          label: "Guia",       icon: BookOpen },
+    ],
+  },
 ]
 
 export function Sidebar() {
@@ -51,31 +92,41 @@ export function Sidebar() {
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 py-3 px-2 space-y-0.5 overflow-y-auto">
-        {NAV.map(({ href, label, icon: Icon, ...rest }) => {
-          const badge = "badge" in rest ? rest.badge : undefined
-          const active = pathname === href || pathname.startsWith(`${href}/`)
-          return (
-            <Link
-              key={href}
-              href={href}
-              className={cn(
-                "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
-                active
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
-              )}
-            >
-              <Icon className="w-4 h-4 shrink-0" />
-              <span className="flex-1 truncate">{label}</span>
-              {badge && (
-                <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground leading-none">
-                  {badge}
-                </span>
-              )}
-            </Link>
-          )
-        })}
+      <nav className="flex-1 py-3 px-2 overflow-y-auto space-y-4">
+        {NAV_GROUPS.map((group, gi) => (
+          <div key={gi}>
+            {group.label && (
+              <p className="px-3 mb-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">
+                {group.label}
+              </p>
+            )}
+            <div className="space-y-0.5">
+              {group.items.map(({ href, label, icon: Icon, badge }) => {
+                const active = pathname === href || pathname.startsWith(`${href}/`)
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
+                      active
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    )}
+                  >
+                    <Icon className="w-4 h-4 shrink-0" />
+                    <span className="flex-1 truncate">{label}</span>
+                    {badge && (
+                      <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground leading-none">
+                        {badge}
+                      </span>
+                    )}
+                  </Link>
+                )
+              })}
+            </div>
+          </div>
+        ))}
       </nav>
     </aside>
   )

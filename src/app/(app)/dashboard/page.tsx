@@ -2,6 +2,7 @@
 
 import { useTenant } from "@/hooks/useTenant"
 import { useDashboardData } from "@/hooks/dashboard/useDashboardData"
+import { useDeals } from "@/hooks/deals/useDeals"
 import { PageHeader } from "@/components/shared/PageHeader"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -18,6 +19,7 @@ import {
   Clock,
   Bell,
   FileX,
+  Target,
 } from "lucide-react"
 import { formatCurrency } from "@/lib/utils"
 import Link from "next/link"
@@ -25,6 +27,7 @@ import Link from "next/link"
 export default function DashboardPage() {
   const { tenant } = useTenant()
   const { data, isPending: isLoading } = useDashboardData(tenant.id)
+  const { data: dealsData, isPending: dealsLoading } = useDeals(tenant.id)
 
   return (
     <div>
@@ -33,8 +36,8 @@ export default function DashboardPage() {
         description={`Bem-vindo, ${tenant.name}`}
       />
 
-      {/* KPI Row */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+      {/* KPI Row — 6 cards including deals pipeline */}
+      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-6">
         <KpiCard
           title="Clientes"
           value={isLoading ? null : data!.totalAccounts}
@@ -77,6 +80,13 @@ export default function DashboardPage() {
           href="/documents"
           highlight={!isLoading && data!.expiredDocuments > 0 ? "critical" : undefined}
           isLoading={isLoading}
+        />
+        {/* Deals pipeline KPI */}
+        <DealsKpiCard
+          isLoading={dealsLoading}
+          total={dealsData?.stats.total ?? 0}
+          totalValue={dealsData?.stats.totalValue ?? 0}
+          conversionRate={dealsData?.stats.conversionRate ?? 0}
         />
       </div>
 
@@ -132,7 +142,50 @@ export default function DashboardPage() {
   )
 }
 
-// ── KPI Card ──────────────────────────────────────────────────────────────────
+// ── Deals KPI card ─────────────────────────────────────────────────────────────
+
+function DealsKpiCard({
+  isLoading,
+  total,
+  totalValue,
+  conversionRate,
+}: {
+  isLoading: boolean
+  total: number
+  totalValue: number
+  conversionRate: number
+}) {
+  return (
+    <Link href="/deals">
+      <Card className="hover:shadow-md transition-shadow cursor-pointer h-full border-primary/20 bg-primary/5">
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <CardTitle className="text-sm font-medium text-muted-foreground">Pipeline</CardTitle>
+          <Target className="w-4 h-4 text-primary" />
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <>
+              <Skeleton className="h-8 w-20 mb-1" />
+              <Skeleton className="h-3 w-24" />
+            </>
+          ) : (
+            <>
+              <div className="text-2xl font-bold text-primary">
+                {formatCurrency(totalValue, "BRL")}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                {total} deal{total !== 1 ? "s" : ""}
+                {conversionRate > 0 && ` · ${conversionRate}% conv.`}
+              </p>
+            </>
+          )}
+        </CardContent>
+      </Card>
+    </Link>
+  )
+}
+
+// ── Generic KPI Card ───────────────────────────────────────────────────────────
 
 type KpiCardProps = {
   title: string
