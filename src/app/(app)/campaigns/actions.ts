@@ -101,7 +101,10 @@ export async function executeCampaign(campaignId: string) {
     send_attempts: 0,
   }))
 
-  const { error: msgError } = await supabase.from("whatsapp_messages").insert(messages)
+  const { data: insertedMessages, error: msgError } = await supabase
+    .from("whatsapp_messages")
+    .insert(messages)
+    .select("id, phone")
   if (msgError) {
     logger.error({
       event: "campaign.execute.messages_insert_failed",
@@ -209,6 +212,58 @@ export async function executeCampaign(campaignId: string) {
       wa_message_id: null,
       error: "WhatsApp not configured",
     }))
+  }
+
+  // ---------------------------------------------------------------------------
+  // Update whatsapp_messages records with real send outcomes
+  // ---------------------------------------------------------------------------
+  if (insertedMessages && insertedMessages.length > 0) {
+    // Build phone → message_id map from the inserted rows
+    const msgIdByPhone = new Map(insertedMessages.map((m: { id: string; phone: string }) => [m.phone, m.id]))
+
+    const sentResults = results.filter((r) => r.ok)
+    const failedResults = results.filter((r) => !r.ok)
+
+    // Sent: individual updates (each has a different wa_message_id)
+    await Promise.all(
+      sentResults.map((r) => {
+        const msgId = msgIdByPhone.get(r.phone)
+        if (!msgId) return Promise.resolve()
+        return supabase
+          .from("whatsapp_messages")
+          .update({
+            send_status: "sent",
+            wa_message_id: r.wa_message_id,
+            send_attempts: 1,
+            processed: true,
+          })
+          .eq("id", msgId)
+      })
+    )
+
+    // Failed: bulk update in one query
+    const failedMsgIds = failedResults
+      .map((r) => msgIdByPhone.get(r.phone))
+      .filter((id): id is string => Boolean(id))
+
+    if (failedMsgIds.length > 0) {
+      // last_error may differ per message; use the first error as a representative label
+      // For granularity, update each failed message individually with its own error
+      await Promise.all(
+        failedResults.map((r) => {
+          const msgId = msgIdByPhone.get(r.phone)
+          if (!msgId) return Promise.resolve()
+          return supabase
+            .from("whatsapp_messages")
+            .update({
+              send_status: "failed",
+              last_error: r.error,
+              send_attempts: 1,
+            })
+            .eq("id", msgId)
+        })
+      )
+    }
   }
 
   // ---------------------------------------------------------------------------

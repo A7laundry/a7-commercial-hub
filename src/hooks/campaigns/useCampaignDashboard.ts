@@ -71,8 +71,11 @@ export function useCampaignDashboard(tenantId: string) {
       const totalSent = campaigns.reduce((sum, c) => sum + (c.sent_count ?? 0), 0)
       const totalRecipients = allRecipients.length
       const sentRecipients = allRecipients.filter((r) => r.status === "sent").length
+      const failedRecipients = allRecipients.filter((r) => r.status === "failed").length
       const noPhoneRecipients = allRecipients.filter((r) => r.status === "no_phone").length
-      const successRate = totalRecipients > 0 ? Math.round((sentRecipients / totalRecipients) * 100) : 0
+      // Real success rate: sent / (sent + failed) — excludes no_phone (not deliverable)
+      const deliverable = sentRecipients + failedRecipients
+      const successRate = deliverable > 0 ? Math.round((sentRecipients / deliverable) * 100) : 0
 
       return {
         stats: {

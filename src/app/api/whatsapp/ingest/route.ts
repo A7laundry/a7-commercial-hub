@@ -131,6 +131,8 @@ async function handleMetaWebhook(
     const entries = (body.entry as unknown[]) ?? []
     const processed: string[] = []
 
+    let statusesUpdated = 0
+
     for (const entry of entries) {
       const e = entry as Record<string, unknown>
       const changes = (e.changes as unknown[]) ?? []
@@ -251,10 +253,86 @@ async function handleMetaWebhook(
             metadata: { wa_message_id, phone: from },
           })
         }
+
+        // -----------------------------------------------------------------------
+        // Process delivery status updates (delivered, read)
+        // -----------------------------------------------------------------------
+        const statuses = (value.statuses as unknown[]) ?? []
+
+        for (const statusEntry of statuses) {
+          const s = statusEntry as Record<string, unknown>
+          const wa_message_id = s.id as string
+          const statusStr = s.status as string
+          const timestamp = s.timestamp as string
+
+          // Only process "delivered" and "read" — skip "sent" (already set at
+          // send time) and "failed" (handled at send time)
+          if (statusStr !== "delivered" && statusStr !== "read") continue
+          if (!wa_message_id) continue
+
+          // Look up the existing message to get its tenant_id (used for security
+          // scoping on the subsequent update)
+          const { data: existingMsg } = await admin
+            .from("whatsapp_messages")
+            .select("tenant_id")
+            .eq("wa_message_id", wa_message_id)
+            .maybeSingle()
+
+          if (!existingMsg?.tenant_id) {
+            logger.warn({
+              event: "whatsapp.status.message_not_found",
+              status: "skipped",
+              metadata: { wa_message_id, statusStr },
+            })
+            continue
+          }
+
+          const tenant_id = existingMsg.tenant_id as string
+
+          let updatePayload: Record<string, unknown>
+          if (statusStr === "delivered") {
+            updatePayload = {
+              send_status: "delivered",
+              delivered_at: new Date(Number(timestamp) * 1000).toISOString(),
+            }
+          } else {
+            // "read"
+            updatePayload = { send_status: "read" }
+          }
+
+          const { error: updateError } = await admin
+            .from("whatsapp_messages")
+            .update(updatePayload)
+            .eq("wa_message_id", wa_message_id)
+            .eq("tenant_id", tenant_id)
+
+          if (updateError) {
+            logger.error({
+              event: "whatsapp.status.update_failed",
+              status: "error",
+              tenant_id,
+              error: updateError.message,
+              metadata: { wa_message_id, statusStr },
+            })
+            continue
+          }
+
+          statusesUpdated++
+
+          logger.info({
+            event: "whatsapp.status.updated",
+            status: "ok",
+            tenant_id,
+            metadata: { wa_message_id, statusStr },
+          })
+        }
       }
     }
 
-    return NextResponse.json({ processed: processed.length }, { status: 200 })
+    return NextResponse.json(
+      { processed: processed.length, statuses_updated: statusesUpdated },
+      { status: 200 }
+    )
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
     logger.error({

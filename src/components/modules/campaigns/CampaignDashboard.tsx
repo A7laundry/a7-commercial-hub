@@ -4,6 +4,7 @@ import { useCampaignDashboard } from "@/hooks/campaigns/useCampaignDashboard"
 import { useTenant } from "@/hooks/useTenant"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
+import Link from "next/link"
 import {
   Megaphone, Send, Users, CheckCircle2, TrendingUp,
   Clock, PhoneOff, BarChart2,
@@ -34,10 +35,12 @@ const TYPE_EMOJI: Record<string, string> = {
 }
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
-  draft:     { label: "Rascunho", color: "bg-slate-100 text-slate-600" },
-  active:    { label: "Enviada",  color: "bg-green-100 text-green-700" },
-  completed: { label: "Concluída",color: "bg-blue-100 text-blue-700" },
-  cancelled: { label: "Cancelada",color: "bg-red-100 text-red-700" },
+  draft:           { label: "Rascunho",       color: "bg-slate-100 text-slate-600" },
+  active:          { label: "Enviada",         color: "bg-green-100 text-green-700" },
+  partial_failure: { label: "Parcial",         color: "bg-amber-100 text-amber-700" },
+  failed:          { label: "Falhou",          color: "bg-red-100 text-red-700" },
+  completed:       { label: "Concluída",       color: "bg-blue-100 text-blue-700" },
+  cancelled:       { label: "Cancelada",       color: "bg-red-100 text-red-700" },
 }
 
 export function CampaignDashboard() {
@@ -75,10 +78,10 @@ export function CampaignDashboard() {
       color: "text-green-600",
     },
     {
-      label: "Taxa de entrega",
+      label: "Aceitos pela API",
       value: `${stats.successRate}%`,
       icon: TrendingUp,
-      sub: `${stats.noPhoneRecipients} sem telefone`,
+      sub: stats.successRate === 0 && stats.totalSent === 0 ? "nenhum enviado ainda" : `${stats.noPhoneRecipients} sem telefone`,
       color: stats.successRate >= 80 ? "text-green-600" : stats.successRate >= 50 ? "text-amber-600" : "text-red-600",
     },
     {
@@ -124,7 +127,7 @@ export function CampaignDashboard() {
               const rate = c.totalCount > 0 ? Math.round((c.sentCount / c.totalCount) * 100) : 0
               const createdAt = new Date(c.created_at).toLocaleDateString("pt-BR")
               return (
-                <div key={c.id} className="px-4 py-3 flex items-center gap-3">
+                <Link key={c.id} href={`/campaigns/${c.id}`} className="px-4 py-3 flex items-center gap-3 hover:bg-muted/30 transition-colors">
                   <span className="text-base shrink-0">{TYPE_EMOJI[c.type] ?? "📢"}</span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
@@ -166,7 +169,7 @@ export function CampaignDashboard() {
                       </div>
                     </div>
                   )}
-                </div>
+                </Link>
               )
             })}
           </div>
