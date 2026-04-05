@@ -1,4 +1,5 @@
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import type { WhatsAppMessage } from "@/types"
 
@@ -14,6 +15,32 @@ export type Conversation = {
 
 export function useInbox(tenantId: string) {
   const supabase = createClient()
+  const qc = useQueryClient()
+
+  // Supabase Realtime: invalidate query on any insert to whatsapp_messages
+  useEffect(() => {
+    if (!tenantId) return
+
+    const channel = supabase
+      .channel(`inbox:${tenantId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "whatsapp_messages",
+          filter: `tenant_id=eq.${tenantId}`,
+        },
+        () => {
+          qc.invalidateQueries({ queryKey: ["inbox", tenantId] })
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [tenantId, supabase, qc])
 
   return useQuery<Conversation[]>({
     queryKey: ["inbox", tenantId],
@@ -81,6 +108,6 @@ export function useInbox(tenantId: string) {
       )
     },
     staleTime: 30_000,
-    refetchInterval: 60_000,
+    refetchInterval: 120_000, // Fallback poll — realtime handles instant updates
   })
 }

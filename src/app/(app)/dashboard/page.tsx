@@ -30,6 +30,10 @@ import {
   UserPlus,
   AlertTriangle,
   BarChart3,
+  Sparkles,
+  CheckCircle2,
+  Circle,
+  ArrowRight,
 } from "lucide-react"
 import { formatCurrency } from "@/lib/utils"
 import Link from "next/link"
@@ -42,12 +46,17 @@ export default function DashboardPage() {
   const [period, setPeriod] = useState<PeriodType>("month")
   const { data: periodData, isPending: periodLoading } = useDashboardPeriod(tenant.id, period)
 
+  const showOnboarding = !isLoading && data!.totalAccounts === 0
+
   return (
     <div>
       <PageHeader
         title="Dashboard"
         description={`Bem-vindo, ${tenant.name}`}
       />
+
+      {/* Onboarding banner — shown only when no clients exist */}
+      {showOnboarding && <OnboardingBanner />}
 
       {/* KPI Row — 7 cards including deals pipeline */}
       <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-4 mb-6">
@@ -311,6 +320,51 @@ function PeriodStatBlock({
           </p>
         </>
       )}
+    </div>
+  )
+}
+
+// ── Onboarding Banner ─────────────────────────────────────────────────────────
+
+function OnboardingBanner() {
+  const steps = [
+    { label: "Adicionar primeiro cliente", href: "/accounts", done: false },
+    { label: "Conectar WhatsApp (número)", href: "/guide", done: false },
+    { label: "Criar primeira oportunidade", href: "/deals", done: false },
+  ]
+
+  return (
+    <div className="mb-6 rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 p-5">
+      <div className="flex items-start gap-3">
+        <div className="shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+          <Sparkles className="w-4 h-4 text-primary" />
+        </div>
+        <div className="flex-1">
+          <h3 className="text-sm font-semibold">Comece aqui — configure o A7X</h3>
+          <p className="text-xs text-muted-foreground mt-0.5 mb-3">
+            Siga os 3 passos para ativar o sistema comercial.
+          </p>
+          <ol className="space-y-2">
+            {steps.map((step, i) => (
+              <li key={i}>
+                <Link
+                  href={step.href}
+                  className="flex items-center gap-2 text-sm hover:text-primary transition-colors group"
+                >
+                  {step.done
+                    ? <CheckCircle2 className="w-4 h-4 text-green-600 shrink-0" />
+                    : <Circle className="w-4 h-4 text-muted-foreground shrink-0 group-hover:text-primary" />
+                  }
+                  <span className={step.done ? "line-through text-muted-foreground" : ""}>
+                    {i + 1}. {step.label}
+                  </span>
+                  <ArrowRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </Link>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </div>
     </div>
   )
 }

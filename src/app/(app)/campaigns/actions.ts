@@ -287,6 +287,13 @@ export async function executeCampaign(campaignId: string) {
       .update({ status: "sent", sent_at: new Date().toISOString() })
       .eq("campaign_id", campaignId)
       .in("account_id", sentIds)
+
+    // Update last_contact_at for successfully reached accounts
+    await supabase
+      .from("accounts")
+      .update({ last_contact_at: new Date().toISOString() })
+      .eq("tenant_id", tenantId)
+      .in("id", sentIds)
   }
 
   if (failedIds.length > 0) {

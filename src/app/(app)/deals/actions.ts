@@ -148,6 +148,14 @@ export async function updateDealStage(
 
   const fromStage = existing.stage as DealStage
 
+  // Fetch account_id for pipeline sync
+  const { data: dealForAccount } = await supabase
+    .from("deals")
+    .select("account_id")
+    .eq("id", dealId)
+    .eq("tenant_id", tenantId)
+    .single()
+
   const { error: updateError } = await supabase
     .from("deals")
     .update({ stage: newStage })
@@ -163,6 +171,24 @@ export async function updateDealStage(
       error: updateError.message,
     })
     return { error: updateError.message }
+  }
+
+  // Sync account.pipeline_stage based on deal progression
+  if (dealForAccount?.account_id) {
+    const stageSyncMap: Partial<Record<DealStage, string>> = {
+      proposal:    "quote_sent",
+      negotiation: "negotiating",
+      contacted:   "lead",
+      qualified:   "lead",
+    }
+    const accountStage = stageSyncMap[newStage]
+    if (accountStage) {
+      await supabase
+        .from("accounts")
+        .update({ pipeline_stage: accountStage })
+        .eq("id", dealForAccount.account_id)
+        .eq("tenant_id", tenantId)
+    }
   }
 
   await supabase.from("deal_stage_history").insert({
@@ -204,7 +230,7 @@ export async function markDealWon(dealId: string): Promise<{ error: string | nul
 
   const { data: existing, error: fetchError } = await supabase
     .from("deals")
-    .select("id, stage, tenant_id")
+    .select("id, stage, tenant_id, account_id")
     .eq("id", dealId)
     .eq("tenant_id", tenantId)
     .single()
@@ -234,6 +260,15 @@ export async function markDealWon(dealId: string): Promise<{ error: string | nul
       error: updateError.message,
     })
     return { error: updateError.message }
+  }
+
+  // Won deal → account becomes a recurring client
+  if (existing.account_id) {
+    await supabase
+      .from("accounts")
+      .update({ pipeline_stage: "recurring", commercial_status: "active" })
+      .eq("id", existing.account_id)
+      .eq("tenant_id", tenantId)
   }
 
   await supabase.from("deal_stage_history").insert({
@@ -278,7 +313,7 @@ export async function markDealLost(
 
   const { data: existing, error: fetchError } = await supabase
     .from("deals")
-    .select("id, stage, tenant_id")
+    .select("id, stage, tenant_id, account_id")
     .eq("id", dealId)
     .eq("tenant_id", tenantId)
     .single()
@@ -313,6 +348,25 @@ export async function markDealLost(
       error: updateError.message,
     })
     return { error: updateError.message }
+  }
+
+  // Lost deal — check if account has no remaining open deals; if so, mark at_risk
+  if (existing.account_id) {
+    const { count: openDeals } = await supabase
+      .from("deals")
+      .select("*", { count: "exact", head: true })
+      .eq("account_id", existing.account_id)
+      .eq("tenant_id", tenantId)
+      .not("stage", "in", '("won","lost")')
+
+    if ((openDeals ?? 0) === 0) {
+      await supabase
+        .from("accounts")
+        .update({ commercial_status: "at_risk" })
+        .eq("id", existing.account_id)
+        .eq("tenant_id", tenantId)
+        .eq("commercial_status", "active") // only downgrade active accounts
+    }
   }
 
   await supabase.from("deal_stage_history").insert({

@@ -1,9 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useTransition } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import { useTenant } from "@/hooks/useTenant"
 import { useExecutionQueue, type ExecutionItem } from "@/hooks/dashboard/useExecutionQueue"
+import { snoozeAccount } from "./actions"
 import { PageHeader } from "@/components/shared/PageHeader"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Button } from "@/components/ui/button"
@@ -14,7 +15,7 @@ import Link from "next/link"
 import {
   Zap, AlertTriangle, ArrowRight, Send, CheckCircle2, X,
   Building2, PhoneCall, MessageSquare, Target, RefreshCw,
-  ChevronDown, ChevronUp,
+  ChevronDown, ChevronUp, BellOff,
 } from "lucide-react"
 
 const ACTION_LABEL: Record<string, { label: string; color: string }> = {
@@ -45,13 +46,14 @@ export default function ExecutionPage() {
 
   const [composer, setComposer] = useState<ComposerState | null>(null)
   const [sending, setSending] = useState(false)
-  const [doneIds, setDoneIds] = useState<Set<string>>(new Set())
+  const [snoozingId, setSnoozingId] = useState<string | null>(null)
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set())
+  const [, startTransition] = useTransition()
 
   const grouped = {
-    urgent: items.filter((i) => i.urgency === "urgent" && !doneIds.has(i.id)),
-    high:   items.filter((i) => i.urgency === "high"   && !doneIds.has(i.id)),
-    normal: items.filter((i) => i.urgency === "normal"  && !doneIds.has(i.id)),
+    urgent: items.filter((i) => i.urgency === "urgent"),
+    high:   items.filter((i) => i.urgency === "high"),
+    normal: items.filter((i) => i.urgency === "normal"),
   }
 
   const totalPending = grouped.urgent.length + grouped.high.length + grouped.normal.length
@@ -79,8 +81,8 @@ export default function ExecutionPage() {
         }),
       })
       if (res.ok) {
-        setDoneIds((prev) => new Set([...prev, item.id]))
         qc.invalidateQueries({ queryKey: ["accounts", tenant.id] })
+        qc.invalidateQueries({ queryKey: ["execution_queue", tenant.id] })
         setComposer(null)
       }
     } finally {
@@ -88,9 +90,14 @@ export default function ExecutionPage() {
     }
   }
 
-  function markDone(id: string) {
-    setDoneIds((prev) => new Set([...prev, id]))
-    if (composer?.itemId === id) setComposer(null)
+  function handleSnooze(item: ExecutionItem) {
+    setSnoozingId(item.id)
+    if (composer?.itemId === item.id) setComposer(null)
+    startTransition(async () => {
+      await snoozeAccount(item.accountId, 3)
+      qc.invalidateQueries({ queryKey: ["execution_queue", tenant.id] })
+      setSnoozingId(null)
+    })
   }
 
   function toggleGroup(key: string) {
@@ -255,11 +262,12 @@ export default function ExecutionPage() {
                             </Link>
                             <button
                               type="button"
-                              onClick={() => markDone(item.id)}
-                              className="text-[10px] font-medium px-2 py-1.5 rounded-md text-muted-foreground hover:bg-muted transition-colors"
-                              title="Marcar como resolvido"
+                              onClick={() => handleSnooze(item)}
+                              disabled={snoozingId === item.id}
+                              className="text-[10px] font-medium px-2 py-1.5 rounded-md text-muted-foreground hover:bg-muted transition-colors disabled:opacity-50"
+                              title="Adiar por 3 dias"
                             >
-                              <CheckCircle2 className="w-3.5 h-3.5" />
+                              <BellOff className="w-3.5 h-3.5" />
                             </button>
                           </div>
                         </div>
@@ -326,20 +334,11 @@ export default function ExecutionPage() {
         })}
       </div>
 
-      {doneIds.size > 0 && (
-        <div className="mt-8 pt-4 border-t">
-          <p className="text-xs text-muted-foreground">
-            {doneIds.size} ação{doneIds.size !== 1 ? "ões" : ""} resolvida{doneIds.size !== 1 ? "s" : ""} nesta sessão.{" "}
-            <button
-              type="button"
-              onClick={() => setDoneIds(new Set())}
-              className="text-primary hover:underline"
-            >
-              Restaurar
-            </button>
-          </p>
-        </div>
-      )}
+      <div className="mt-6 pt-4 border-t">
+        <p className="text-[11px] text-muted-foreground">
+          Itens adiados ficam ocultos por 3 dias e retornam automaticamente à fila.
+        </p>
+      </div>
     </div>
   )
 }

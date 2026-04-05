@@ -81,7 +81,7 @@ export function useExecutionQueue(tenantId: string) {
   return useQuery<ExecutionItem[]>({
     queryKey: ["execution_queue", tenantId],
     queryFn: async () => {
-      const [accountsRes, contractsRes, dealsRes, alertsRes] = await Promise.all([
+      const [accountsRes, contractsRes, dealsRes, alertsRes, snoozesRes] = await Promise.all([
         supabase
           .from("accounts")
           .select("*, phone_mappings(phone)")
@@ -103,12 +103,22 @@ export function useExecutionQueue(tenantId: string) {
           .select("*")
           .eq("tenant_id", tenantId)
           .eq("status", "open"),
+        supabase
+          .from("execution_snoozes")
+          .select("account_id, snoozed_until")
+          .eq("tenant_id", tenantId)
+          .gt("snoozed_until", new Date().toISOString()),
       ])
 
       const accounts = (accountsRes.data ?? []) as Account[]
       const contracts = (contractsRes.data ?? []) as Contract[]
       const deals = (dealsRes.data ?? []) as Deal[]
       const alerts = (alertsRes.data ?? []) as Alert[]
+
+      // Build snooze set — accounts to skip
+      const snoozedAccountIds = new Set(
+        (snoozesRes.data ?? []).map((s: { account_id: string }) => s.account_id)
+      )
 
       // Index contracts, deals, alerts by account_id
       const contractsByAccount = new Map<string, Contract[]>()
@@ -138,7 +148,7 @@ export function useExecutionQueue(tenantId: string) {
 
       const items: ExecutionItem[] = []
 
-      for (const account of accounts) {
+      for (const account of accounts.filter((a) => !snoozedAccountIds.has(a.id))) {
         const acctContracts = contractsByAccount.get(account.id) ?? []
         const stalledDeal = stalledDealByAccount.get(account.id) ?? null
         const openAlert = alertByAccount.get(account.id) ?? null
