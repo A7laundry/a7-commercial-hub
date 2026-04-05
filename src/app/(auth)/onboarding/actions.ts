@@ -46,5 +46,20 @@ export async function createTenantAction(
 
   if (memberError) return { error: memberError.message }
 
-  redirect("/dashboard")
+  // Initialize onboarding_state and activation_metrics rows for the new tenant.
+  // These are non-critical — don't fail the whole action if they error.
+  try {
+    await Promise.all([
+      admin
+        .from("onboarding_state")
+        .insert({ tenant_id: tenant.id }),
+      admin
+        .from("activation_metrics")
+        .insert({ tenant_id: tenant.id }),
+    ])
+  } catch {
+    // intentionally swallowed — rows will be created lazily if missing
+  }
+
+  redirect("/welcome")
 }

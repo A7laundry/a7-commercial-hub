@@ -8,6 +8,7 @@ import { Search } from "lucide-react"
 import { Toaster } from "sonner"
 import { useTenant } from "@/hooks/useTenant"
 import { useRealtimeEvents } from "@/hooks/useRealtimeEvents"
+import { OnboardingBanner } from "@/components/layout/OnboardingBanner"
 
 // ── Sidebar collapse context ───────────────────────────────────────────────────
 
@@ -62,7 +63,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </button>
           </header>
 
-          <main className="flex-1 p-6">{children}</main>
+          <main className="flex-1">
+            <OnboardingBanner />
+            <div className="p-6">{children}</div>
+          </main>
         </div>
       </div>
 

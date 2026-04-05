@@ -58,11 +58,6 @@ export default function DashboardPage() {
 
   return (
     <div>
-      {/* ── Onboarding (sem clientes) ─────────────────────────────────────── */}
-      {!onboarding.isLoading && !onboarding.allDone && (
-        <OnboardingChecklist onboarding={onboarding} />
-      )}
-
       {/* ── Entry point: O que fazer agora? (com clientes) ─────────────── */}
       {hasActivity && queueItems.length > 0 && (
         <motion.div
@@ -120,6 +115,11 @@ export default function DashboardPage() {
         </motion.div>
       )}
 
+      {/* ── Onboarding (sem clientes) ─────────────────────────────────────── */}
+      {!onboarding.isLoading && !onboarding.allDone && (
+        <OnboardingChecklist onboarding={onboarding} />
+      )}
+
       {/* KPI Row — 7 cards including deals pipeline */}
       <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-4 mb-6">
         {[
@@ -151,6 +151,11 @@ export default function DashboardPage() {
             conversionRate={dealsData?.stats.conversionRate ?? 0}
           />
         </motion.div>
+      </div>
+
+      {/* Operational Intelligence — full width */}
+      <div className="mb-6">
+        <InsightsCard insights={insights} isLoading={insightsLoading} />
       </div>
 
       {/* Period Activity Section */}
@@ -239,11 +244,6 @@ export default function DashboardPage() {
             </div>
           </CardContent>
         </Card>
-      </div>
-
-      {/* Operational Intelligence — full width */}
-      <div className="mb-6">
-        <InsightsCard insights={insights} isLoading={insightsLoading} />
       </div>
 
       {/* Urgent Actions — full width */}
