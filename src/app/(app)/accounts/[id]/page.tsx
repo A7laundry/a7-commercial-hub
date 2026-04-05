@@ -22,6 +22,7 @@ import { OpportunityPanel } from "@/components/modules/accounts/OpportunityPanel
 import { useAccountDeals } from "@/hooks/deals/useAccountDeals"
 import { WhatsAppTimeline } from "@/components/modules/accounts/WhatsAppTimeline"
 import { QuickActions } from "@/components/modules/accounts/QuickActions"
+import { AccountTimeline } from "@/components/modules/accounts/AccountTimeline"
 import { Button } from "@/components/ui/button"
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
@@ -321,6 +322,11 @@ export default function AccountDetailPage({
       <section>
         <SectionTitle>Ações Rápidas</SectionTitle>
         <QuickActions account={account} />
+      </section>
+
+      <section>
+        <SectionTitle>Histórico de atividades</SectionTitle>
+        <AccountTimeline tenantId={tenant.id} accountId={id} />
       </section>
 
       <section>

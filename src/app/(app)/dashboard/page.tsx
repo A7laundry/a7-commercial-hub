@@ -7,6 +7,8 @@ import { useDashboardPeriod, type PeriodType } from "@/hooks/dashboard/useDashbo
 import { useDeals } from "@/hooks/deals/useDeals"
 import { useExecutionQueue } from "@/hooks/dashboard/useExecutionQueue"
 import { useOnboardingState, type OnboardingState } from "@/hooks/useOnboardingState"
+import { useInsights } from "@/hooks/dashboard/useInsights"
+import { InsightsCard } from "@/components/modules/dashboard/InsightsCard"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { UrgentActionsCard } from "@/components/modules/dashboard/UrgentActionsCard"
@@ -48,6 +50,7 @@ export default function DashboardPage() {
   const { data: periodData, isPending: periodLoading } = useDashboardPeriod(tenant.id, period)
   const { data: queueItems = [] } = useExecutionQueue(tenant.id)
   const onboarding = useOnboardingState(tenant.id)
+  const { data: insights = [], isPending: insightsLoading } = useInsights(tenant.id)
 
   const hasActivity = !isLoading && (data?.totalAccounts ?? 0) > 0
   const urgentCount = queueItems.filter((i) => i.urgency === "urgent").length
@@ -236,6 +239,11 @@ export default function DashboardPage() {
             </div>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Operational Intelligence — full width */}
+      <div className="mb-6">
+        <InsightsCard insights={insights} isLoading={insightsLoading} />
       </div>
 
       {/* Urgent Actions — full width */}

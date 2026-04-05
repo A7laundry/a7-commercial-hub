@@ -40,6 +40,18 @@ export async function snoozeAccount(
       { onConflict: "tenant_id,account_id" }
     )
 
+  // Log snooze to account timeline (fire-and-forget)
+  if (!error) {
+    const until = new Date(snoozedUntil).toLocaleDateString("pt-BR")
+    await supabase.from("account_timeline").insert({
+      tenant_id: tenantId,
+      account_id: accountId,
+      event_type: "snooze",
+      summary: `Adicionado à fila em ${until}`,
+      metadata: { days, snoozed_until: snoozedUntil },
+    })
+  }
+
   return { error: error?.message ?? null }
 }
 

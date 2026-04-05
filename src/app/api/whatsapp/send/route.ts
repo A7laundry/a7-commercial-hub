@@ -257,6 +257,16 @@ export async function POST(request: NextRequest) {
       .update(accountUpdate)
       .eq("id", account_id)
       .eq("tenant_id", tenant_id)
+
+    // Log to account timeline (fire-and-forget)
+    const preview = message.length > 60 ? message.slice(0, 60) + "…" : message
+    await supabase.from("account_timeline").insert({
+      tenant_id: tenant_id,
+      account_id,
+      event_type: "message_sent",
+      summary: `Mensagem enviada: "${preview}"`,
+      metadata: { action_type: action_type ?? "follow_up", phone },
+    })
   }
 
   // ---------------------------------------------------------------------------

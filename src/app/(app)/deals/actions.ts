@@ -45,6 +45,26 @@ export type UpdateDealInput = {
 
 const TERMINAL_STAGES: DealStage[] = ['won', 'lost']
 
+// ─── Timeline helper ──────────────────────────────────────────────────────────
+
+async function timelineLog(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  tenantId: string,
+  accountId: string | null,
+  eventType: string,
+  summary: string,
+  metadata?: Record<string, unknown>
+) {
+  if (!accountId) return
+  await supabase.from("account_timeline").insert({
+    tenant_id: tenantId,
+    account_id: accountId,
+    event_type: eventType,
+    summary,
+    metadata: metadata ?? null,
+  })
+}
+
 // ─── createDeal ───────────────────────────────────────────────────────────────
 
 export async function createDeal(data: CreateDealInput): Promise<{ error: string | null; deal?: Deal }> {
@@ -93,6 +113,11 @@ export async function createDeal(data: CreateDealInput): Promise<{ error: string
     changed_by: userId,
     notes: "Oportunidade criada",
   })
+
+  await timelineLog(supabase, tenantId, data.account_id, "deal_created",
+    `Deal criado: "${data.title}"${data.value ? ` · R$ ${data.value.toLocaleString("pt-BR")}` : ""}`,
+    { deal_id: deal.id, title: data.title, value: data.value }
+  )
 
   logger.info({
     event: "deal.create",
@@ -192,6 +217,11 @@ export async function updateDealStage(
     notes: notes ?? null,
   })
 
+  await timelineLog(supabase, tenantId, existing.account_id, "stage_changed",
+    `Deal movido: ${fromStage} → ${newStage}`,
+    { deal_id: dealId, from: fromStage, to: newStage }
+  )
+
   logger.info({
     event: "deal.stage_update",
     status: "ok",
@@ -271,6 +301,11 @@ export async function markDealWon(dealId: string): Promise<{ error: string | nul
     changed_by: userId,
     notes: "Oportunidade marcada como ganha",
   })
+
+  await timelineLog(supabase, tenantId, existing.account_id, "deal_won",
+    "Deal ganho — cliente convertido",
+    { deal_id: dealId }
+  )
 
   logger.info({
     event: "deal.mark_won",
@@ -369,6 +404,11 @@ export async function markDealLost(
     changed_by: userId,
     notes: notes ?? `Motivo: ${loss_reason}`,
   })
+
+  await timelineLog(supabase, tenantId, existing.account_id, "deal_lost",
+    `Deal perdido · motivo: ${loss_reason}`,
+    { deal_id: dealId, loss_reason, notes }
+  )
 
   logger.info({
     event: "deal.mark_lost",
