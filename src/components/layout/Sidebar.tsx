@@ -19,6 +19,7 @@ import {
   BookOpen,
   Target,
   ChevronLeft,
+  ListChecks,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useSidebarCollapsed } from "./AppShell"
@@ -44,8 +45,9 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: "Operações",
     items: [
-      { href: "/deals",    label: "Oportunidades",     icon: Target,   badge: "Novo" },
-      { href: "/pipeline", label: "Pipeline (Carteira)", icon: Kanban },
+      { href: "/execution", label: "Minha Fila",          icon: ListChecks },
+      { href: "/deals",     label: "Oportunidades",       icon: Target },
+      { href: "/pipeline",  label: "Pipeline (Carteira)", icon: Kanban },
     ],
   },
   {
