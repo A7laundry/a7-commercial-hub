@@ -46,7 +46,7 @@ export async function createTenantAction(
 
   if (memberError) return { error: memberError.message }
 
-  // Initialize onboarding_state and activation_metrics rows for the new tenant.
+  // Initialize onboarding_state, activation_metrics, and subscriptions rows for the new tenant.
   // These are non-critical — don't fail the whole action if they error.
   try {
     await Promise.all([
@@ -56,6 +56,12 @@ export async function createTenantAction(
       admin
         .from("activation_metrics")
         .insert({ tenant_id: tenant.id }),
+      admin.from("subscriptions").insert({
+        tenant_id: tenant.id,
+        status: "trialing",
+        plan: "free",
+        trial_end: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      }),
     ])
   } catch {
     // intentionally swallowed — rows will be created lazily if missing

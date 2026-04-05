@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache"
 import { createClient } from "@/lib/supabase/server"
 import { logger } from "@/lib/logger"
 import type { CampaignType } from "@/types"
+import { checkCampaignLimit } from "@/lib/billing-guard"
 
 async function getTenantId(supabase: Awaited<ReturnType<typeof createClient>>) {
   const { data: { user } } = await supabase.auth.getUser()
@@ -21,6 +22,12 @@ export async function createCampaign(payload: {
 }) {
   const supabase = await createClient()
   const tenantId = await getTenantId(supabase)
+
+  // Plan limit check
+  const limitCheck = await checkCampaignLimit(tenantId)
+  if (!limitCheck.allowed) {
+    return { error: limitCheck.reason!, id: null }
+  }
 
   const { data: campaign, error: campError } = await supabase
     .from("campaigns")

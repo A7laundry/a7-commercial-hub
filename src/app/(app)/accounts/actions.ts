@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 import { createClient } from "@/lib/supabase/server"
+import { checkAccountLimit } from "@/lib/billing-guard"
 
 async function getTenantId(supabase: Awaited<ReturnType<typeof createClient>>) {
   const { data: { user } } = await supabase.auth.getUser()
@@ -48,6 +49,12 @@ export async function createAccountFull(
   try {
     const supabase = await createClient()
     const tenantId = await getTenantId(supabase)
+
+    // Plan limit check
+    const limitCheck = await checkAccountLimit(tenantId)
+    if (!limitCheck.allowed) {
+      return { error: limitCheck.reason!, accountId: null, phone: null }
+    }
 
     const estimatedValue = data.estimated_value
       ? Number(data.estimated_value)
