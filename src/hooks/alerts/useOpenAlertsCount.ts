@@ -22,5 +22,6 @@ export function useOpenAlertsCount(tenantId: string) {
       return count ?? 0
     },
     staleTime: 10_000,
+    refetchInterval: 30_000, // fallback if realtime channel drops
   })
 }

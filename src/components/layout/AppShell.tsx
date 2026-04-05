@@ -5,6 +5,9 @@ import { Sidebar } from "./Sidebar"
 import { CommandPalette } from "./CommandPalette"
 import { cn } from "@/lib/utils"
 import { Search } from "lucide-react"
+import { Toaster } from "sonner"
+import { useTenant } from "@/hooks/useTenant"
+import { useRealtimeEvents } from "@/hooks/useRealtimeEvents"
 
 // ── Sidebar collapse context ───────────────────────────────────────────────────
 
@@ -13,6 +16,14 @@ const SidebarContext = createContext<SidebarCtx>({ collapsed: false, toggle: () 
 
 export function useSidebarCollapsed() {
   return useContext(SidebarContext)
+}
+
+// ── Realtime events — mounted once, provides tenant-wide live signals ──────────
+
+function RealtimeProvider() {
+  const { tenant } = useTenant()
+  useRealtimeEvents(tenant.id)
+  return null
 }
 
 // ── AppShell ───────────────────────────────────────────────────────────────────
@@ -56,6 +67,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       {/* Command palette — mounted at root to overlay everything */}
       <CommandPalette />
+
+      {/* Realtime event subscriptions — tenant-wide channels + toast dispatch */}
+      <RealtimeProvider />
+
+      {/* Toast renderer — bottom-right, rich colors */}
+      <Toaster position="bottom-right" richColors closeButton />
     </SidebarContext.Provider>
   )
 }

@@ -18,7 +18,7 @@ import Link from "next/link"
 import {
   Zap, AlertTriangle, ArrowRight, Send, CheckCircle2, X,
   Building2, PhoneCall, MessageSquare, Target, RefreshCw,
-  ChevronDown, ChevronUp, BellOff, Check, Phone,
+  ChevronDown, ChevronUp, BellOff, Check, Phone, TrendingUp,
 } from "lucide-react"
 
 const ACTION_LABEL: Record<string, { label: string; color: string }> = {
@@ -322,6 +322,20 @@ export default function ExecutionPage() {
                               )}
                             </div>
                             <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{item.reason}</p>
+                            {/* Escalation explanation — why the strategy changed */}
+                            {item.escalationReason && item.escalationLevel >= 1 && (
+                              <div className={cn(
+                                "flex items-center gap-1 mt-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded w-fit",
+                                item.escalationLevel === 3
+                                  ? "bg-red-50 text-red-700"
+                                  : item.escalationLevel === 2
+                                  ? "bg-amber-50 text-amber-700"
+                                  : "bg-slate-50 text-slate-600"
+                              )}>
+                                <TrendingUp className="w-2.5 h-2.5 shrink-0" />
+                                {item.escalationReason}
+                              </div>
+                            )}
                             {/* Last action summary */}
                             {item.lastActionSummary && (
                               <p className="text-[10px] text-muted-foreground/70 mt-0.5 italic line-clamp-1">
