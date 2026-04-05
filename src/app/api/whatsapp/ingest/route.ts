@@ -241,6 +241,29 @@ async function handleMetaWebhook(
               .update({ last_contact_at: new Date().toISOString() })
               .eq("id", account_id)
               .eq("tenant_id", tenant_id)
+
+            // ── Operator command detection ────────────────────────────────────
+            // Operator replies "feito", "ok", "pronto" etc. from their phone
+            // → auto-log action_taken to account_timeline + update timeline
+            const DONE_COMMANDS = new Set([
+              "feito", "ok", "pronto", "concluído", "concluido", "done", "✓", "✔",
+            ])
+            if (DONE_COMMANDS.has(text.trim().toLowerCase())) {
+              await admin.from("account_timeline").insert({
+                tenant_id,
+                account_id,
+                event_type: "action_taken",
+                summary: "Ação concluída via WhatsApp",
+                metadata: { source: "whatsapp_reply", message: text, wa_message_id },
+              })
+              logger.info({
+                event: "whatsapp.ingest.command_done",
+                status: "ok",
+                tenant_id,
+                entity_id: account_id,
+                metadata: { wa_message_id },
+              })
+            }
           }
 
           processed.push(wa_message_id)

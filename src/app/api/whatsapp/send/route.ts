@@ -2,80 +2,13 @@ import { NextRequest, NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 import { logger } from "@/lib/logger"
 import { isWhatsAppConfigured } from "@/lib/env"
+import { sendToMeta } from "@/lib/whatsapp"
 
 type SendBody = {
   account_id: string
   phone: string
   message: string
   action_type?: "follow_up" | "upsell" | "reactivation" | "proposal" | "renewal"
-}
-
-// ---------------------------------------------------------------------------
-// Retry helper: up to maxAttempts with exponential backoff
-// delays: [1s, 3s, 10s]
-// ---------------------------------------------------------------------------
-async function sendToMeta(
-  phoneNumberId: string,
-  accessToken: string,
-  phone: string,
-  message: string,
-  maxAttempts = 3
-): Promise<{ wa_message_id: string | null; attempts: number; error: string | null }> {
-  const delays = [1000, 3000, 10000]
-  let lastError: string | null = null
-
-  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    try {
-      const res = await fetch(
-        `https://graph.facebook.com/v19.0/${phoneNumberId}/messages`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            messaging_product: "whatsapp",
-            to: phone.replace(/\D/g, ""),
-            type: "text",
-            text: { body: message },
-          }),
-          // 10s timeout per attempt
-          signal: AbortSignal.timeout(10_000),
-        }
-      )
-
-      if (res.ok) {
-        const data = await res.json()
-        const wa_message_id = data?.messages?.[0]?.id ?? null
-        return { wa_message_id, attempts: attempt, error: null }
-      }
-
-      // API returned non-2xx: extract error body
-      let errBody = `HTTP ${res.status}`
-      try {
-        const errData = await res.json()
-        errBody = errData?.error?.message ?? errBody
-      } catch {
-        // ignore parse error
-      }
-      lastError = errBody
-
-      // 4xx errors are not retryable (bad request, auth failure)
-      if (res.status >= 400 && res.status < 500) {
-        return { wa_message_id: null, attempts: attempt, error: lastError }
-      }
-    } catch (err) {
-      lastError = err instanceof Error ? err.message : String(err)
-    }
-
-    // Wait before next retry (skip delay after last attempt)
-    if (attempt < maxAttempts) {
-      await new Promise((r) => setTimeout(r, delays[attempt - 1]))
-    }
-  }
-
-  return { wa_message_id: null, attempts: maxAttempts, error: lastError }
 }
 
 // ---------------------------------------------------------------------------

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useTransition } from "react"
+import { useSearchParams } from "next/navigation"
 import { useQueryClient } from "@tanstack/react-query"
 import { useTenant } from "@/hooks/useTenant"
 import { useExecutionQueue, type ExecutionItem } from "@/hooks/dashboard/useExecutionQueue"
@@ -93,7 +94,10 @@ function PatternBadge({ item }: { item: ExecutionItem }) {
 export default function ExecutionPage() {
   const { tenant } = useTenant()
   const qc = useQueryClient()
+  const searchParams = useSearchParams()
   const { data: items = [], isPending: isLoading, refetch } = useExecutionQueue(tenant.id)
+
+  const filterAccountId = searchParams.get("account_id")
 
   const [composer, setComposer] = useState<ComposerState | null>(null)
   const [sending, setSending] = useState(false)
@@ -102,15 +106,20 @@ export default function ExecutionPage() {
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set())
   const [, startTransition] = useTransition()
 
+  // When a deep link provides account_id, filter to just that account
+  const visibleItems = filterAccountId
+    ? items.filter((i) => i.accountId === filterAccountId)
+    : items
+
   const grouped = {
-    urgent: items.filter((i) => i.urgency === "urgent"),
-    high:   items.filter((i) => i.urgency === "high"),
-    normal: items.filter((i) => i.urgency === "normal"),
+    urgent: visibleItems.filter((i) => i.urgency === "urgent"),
+    high:   visibleItems.filter((i) => i.urgency === "high"),
+    normal: visibleItems.filter((i) => i.urgency === "normal"),
   }
 
   const totalPending = grouped.urgent.length + grouped.high.length + grouped.normal.length
-  const overdueCount = items.filter((i) => i.daysOverdue >= 7).length
-  const waitingCount = items.filter((i) => i.consecutiveUnanswered > 0).length
+  const overdueCount = visibleItems.filter((i) => i.daysOverdue >= 7).length
+  const waitingCount = visibleItems.filter((i) => i.consecutiveUnanswered > 0).length
 
   function openComposer(item: ExecutionItem) {
     setComposer({
@@ -199,6 +208,17 @@ export default function ExecutionPage() {
           </Button>
         }
       />
+
+      {filterAccountId && (
+        <div className="flex items-center justify-between mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <span className="text-sm text-blue-700 font-medium">
+            Mostrando ação para {visibleItems[0]?.accountName ?? filterAccountId}
+          </span>
+          <Link href="/execution" className="text-xs text-blue-600 hover:underline">
+            Ver todas →
+          </Link>
+        </div>
+      )}
 
       {(overdueCount > 0 || waitingCount > 0) && (
         <div className="flex gap-3 mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
