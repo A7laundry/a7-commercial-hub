@@ -237,7 +237,7 @@ export async function POST(request: NextRequest) {
         id: messageId,
         wa_message_id: null,
         send_status: "failed",
-        error: sendError ?? "WhatsApp delivery failed after retries",
+        error: "Falha na entrega da mensagem. Tente novamente.",
         attempts,
       },
       { status: 502 }

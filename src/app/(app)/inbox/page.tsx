@@ -43,6 +43,10 @@ export default function InboxPage() {
 
   async function handleSend() {
     if (!selected || !reply.trim()) return
+    if (!selected.accountId) {
+      toast.error("Vincule esta conversa a uma conta antes de enviar mensagens")
+      return
+    }
     setSending(true)
     try {
       const res = await fetch("/api/whatsapp/send", {

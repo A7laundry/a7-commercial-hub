@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
       metadata: { phone },
     })
     return NextResponse.json(
-      { error: result.error ?? "Falha ao enviar mensagem de teste" },
+      { error: "Falha ao enviar mensagem de teste. Verifique suas credenciais." },
       { status: 502 }
     )
   }
