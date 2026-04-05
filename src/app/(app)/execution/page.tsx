@@ -4,18 +4,19 @@ import { useState, useTransition } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import { useTenant } from "@/hooks/useTenant"
 import { useExecutionQueue, type ExecutionItem } from "@/hooks/dashboard/useExecutionQueue"
-import { snoozeAccount } from "./actions"
+import { snoozeAccount, markActionDone } from "./actions"
 import { PageHeader } from "@/components/shared/PageHeader"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
+import { daysSince } from "@/lib/commercial-intelligence"
 import Link from "next/link"
 import {
   Zap, AlertTriangle, ArrowRight, Send, CheckCircle2, X,
   Building2, PhoneCall, MessageSquare, Target, RefreshCw,
-  ChevronDown, ChevronUp, BellOff,
+  ChevronDown, ChevronUp, BellOff, Check, Phone,
 } from "lucide-react"
 
 const ACTION_LABEL: Record<string, { label: string; color: string }> = {
@@ -25,6 +26,7 @@ const ACTION_LABEL: Record<string, { label: string; color: string }> = {
   upsell:       { label: "Upsell",      color: "bg-emerald-100 text-emerald-700" },
   qualify:      { label: "Qualificar",  color: "bg-purple-100 text-purple-700" },
   proposal:     { label: "Proposta",    color: "bg-orange-100 text-orange-700" },
+  call:         { label: "Ligar",       color: "bg-red-100 text-red-700" },
 }
 
 const URGENCY_CONFIG = {
@@ -39,6 +41,53 @@ type ComposerState = {
   message: string
 }
 
+const RULE_BADGE: Partial<Record<string, () => React.ReactNode>> = {
+  message_needs_followup: () => (
+    <span className="inline-flex items-center text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 shrink-0">
+      Follow-up pendente
+    </span>
+  ),
+  message_followup_urgent: () => (
+    <span className="inline-flex items-center text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-red-100 text-red-700 shrink-0">
+      Follow-up urgente
+    </span>
+  ),
+  negotiation_stalled_14d: () => (
+    <span className="inline-flex items-center text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-orange-100 text-orange-700 shrink-0">
+      Negociação parada 14d+
+    </span>
+  ),
+  negotiation_stalled_7d: () => (
+    <span className="inline-flex items-center text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 shrink-0">
+      Negociação parada
+    </span>
+  ),
+  ignored_change_approach: () => (
+    <span className="inline-flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-red-100 text-red-700 shrink-0">
+      <Phone className="w-2.5 h-2.5" />
+      {"{n}"} msgs ignoradas — ligue
+    </span>
+  ),
+  silent_client_45d: () => (
+    <span className="inline-flex items-center text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-600 shrink-0">
+      45d+ sem contato
+    </span>
+  ),
+}
+
+function PatternBadge({ item }: { item: ExecutionItem }) {
+  if (item.ruleId === "ignored_change_approach") {
+    return (
+      <span className="inline-flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-red-100 text-red-700 shrink-0">
+        <Phone className="w-2.5 h-2.5" />
+        {item.consecutiveUnanswered} msgs ignoradas — ligue
+      </span>
+    )
+  }
+  const render = RULE_BADGE[item.ruleId]
+  return render ? <>{render()}</> : null
+}
+
 export default function ExecutionPage() {
   const { tenant } = useTenant()
   const qc = useQueryClient()
@@ -47,6 +96,7 @@ export default function ExecutionPage() {
   const [composer, setComposer] = useState<ComposerState | null>(null)
   const [sending, setSending] = useState(false)
   const [snoozingId, setSnoozingId] = useState<string | null>(null)
+  const [doneId, setDoneId] = useState<string | null>(null)
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set())
   const [, startTransition] = useTransition()
 
@@ -97,6 +147,16 @@ export default function ExecutionPage() {
       await snoozeAccount(item.accountId, 3)
       qc.invalidateQueries({ queryKey: ["execution_queue", tenant.id] })
       setSnoozingId(null)
+    })
+  }
+
+  function handleMarkDone(item: ExecutionItem) {
+    setDoneId(item.id)
+    if (composer?.itemId === item.id) setComposer(null)
+    startTransition(async () => {
+      await markActionDone(item.accountId)
+      qc.invalidateQueries({ queryKey: ["execution_queue", tenant.id] })
+      setDoneId(null)
     })
   }
 
@@ -174,6 +234,8 @@ export default function ExecutionPage() {
                   {group.map((item) => {
                     const actionCfg = ACTION_LABEL[item.actionType] ?? ACTION_LABEL.follow_up
                     const isComposing = composer?.itemId === item.id
+                    const isIgnored = item.ruleId === "ignored_change_approach"
+                    const lastActionDays = item.lastActionAt ? (daysSince(item.lastActionAt) ?? 0) : null
 
                     return (
                       <div
@@ -212,8 +274,16 @@ export default function ExecutionPage() {
                               <span className={cn("text-[10px] font-medium px-1.5 py-0.5 rounded-full shrink-0", actionCfg.color)}>
                                 {actionCfg.label}
                               </span>
+                              <PatternBadge item={item} />
                             </div>
                             <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{item.reason}</p>
+                            {/* Last action summary */}
+                            {item.lastActionSummary && (
+                              <p className="text-[10px] text-muted-foreground/70 mt-0.5 italic line-clamp-1">
+                                Última: {item.lastActionSummary}
+                                {lastActionDays !== null && ` · ${lastActionDays}d atrás`}
+                              </p>
+                            )}
                             <div className="flex items-center gap-3 mt-1 flex-wrap">
                               {item.ltv && (
                                 <span className="text-[10px] text-emerald-700 font-medium">
@@ -247,11 +317,13 @@ export default function ExecutionPage() {
                                 "flex items-center gap-1 text-[10px] font-medium px-2 py-1.5 rounded-md transition-colors",
                                 isComposing
                                   ? "bg-muted text-muted-foreground"
+                                  : isIgnored
+                                  ? "bg-red-100 text-red-700 hover:bg-red-200"
                                   : "bg-primary/10 text-primary hover:bg-primary/20"
                               )}
                             >
-                              <MessageSquare className="w-3 h-3" />
-                              {isComposing ? "Fechar" : "WhatsApp"}
+                              {isIgnored ? <Phone className="w-3 h-3" /> : <MessageSquare className="w-3 h-3" />}
+                              {isComposing ? "Fechar" : isIgnored ? "Ligar" : "WhatsApp"}
                             </button>
                             <Link
                               href={item.href}
@@ -260,6 +332,16 @@ export default function ExecutionPage() {
                               <Building2 className="w-3 h-3" />
                               Ver
                             </Link>
+                            <button
+                              type="button"
+                              onClick={() => handleMarkDone(item)}
+                              disabled={doneId === item.id}
+                              className="flex items-center gap-0.5 text-[10px] font-medium px-2 py-1.5 rounded-md text-emerald-700 hover:bg-emerald-50 transition-colors disabled:opacity-50"
+                              title="Marcar como feito"
+                            >
+                              <Check className="w-3.5 h-3.5" />
+                              Feito
+                            </button>
                             <button
                               type="button"
                               onClick={() => handleSnooze(item)}
@@ -278,7 +360,7 @@ export default function ExecutionPage() {
                             <div className="flex items-center justify-between">
                               <p className="text-xs font-semibold flex items-center gap-1.5">
                                 <Send className="w-3 h-3" />
-                                Enviar via WhatsApp
+                                {isIgnored ? "Registrar contato via ligação" : "Enviar via WhatsApp"}
                               </p>
                               <button type="button" onClick={() => setComposer(null)}>
                                 <X className="w-3.5 h-3.5 text-muted-foreground hover:text-foreground" />

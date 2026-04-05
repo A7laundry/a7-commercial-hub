@@ -78,3 +78,58 @@ export async function unsnoozeAccount(
 
   return { error: error?.message ?? null }
 }
+
+/**
+ * Mark an action as done for an account:
+ * - Inserts action_taken event into account_timeline
+ * - Updates accounts.last_contact_at to now
+ * - Removes any active execution_snoozes for this account
+ */
+export async function markActionDone(
+  accountId: string,
+  summary?: string
+): Promise<{ error: string | null }> {
+  const supabase = await createClient()
+
+  let tenantId: string
+  try {
+    tenantId = await getTenantId(supabase)
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : "Não autenticado" }
+  }
+
+  const now = new Date().toISOString()
+
+  // Insert timeline event
+  const { error: timelineError } = await supabase.from("account_timeline").insert({
+    tenant_id: tenantId,
+    account_id: accountId,
+    event_type: "action_taken",
+    summary: summary ?? "Ação concluída",
+    metadata: { completed_at: now },
+  })
+
+  if (timelineError) {
+    return { error: timelineError.message }
+  }
+
+  // Update last_contact_at
+  const { error: updateError } = await supabase
+    .from("accounts")
+    .update({ last_contact_at: now })
+    .eq("tenant_id", tenantId)
+    .eq("id", accountId)
+
+  if (updateError) {
+    return { error: updateError.message }
+  }
+
+  // Remove any execution snoozes (clean state)
+  await supabase
+    .from("execution_snoozes")
+    .delete()
+    .eq("tenant_id", tenantId)
+    .eq("account_id", accountId)
+
+  return { error: null }
+}

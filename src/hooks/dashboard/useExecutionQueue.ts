@@ -2,13 +2,14 @@ import { useQuery } from "@tanstack/react-query"
 import { createClient } from "@/lib/supabase/client"
 import {
   computeCommercialScore,
-  computeNextBestAction,
   computeLTV,
-  getMessageSuggestions,
   daysSince,
 } from "@/lib/commercial-intelligence"
+import { evaluateRules, computeFinalScore } from "@/lib/execution-rules"
 import { MESSAGE_TEMPLATES, interpolateTemplate } from "@/lib/message-templates"
+import { getMessageSuggestions } from "@/lib/commercial-intelligence"
 import type { Account, Contract, Deal, Alert } from "@/types"
+import type { RuleActionType } from "@/lib/execution-rules"
 
 export type ExecutionItem = {
   id: string
@@ -16,11 +17,11 @@ export type ExecutionItem = {
   accountName: string
   contactName: string | null
   phone: string | null
-  priorityScore: number // 0-100
+  priorityScore: number             // 0–100, computed from matched rule
   urgency: "urgent" | "high" | "normal"
-  actionLabel: string
-  actionType: "follow_up" | "reactivation" | "renewal" | "upsell" | "qualify" | "proposal"
-  reason: string
+  actionLabel: string               // "Reativar cliente", "Follow-up urgente", etc.
+  actionType: RuleActionType
+  reason: string                    // specific context from the matched rule
   detail: string | null
   ltv: number | null
   href: string
@@ -28,51 +29,25 @@ export type ExecutionItem = {
   dealId: string | null
   dealTitle: string | null
   alertId: string | null
+  ruleId: string                    // which rule triggered this item
+  // Memory context
+  lastActionSummary: string | null
+  lastActionType: string | null
+  lastActionAt: string | null
+  consecutiveUnanswered: number
 }
 
-function computePriorityScore(
-  account: Account,
-  contracts: Contract[],
-  stalledDeal: Deal | null,
-  openAlert: Alert | null
-): number {
-  const score = computeCommercialScore(account, contracts)
-  const days = daysSince(account.last_contact_at) ?? 999
-  const ltv = computeLTV(account) ?? 0
+type TimelineEvent = {
+  account_id: string
+  event_type: string
+  summary: string | null
+  created_at: string
+}
 
-  let base = 20
-
-  // Commercial score baseline
-  if (account.commercial_status === "at_risk") base = 90
-  else if (score === "at_risk")                base = 85
-  else if (score === "hot")                    base = 70
-  else if (score === "upsell")                 base = 60
-  else if (score === "cold" && days > 60)      base = 55
-  else if (score === "cold")                   base = 45
-  else if (score === "warm" && account.pipeline_stage === "quote_sent") base = 55
-  else if (score === "warm")                   base = 35
-
-  // Stalled deal boost
-  if (stalledDeal) {
-    const dealDays = daysSince(stalledDeal.updated_at) ?? 0
-    if (dealDays > 14) base = Math.max(base, 80)
-    else if (dealDays > 7) base = Math.max(base, 65)
-  }
-
-  // Critical alert boost
-  if (openAlert?.severity === "critical") base = Math.max(base, 80)
-  else if (openAlert?.severity === "warning") base = Math.max(base, 65)
-
-  // Modifiers
-  if (ltv > 100_000) base = Math.min(100, base + 8)
-  else if (ltv > 50_000) base = Math.min(100, base + 5)
-
-  if (stalledDeal?.value && stalledDeal.value > 10_000) base = Math.min(100, base + 5)
-
-  // Recently contacted → lower urgency
-  if (days <= 3) base = Math.max(0, base - 15)
-
-  return Math.min(100, Math.max(0, base))
+type WaMessage = {
+  account_id: string
+  direction: "inbound" | "outbound"
+  received_at: string
 }
 
 export function useExecutionQueue(tenantId: string) {
@@ -81,7 +56,10 @@ export function useExecutionQueue(tenantId: string) {
   return useQuery<ExecutionItem[]>({
     queryKey: ["execution_queue", tenantId],
     queryFn: async () => {
-      const [accountsRes, contractsRes, dealsRes, alertsRes, snoozesRes] = await Promise.all([
+      const [
+        accountsRes, contractsRes, dealsRes, alertsRes, snoozesRes,
+        timelineRes, waMessagesRes,
+      ] = await Promise.all([
         supabase
           .from("accounts")
           .select("*, phone_mappings(phone)")
@@ -108,19 +86,33 @@ export function useExecutionQueue(tenantId: string) {
           .select("account_id, snoozed_until")
           .eq("tenant_id", tenantId)
           .gt("snoozed_until", new Date().toISOString()),
+        supabase
+          .from("account_timeline")
+          .select("account_id, event_type, summary, created_at")
+          .eq("tenant_id", tenantId)
+          .order("created_at", { ascending: false })
+          .limit(500),
+        supabase
+          .from("whatsapp_messages")
+          .select("account_id, direction, received_at")
+          .eq("tenant_id", tenantId)
+          .order("received_at", { ascending: false })
+          .limit(1000),
       ])
 
-      const accounts = (accountsRes.data ?? []) as Account[]
-      const contracts = (contractsRes.data ?? []) as Contract[]
-      const deals = (dealsRes.data ?? []) as Deal[]
-      const alerts = (alertsRes.data ?? []) as Alert[]
+      const accounts   = (accountsRes.data   ?? []) as Account[]
+      const contracts  = (contractsRes.data  ?? []) as Contract[]
+      const deals      = (dealsRes.data      ?? []) as Deal[]
+      const alerts     = (alertsRes.data     ?? []) as Alert[]
+      const timelineEvents = (timelineRes.data    ?? []) as TimelineEvent[]
+      const waMessages     = (waMessagesRes.data  ?? []) as WaMessage[]
 
-      // Build snooze set — accounts to skip
-      const snoozedAccountIds = new Set(
+      // ── Snoozed accounts ────────────────────────────────────────────────────
+      const snoozedIds = new Set(
         (snoozesRes.data ?? []).map((s: { account_id: string }) => s.account_id)
       )
 
-      // Index contracts, deals, alerts by account_id
+      // ── Index: contracts by account ─────────────────────────────────────────
       const contractsByAccount = new Map<string, Contract[]>()
       for (const c of contracts) {
         const list = contractsByAccount.get(c.account_id) ?? []
@@ -128,78 +120,112 @@ export function useExecutionQueue(tenantId: string) {
         contractsByAccount.set(c.account_id, list)
       }
 
+      // ── Index: most-stalled active deal per account ─────────────────────────
       const stalledDealByAccount = new Map<string, Deal>()
       for (const d of deals) {
-        if ((d.stage === "negotiation" || d.stage === "proposal") && !stalledDealByAccount.has(d.account_id)) {
-          stalledDealByAccount.set(d.account_id, d)
+        if (d.stage === "negotiation" || d.stage === "proposal") {
+          const existing = stalledDealByAccount.get(d.account_id)
+          const dDays = daysSince(d.updated_at) ?? 0
+          const eDays = existing ? (daysSince(existing.updated_at) ?? 0) : -1
+          if (!existing || dDays > eDays) stalledDealByAccount.set(d.account_id, d)
         }
       }
 
+      // ── Index: most severe open alert per account ───────────────────────────
       const alertByAccount = new Map<string, Alert>()
+      const severityOrder = { critical: 0, warning: 1, info: 2 }
       for (const a of alerts) {
         if (!a.account_id) continue
-        // Keep the most severe
         const existing = alertByAccount.get(a.account_id)
-        const order = { critical: 0, warning: 1, info: 2 }
-        if (!existing || order[a.severity] < order[existing.severity]) {
+        if (!existing || severityOrder[a.severity] < severityOrder[existing.severity]) {
           alertByAccount.set(a.account_id, a)
         }
       }
 
+      // ── Index: most recent timeline event per account ───────────────────────
+      const lastTimelineByAccount = new Map<string, TimelineEvent>()
+      for (const evt of timelineEvents) {
+        if (!lastTimelineByAccount.has(evt.account_id)) {
+          lastTimelineByAccount.set(evt.account_id, evt)
+        }
+      }
+
+      // ── Index: last message_sent event per account ─────────────────────────
+      const lastMessageSentByAccount = new Map<string, TimelineEvent>()
+      for (const evt of timelineEvents) {
+        if (evt.event_type === "message_sent" && !lastMessageSentByAccount.has(evt.account_id)) {
+          lastMessageSentByAccount.set(evt.account_id, evt)
+        }
+      }
+
+      // ── Index: consecutive unanswered outbound WA messages per account ──────
+      const consecutiveOutboundByAccount = new Map<string, number>()
+      const waByAccount = new Map<string, WaMessage[]>()
+      for (const msg of waMessages) {
+        const list = waByAccount.get(msg.account_id) ?? []
+        list.push(msg)
+        waByAccount.set(msg.account_id, list)
+      }
+      for (const [accountId, msgs] of waByAccount) {
+        let count = 0
+        for (const msg of msgs) { // already ordered desc
+          if (msg.direction === "outbound") count++
+          else break
+        }
+        consecutiveOutboundByAccount.set(accountId, count)
+      }
+
+      // ── Evaluate rules for each account ────────────────────────────────────
       const items: ExecutionItem[] = []
 
-      for (const account of accounts.filter((a) => !snoozedAccountIds.has(a.id))) {
-        const acctContracts = contractsByAccount.get(account.id) ?? []
-        const stalledDeal = stalledDealByAccount.get(account.id) ?? null
-        const openAlert = alertByAccount.get(account.id) ?? null
+      for (const account of accounts) {
+        if (snoozedIds.has(account.id)) continue
 
-        const commScore = computeCommercialScore(account, acctContracts)
-        const nba = computeNextBestAction(account, acctContracts, commScore)
-        const priorityScore = computePriorityScore(account, acctContracts, stalledDeal, openAlert)
+        const acctContracts       = contractsByAccount.get(account.id)  ?? []
+        const stalledDeal         = stalledDealByAccount.get(account.id) ?? null
+        const openAlert           = alertByAccount.get(account.id)       ?? null
+        const lastTimeline        = lastTimelineByAccount.get(account.id) ?? null
+        const lastMessageSent     = lastMessageSentByAccount.get(account.id) ?? null
+        const consecutiveUnanswered = consecutiveOutboundByAccount.get(account.id) ?? 0
+
+        const commScore       = computeCommercialScore(account, acctContracts)
+        const daysSinceContact = daysSince(account.last_contact_at) ?? 999
+
+        const ctx = {
+          account,
+          contracts: acctContracts,
+          stalledDeal,
+          openAlert,
+          consecutiveUnanswered,
+          lastMessageSentAt: lastMessageSent?.created_at ?? null,
+          daysSinceContact,
+          commScore,
+        }
+
+        const matched = evaluateRules(ctx, 25)
+        if (!matched) continue
+
+        const priorityScore = computeFinalScore(matched)
         const ltv = computeLTV(account)
 
-        // Skip low-priority warm/recurring accounts with recent contact
-        if (priorityScore < 25) continue
-
-        // Determine action type
-        const actionType = nba.type === "follow_up" || nba.type === "qualify" || nba.type === "proposal"
-          ? nba.type
-          : nba.type as ExecutionItem["actionType"]
-
-        // Message
+        // Build message text for the composer
         const suggestions = getMessageSuggestions(account, commScore, acctContracts)
-        const msgTypeMap: Record<string, ExecutionItem["actionType"]> = {
-          follow_up: "follow_up",
-          qualify: "follow_up",
-          proposal: "follow_up",
-          reactivation: "reactivation",
-          renewal: "renewal",
-          upsell: "upsell",
+        const msgTypeMap: Record<RuleActionType, "follow_up" | "reactivation" | "renewal" | "upsell"> = {
+          follow_up:   "follow_up",
+          qualify:     "follow_up",
+          proposal:    "follow_up",
+          call:        "follow_up",
+          reactivation:"reactivation",
+          renewal:     "renewal",
+          upsell:      "upsell",
         }
-        const msgType = msgTypeMap[nba.type] ?? "follow_up"
+        const msgType = msgTypeMap[matched.actionType]
         const suggestion = suggestions.find((s) => s.type === msgType) ?? suggestions[0]
-
-        const tplKey = msgType === "reactivation" ? "reactivation"
-          : msgType === "renewal" ? "renewal"
-          : msgType === "upsell" ? "upsell"
-          : "follow_up"
-        const tpl = MESSAGE_TEMPLATES[tplKey]
+        const tpl = MESSAGE_TEMPLATES[msgType] ?? MESSAGE_TEMPLATES.follow_up
         const messageText = suggestion?.text ?? interpolateTemplate(tpl.text, {
           name: account.contact_name ?? account.name,
           service: account.segment ?? account.name,
         })
-
-        // Reason string
-        let reason = nba.description
-        if (stalledDeal) {
-          const stalledDays = daysSince(stalledDeal.updated_at) ?? 0
-          reason = stalledDays > 7
-            ? `Deal "${stalledDeal.title}" parado há ${stalledDays} dias`
-            : reason
-        }
-        if (openAlert?.severity === "critical") {
-          reason = openAlert.title
-        }
 
         // Phone: first from phone_mappings
         const mappings = account.phone_mappings as { phone: string }[] | undefined
@@ -213,9 +239,9 @@ export function useExecutionQueue(tenantId: string) {
           phone,
           priorityScore,
           urgency: priorityScore >= 75 ? "urgent" : priorityScore >= 50 ? "high" : "normal",
-          actionLabel: nba.label,
-          actionType,
-          reason,
+          actionLabel: matched.actionLabel,
+          actionType: matched.actionType,
+          reason: matched.reason,
           detail: account.next_action ?? null,
           ltv,
           href: `/accounts/${account.id}`,
@@ -223,6 +249,11 @@ export function useExecutionQueue(tenantId: string) {
           dealId: stalledDeal?.id ?? null,
           dealTitle: stalledDeal?.title ?? null,
           alertId: openAlert?.id ?? null,
+          ruleId: matched.ruleId,
+          lastActionSummary: lastTimeline?.summary ?? null,
+          lastActionType: lastTimeline?.event_type ?? null,
+          lastActionAt: lastTimeline?.created_at ?? null,
+          consecutiveUnanswered,
         })
       }
 
