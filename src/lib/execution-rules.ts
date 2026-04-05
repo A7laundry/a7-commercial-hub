@@ -13,7 +13,7 @@
  */
 
 import type { Account, Contract, Deal, Alert } from "@/types"
-import { computeCommercialScore, computeLTV, daysSince, daysUntil } from "./commercial-intelligence"
+import { computeCommercialScore, computeLTV, daysSince, daysUntil, parseFrequencyPerMonth } from "./commercial-intelligence"
 import { deriveContractStatus } from "./utils"
 
 export type RuleActionType =
@@ -43,6 +43,33 @@ export type MatchedRule = {
   reason: string
   baseScore: number
   scoreModifier: number             // LTV boost, urgency override, etc.
+  daysOverdue: number               // days past expected contact interval (0 if not overdue)
+}
+
+/**
+ * Compute how many days PAST the expected contact interval the account is.
+ * Uses account.frequency if set, otherwise falls back to commScore buckets.
+ */
+export function computeDaysOverdue(ctx: RuleContext): number {
+  let expectedIntervalDays: number
+
+  const freq = parseFrequencyPerMonth(ctx.account.frequency)
+  if (freq > 0) {
+    // 30 / freq = expected days between contacts
+    expectedIntervalDays = Math.max(3, Math.min(90, Math.round(30 / freq)))
+  } else {
+    // commScore fallback
+    const fallback: Record<ReturnType<typeof computeCommercialScore>, number> = {
+      at_risk: 7,
+      hot: 14,
+      upsell: 21,
+      warm: 30,
+      cold: 60,
+    }
+    expectedIntervalDays = fallback[ctx.commScore] ?? 30
+  }
+
+  return Math.max(0, ctx.daysSinceContact - expectedIntervalDays)
 }
 
 type ExecutionRule = {
@@ -263,6 +290,7 @@ export function evaluateRules(ctx: RuleContext, minScore = 25): MatchedRule | nu
     const dealValueBonus = ctx.stalledDeal?.value && ctx.stalledDeal.value > 10_000 ? 5 : 0
     const recentContactPenalty = ctx.daysSinceContact <= 3 ? -15 : 0
     const patternModifier = rule.modifier?.(ctx) ?? 0
+    const daysOverdue = computeDaysOverdue(ctx)
 
     return {
       ruleId: rule.id,
@@ -271,6 +299,7 @@ export function evaluateRules(ctx: RuleContext, minScore = 25): MatchedRule | nu
       reason: rule.reason(ctx),
       baseScore: rule.baseScore,
       scoreModifier: ltvBonus + dealValueBonus + recentContactPenalty + patternModifier,
+      daysOverdue,
     }
   }
   return null
@@ -278,5 +307,6 @@ export function evaluateRules(ctx: RuleContext, minScore = 25): MatchedRule | nu
 
 /** Compute final priority score from a matched rule */
 export function computeFinalScore(matched: MatchedRule): number {
-  return Math.min(100, Math.max(0, matched.baseScore + matched.scoreModifier))
+  const overdueBoost = Math.min(30, Math.floor(matched.daysOverdue / 7) * 5)
+  return Math.min(100, Math.max(0, matched.baseScore + matched.scoreModifier + overdueBoost))
 }

@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
 import { daysSince } from "@/lib/commercial-intelligence"
+import { MESSAGE_VARIANTS, interpolateTemplate, type MessageTemplateType } from "@/lib/message-templates"
 import Link from "next/link"
 import {
   Zap, AlertTriangle, ArrowRight, Send, CheckCircle2, X,
@@ -39,6 +40,7 @@ type ComposerState = {
   itemId: string
   phone: string
   message: string
+  variantIdx: number
 }
 
 const RULE_BADGE: Partial<Record<string, () => React.ReactNode>> = {
@@ -107,12 +109,15 @@ export default function ExecutionPage() {
   }
 
   const totalPending = grouped.urgent.length + grouped.high.length + grouped.normal.length
+  const overdueCount = items.filter((i) => i.daysOverdue >= 7).length
+  const waitingCount = items.filter((i) => i.consecutiveUnanswered > 0).length
 
   function openComposer(item: ExecutionItem) {
     setComposer({
       itemId: item.id,
       phone: item.phone ?? "",
       message: item.messageText,
+      variantIdx: 0,
     })
   }
 
@@ -195,6 +200,21 @@ export default function ExecutionPage() {
         }
       />
 
+      {(overdueCount > 0 || waitingCount > 0) && (
+        <div className="flex gap-3 mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+          {overdueCount > 0 && (
+            <span className="text-sm text-red-700 font-medium">
+              ⚠️ {overdueCount} ação{overdueCount !== 1 ? "ões" : ""} atrasada{overdueCount !== 1 ? "s" : ""}
+            </span>
+          )}
+          {waitingCount > 0 && (
+            <span className="text-sm text-amber-700 font-medium">
+              💬 {waitingCount} cliente{waitingCount !== 1 ? "s" : ""} aguardando resposta
+            </span>
+          )}
+        </div>
+      )}
+
       {totalPending === 0 && (
         <div className="flex flex-col items-center justify-center py-24 text-center text-muted-foreground">
           <CheckCircle2 className="w-12 h-12 opacity-30 mb-4" />
@@ -275,6 +295,11 @@ export default function ExecutionPage() {
                                 {actionCfg.label}
                               </span>
                               <PatternBadge item={item} />
+                              {item.daysOverdue >= 7 && (
+                                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-red-500 text-white shrink-0">
+                                  Atrasado {item.daysOverdue}d
+                                </span>
+                              )}
                             </div>
                             <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{item.reason}</p>
                             {/* Last action summary */}
@@ -355,7 +380,22 @@ export default function ExecutionPage() {
                         </div>
 
                         {/* Inline WhatsApp Composer */}
-                        {isComposing && (
+                        {isComposing && (() => {
+                          const variants = MESSAGE_VARIANTS[item.actionType as MessageTemplateType] ?? null
+                          const variantCount = variants?.length ?? 0
+                          const currentVariantIdx = composer?.variantIdx ?? 0
+
+                          function cycleVariant(newIdx: number) {
+                            if (!variants) return
+                            const variant = variants[newIdx]
+                            const interpolated = interpolateTemplate(variant.text, {
+                              name: item.contactName ?? item.accountName,
+                              service: item.accountName,
+                            })
+                            setComposer((c) => c && { ...c, message: interpolated, variantIdx: newIdx })
+                          }
+
+                          return (
                           <div className="border-t px-4 py-3 space-y-3 bg-background">
                             <div className="flex items-center justify-between">
                               <p className="text-xs font-semibold flex items-center gap-1.5">
@@ -379,9 +419,54 @@ export default function ExecutionPage() {
                                 />
                               </div>
                               <div className="sm:col-span-2">
-                                <label className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium block mb-1">
-                                  Mensagem
-                                </label>
+                                {variantCount > 1 && (
+                                  <div className="flex items-center justify-between mb-1">
+                                    <label className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">
+                                      Mensagem
+                                    </label>
+                                    <div className="flex items-center gap-1">
+                                      <span className="text-[10px] text-muted-foreground">
+                                        Variação {currentVariantIdx + 1}/{variantCount}
+                                      </span>
+                                      <button
+                                        type="button"
+                                        onClick={() => cycleVariant((currentVariantIdx - 1 + variantCount) % variantCount)}
+                                        className="text-[10px] px-1.5 py-0.5 rounded border text-muted-foreground hover:bg-muted transition-colors"
+                                        title="Variação anterior"
+                                      >
+                                        ←
+                                      </button>
+                                      {Array.from({ length: variantCount }, (_, i) => (
+                                        <button
+                                          key={i}
+                                          type="button"
+                                          onClick={() => cycleVariant(i)}
+                                          className={cn(
+                                            "text-[10px] px-1.5 py-0.5 rounded border transition-colors",
+                                            currentVariantIdx === i
+                                              ? "bg-primary text-primary-foreground border-primary"
+                                              : "text-muted-foreground hover:bg-muted"
+                                          )}
+                                        >
+                                          V{i + 1}
+                                        </button>
+                                      ))}
+                                      <button
+                                        type="button"
+                                        onClick={() => cycleVariant((currentVariantIdx + 1) % variantCount)}
+                                        className="text-[10px] px-1.5 py-0.5 rounded border text-muted-foreground hover:bg-muted transition-colors"
+                                        title="Próxima variação"
+                                      >
+                                        →
+                                      </button>
+                                    </div>
+                                  </div>
+                                )}
+                                {variantCount <= 1 && (
+                                  <label className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium block mb-1">
+                                    Mensagem
+                                  </label>
+                                )}
                                 <Textarea
                                   value={composer?.message ?? ""}
                                   onChange={(e) => setComposer((c) => c && { ...c, message: e.target.value })}
@@ -405,7 +490,8 @@ export default function ExecutionPage() {
                               </Button>
                             </div>
                           </div>
-                        )}
+                          )
+                        })()}
                       </div>
                     )
                   })}

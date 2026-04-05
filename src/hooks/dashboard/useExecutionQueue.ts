@@ -30,6 +30,7 @@ export type ExecutionItem = {
   dealTitle: string | null
   alertId: string | null
   ruleId: string                    // which rule triggered this item
+  daysOverdue: number               // days past expected contact interval (0 if not overdue)
   // Memory context
   lastActionSummary: string | null
   lastActionType: string | null
@@ -250,6 +251,7 @@ export function useExecutionQueue(tenantId: string) {
           dealTitle: stalledDeal?.title ?? null,
           alertId: openAlert?.id ?? null,
           ruleId: matched.ruleId,
+          daysOverdue: matched.daysOverdue,
           lastActionSummary: lastTimeline?.summary ?? null,
           lastActionType: lastTimeline?.event_type ?? null,
           lastActionAt: lastTimeline?.created_at ?? null,
