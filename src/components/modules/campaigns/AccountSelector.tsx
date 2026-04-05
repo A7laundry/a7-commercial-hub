@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect, useRef } from "react"
 import { useAccounts } from "@/hooks/accounts/useAccounts"
 import {
   computeCommercialScore,
@@ -55,6 +55,27 @@ export function AccountSelector({ tenantId, selected, onSelectionChange, onCampa
     ltv_min: "",
     ltv_max: "",
   })
+  const [debouncedSearch, setDebouncedSearch] = useState("")
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => setDebouncedSearch(filters.search), 250)
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
+  }, [filters.search])
+
+  // Pre-compute scores once per allAccounts change — avoids recomputing on every filter keystroke
+  const accountScores = useMemo(() => {
+    const map = new Map<string, Score>()
+    for (const a of allAccounts) map.set(a.id, computeCommercialScore(a, []))
+    return map
+  }, [allAccounts])
+
+  const accountLtvs = useMemo(() => {
+    const map = new Map<string, number | null>()
+    for (const a of allAccounts) map.set(a.id, computeLTV(a))
+    return map
+  }, [allAccounts])
 
   // Counts for each preset
   const presetCounts = useMemo(() => {
@@ -88,25 +109,24 @@ export function AccountSelector({ tenantId, selected, onSelectionChange, onCampa
     return allAccounts.filter((a) => {
       if (filters.status !== "all" && a.status !== filters.status) return false
       if (filters.pipeline_stage !== "all" && a.pipeline_stage !== filters.pipeline_stage) return false
-      if (filters.search) {
-        const q = filters.search.toLowerCase()
+      if (debouncedSearch) {
+        const q = debouncedSearch.toLowerCase()
         if (!a.name.toLowerCase().includes(q) && !(a.contact_name ?? "").toLowerCase().includes(q)) return false
       }
       if (filters.score !== "all") {
-        const score = computeCommercialScore(a, [])
-        if (score !== filters.score) return false
+        if (accountScores.get(a.id) !== filters.score) return false
       }
       if (filters.ltv_min !== "") {
-        const ltv = computeLTV(a)
-        if (ltv === null || ltv < Number(filters.ltv_min)) return false
+        const ltv = accountLtvs.get(a.id)
+        if (ltv === null || ltv === undefined || ltv < Number(filters.ltv_min)) return false
       }
       if (filters.ltv_max !== "") {
-        const ltv = computeLTV(a)
-        if (ltv === null || ltv > Number(filters.ltv_max)) return false
+        const ltv = accountLtvs.get(a.id)
+        if (ltv === null || ltv === undefined || ltv > Number(filters.ltv_max)) return false
       }
       return true
     })
-  }, [allAccounts, filters])
+  }, [allAccounts, filters.status, filters.pipeline_stage, filters.score, filters.ltv_min, filters.ltv_max, debouncedSearch, accountScores, accountLtvs])
 
   // When preset is active, show all matched accounts regardless of manual filters
   const displayAccounts = activePresetId

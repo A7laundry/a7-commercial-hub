@@ -173,18 +173,21 @@ export function useExecutionQueue(tenantId: string) {
         supabase
           .from("contracts")
           .select("*")
-          .eq("tenant_id", tenantId),
+          .eq("tenant_id", tenantId)
+          .limit(1000),
         supabase
           .from("deals")
           .select("*")
           .eq("tenant_id", tenantId)
           .not("stage", "in", '("won","lost")')
-          .order("updated_at", { ascending: true }),
+          .order("updated_at", { ascending: true })
+          .limit(500),
         supabase
           .from("alerts")
           .select("*")
           .eq("tenant_id", tenantId)
-          .eq("status", "open"),
+          .eq("status", "open")
+          .limit(300),
         supabase
           .from("execution_snoozes")
           .select("account_id, snoozed_until")
@@ -378,7 +381,7 @@ export function useExecutionQueue(tenantId: string) {
 
       return items
         .sort((a, b) => b.priorityScore - a.priorityScore)
-        .slice(0, 40)
+        .slice(0, 100)
     },
     staleTime: 30_000,
   })

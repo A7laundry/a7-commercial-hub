@@ -1,12 +1,14 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import { useState, useRef, useTransition, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { useQueryClient } from "@tanstack/react-query"
+import { AnimatePresence, motion } from "framer-motion"
 import { useTenant } from "@/hooks/useTenant"
 import { useExecutionQueue, type ExecutionItem } from "@/hooks/dashboard/useExecutionQueue"
 import { snoozeAccount, markActionDone } from "./actions"
 import { PageHeader } from "@/components/shared/PageHeader"
+import { Progress } from "@/components/ui/progress"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -91,7 +93,7 @@ function PatternBadge({ item }: { item: ExecutionItem }) {
   return render ? <>{render()}</> : null
 }
 
-export default function ExecutionPage() {
+function ExecutionQueue() {
   const { tenant } = useTenant()
   const qc = useQueryClient()
   const searchParams = useSearchParams()
@@ -104,12 +106,25 @@ export default function ExecutionPage() {
   const [snoozingId, setSnoozingId] = useState<string | null>(null)
   const [doneId, setDoneId] = useState<string | null>(null)
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set())
+  const [displayCount, setDisplayCount] = useState(20)
+  const [completedToday, setCompletedToday] = useState(0)
   const [, startTransition] = useTransition()
 
+  // Reset counter when switching between filtered and full view
+  const prevFilterRef = useRef(filterAccountId)
+  if (prevFilterRef.current !== filterAccountId) {
+    prevFilterRef.current = filterAccountId
+    setCompletedToday(0)
+  }
+
   // When a deep link provides account_id, filter to just that account
-  const visibleItems = filterAccountId
+  const allVisibleItems = filterAccountId
     ? items.filter((i) => i.accountId === filterAccountId)
     : items
+
+  // Paginated view — show displayCount items, preserving sort order
+  const visibleItems = allVisibleItems.slice(0, displayCount)
+  const hasMore = allVisibleItems.length > displayCount
 
   const grouped = {
     urgent: visibleItems.filter((i) => i.urgency === "urgent"),
@@ -117,9 +132,11 @@ export default function ExecutionPage() {
     normal: visibleItems.filter((i) => i.urgency === "normal"),
   }
 
-  const totalPending = grouped.urgent.length + grouped.high.length + grouped.normal.length
-  const overdueCount = visibleItems.filter((i) => i.daysOverdue >= 7).length
-  const waitingCount = visibleItems.filter((i) => i.consecutiveUnanswered > 0).length
+  const totalPending = allVisibleItems.length
+  const totalToday = totalPending + completedToday
+  const progressPct = totalToday > 0 ? Math.round((completedToday / totalToday) * 100) : 0
+  const overdueCount = allVisibleItems.filter((i) => i.daysOverdue >= 7).length
+  const waitingCount = allVisibleItems.filter((i) => i.consecutiveUnanswered > 0).length
 
   function openComposer(item: ExecutionItem) {
     setComposer({
@@ -157,8 +174,10 @@ export default function ExecutionPage() {
   function handleSnooze(item: ExecutionItem) {
     setSnoozingId(item.id)
     if (composer?.itemId === item.id) setComposer(null)
+    setCompletedToday((n) => n + 1)
     startTransition(async () => {
-      await snoozeAccount(item.accountId, 3)
+      const { error } = await snoozeAccount(item.accountId, 3)
+      if (error) setCompletedToday((n) => Math.max(0, n - 1))
       qc.invalidateQueries({ queryKey: ["execution_queue", tenant.id] })
       setSnoozingId(null)
     })
@@ -167,8 +186,10 @@ export default function ExecutionPage() {
   function handleMarkDone(item: ExecutionItem) {
     setDoneId(item.id)
     if (composer?.itemId === item.id) setComposer(null)
+    setCompletedToday((n) => n + 1)
     startTransition(async () => {
-      await markActionDone(item.accountId)
+      const { error } = await markActionDone(item.accountId)
+      if (error) setCompletedToday((n) => Math.max(0, n - 1))
       qc.invalidateQueries({ queryKey: ["execution_queue", tenant.id] })
       setDoneId(null)
     })
@@ -217,6 +238,17 @@ export default function ExecutionPage() {
           <Link href="/execution" className="text-xs text-blue-600 hover:underline">
             Ver todas →
           </Link>
+        </div>
+      )}
+
+      {totalToday > 0 && (
+        <div className="flex items-center gap-3 mb-4 p-3 bg-muted/50 border rounded-lg">
+          <div className="flex-1 min-w-0">
+            <Progress value={progressPct} className="h-2" />
+          </div>
+          <span className="text-xs text-muted-foreground whitespace-nowrap shrink-0">
+            {completedToday}/{totalToday} hoje
+          </span>
         </div>
       )}
 
@@ -270,7 +302,8 @@ export default function ExecutionPage() {
               </button>
 
               {!isCollapsed && (
-                <div className="space-y-2">
+                <AnimatePresence initial={false}>
+                <motion.div layout className="space-y-2">
                   {group.map((item) => {
                     const actionCfg = ACTION_LABEL[item.actionType] ?? ACTION_LABEL.follow_up
                     const isComposing = composer?.itemId === item.id
@@ -278,8 +311,13 @@ export default function ExecutionPage() {
                     const lastActionDays = item.lastActionAt ? (daysSince(item.lastActionAt) ?? 0) : null
 
                     return (
-                      <div
+                      <motion.div
                         key={item.id}
+                        layout
+                        initial={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 60, transition: { duration: 0.18 } }}
+                      >
+                      <div
                         className={cn(
                           "border rounded-xl overflow-hidden transition-all",
                           isComposing && cn(cfg.border, cfg.bg)
@@ -527,20 +565,60 @@ export default function ExecutionPage() {
                           )
                         })()}
                       </div>
+                      </motion.div>
                     )
                   })}
-                </div>
+                </motion.div>
+                </AnimatePresence>
               )}
             </section>
           )
         })}
       </div>
 
+      {/* Load more */}
+      {hasMore && (
+        <div className="mt-4 flex flex-col items-center gap-2">
+          <p className="text-xs text-muted-foreground">
+            Exibindo {visibleItems.length} de {allVisibleItems.length} ações
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setDisplayCount((c) => c + 20)}
+            className="gap-1.5"
+          >
+            <ChevronDown className="w-3.5 h-3.5" />
+            Carregar mais 20
+          </Button>
+        </div>
+      )}
+
       <div className="mt-6 pt-4 border-t">
         <p className="text-[11px] text-muted-foreground">
+          {allVisibleItems.length > 0 && !hasMore
+            ? `${allVisibleItems.length} ação${allVisibleItems.length !== 1 ? "ões" : ""} no total · `
+            : ""}
           Itens adiados ficam ocultos por 3 dias e retornam automaticamente à fila.
         </p>
       </div>
     </div>
+  )
+}
+
+function QueueSkeleton() {
+  return (
+    <div className="max-w-3xl mx-auto space-y-4">
+      <Skeleton className="h-16 w-full" />
+      {[1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="h-20 w-full rounded-xl" />)}
+    </div>
+  )
+}
+
+export default function ExecutionPage() {
+  return (
+    <Suspense fallback={<QueueSkeleton />}>
+      <ExecutionQueue />
+    </Suspense>
   )
 }

@@ -1,7 +1,7 @@
 "use client"
 
 import { createContext, useContext, useState } from "react"
-import { Sidebar } from "./Sidebar"
+import { Sidebar, MobileSidebarTrigger } from "./Sidebar"
 import { CommandPalette } from "./CommandPalette"
 import { cn } from "@/lib/utils"
 import { Search } from "lucide-react"
@@ -38,11 +38,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div
           className={cn(
             "flex flex-col min-h-screen transition-all duration-300",
-            collapsed ? "pl-[68px]" : "pl-60"
+            collapsed ? "lg:pl-[68px]" : "lg:pl-60"
           )}
         >
           {/* Top bar with search trigger */}
-          <header className="h-12 border-b bg-background/95 backdrop-blur sticky top-0 z-20 flex items-center px-6">
+          <header className="h-12 border-b bg-background/95 backdrop-blur sticky top-0 z-20 flex items-center gap-3 px-4 lg:px-6">
+            <MobileSidebarTrigger />
             <button
               type="button"
               onClick={() => {

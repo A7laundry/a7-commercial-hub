@@ -1,7 +1,6 @@
 "use client"
 
-import { useState, useTransition, useEffect } from "react"
-import { createClient } from "@/lib/supabase/client"
+import { useState, useTransition } from "react"
 import { createDeal } from "@/app/(app)/deals/actions"
 import {
   Dialog,
@@ -10,18 +9,10 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-
-type Account = { id: string; name: string }
+import { AccountSearchSelect, type AccountOption } from "@/components/shared/AccountSearchSelect"
 
 type Props = {
   open: boolean
@@ -30,10 +21,8 @@ type Props = {
   onCreated?: () => void
 }
 
-export function CreateDealDialog({ open, onOpenChange, tenantId, onCreated }: Props) {
-  const [accounts, setAccounts] = useState<Account[]>([])
-  const [accountSearch, setAccountSearch] = useState("")
-  const [accountId, setAccountId] = useState("")
+export function CreateDealDialog({ open, onOpenChange, tenantId: _tenantId, onCreated }: Props) {
+  const [selectedAccount, setSelectedAccount] = useState<AccountOption | null>(null)
   const [title, setTitle] = useState("")
   const [value, setValue] = useState("")
   const [expectedCloseDate, setExpectedCloseDate] = useState("")
@@ -41,25 +30,8 @@ export function CreateDealDialog({ open, onOpenChange, tenantId, onCreated }: Pr
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
 
-  // Fetch accounts for the select
-  useEffect(() => {
-    if (!open) return
-
-    const supabase = createClient()
-    supabase
-      .from("accounts")
-      .select("id, name")
-      .eq("tenant_id", tenantId)
-      .order("name")
-      .limit(500)
-      .then(({ data }) => {
-        setAccounts((data as Account[]) ?? [])
-      })
-  }, [open, tenantId])
-
   function resetForm() {
-    setAccountId("")
-    setAccountSearch("")
+    setSelectedAccount(null)
     setTitle("")
     setValue("")
     setExpectedCloseDate("")
@@ -72,18 +44,14 @@ export function CreateDealDialog({ open, onOpenChange, tenantId, onCreated }: Pr
     onOpenChange(open)
   }
 
-  const filteredAccounts = accounts.filter((a) =>
-    a.name.toLowerCase().includes(accountSearch.toLowerCase())
-  )
-
   function handleSubmit() {
-    if (!accountId) { setError("Selecione uma conta"); return }
+    if (!selectedAccount) { setError("Selecione uma conta"); return }
     if (!title.trim()) { setError("Informe o título da oportunidade"); return }
     setError(null)
 
     startTransition(async () => {
       const result = await createDeal({
-        account_id: accountId,
+        account_id: selectedAccount.id,
         title: title.trim(),
         value: value ? Number(value) : null,
         expected_close_date: expectedCloseDate || null,
@@ -109,33 +77,14 @@ export function CreateDealDialog({ open, onOpenChange, tenantId, onCreated }: Pr
         </DialogHeader>
 
         <div className="space-y-4 py-1">
-          {/* Account select with search */}
+          {/* Account search select */}
           <div className="space-y-1.5">
-            <Label htmlFor="deal-account">Conta <span className="text-destructive">*</span></Label>
-            <Input
-              id="deal-account-search"
+            <Label>Conta <span className="text-destructive">*</span></Label>
+            <AccountSearchSelect
+              value={selectedAccount}
+              onChange={setSelectedAccount}
               placeholder="Buscar conta..."
-              value={accountSearch}
-              onChange={(e) => setAccountSearch(e.target.value)}
-              className="mb-1"
             />
-            <Select value={accountId} onValueChange={(v) => setAccountId(v ?? "")}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Selecione a conta..." />
-              </SelectTrigger>
-              <SelectContent>
-                {filteredAccounts.length === 0 && (
-                  <div className="py-2 px-3 text-xs text-muted-foreground">
-                    Nenhuma conta encontrada
-                  </div>
-                )}
-                {filteredAccounts.map((account) => (
-                  <SelectItem key={account.id} value={account.id}>
-                    {account.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           </div>
 
           {/* Title */}

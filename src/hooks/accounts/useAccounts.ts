@@ -19,7 +19,7 @@ export function useAccounts(tenantId: string, filters: AccountFilters = {}) {
         .select("*")
         .eq("tenant_id", tenantId)
         .order("name")
-        .limit(10000)
+        .limit(500)
 
       if (filters.search) {
         query = query.ilike("name", `%${filters.search}%`)
