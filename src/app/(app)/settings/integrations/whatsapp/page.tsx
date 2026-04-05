@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { loadIntegration, saveIntegration } from "./actions"
 import { PageHeader } from "@/components/shared/PageHeader"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -97,6 +98,22 @@ export default function WhatsAppIntegrationPage() {
   const [testMessage, setTestMessage] = useState("")
   const [isSendingTest, setIsSendingTest] = useState(false)
 
+  // Load persisted integration state on mount
+  useEffect(() => {
+    loadIntegration().then((row) => {
+      if (!row || row.status === "disconnected") return
+      setStatus(row.status)
+      setConnectionData({
+        phoneNumber: row.phone_number,
+        lastActivity: row.last_activity_at ?? new Date().toISOString(),
+      })
+      setWebhookStatus({
+        lastEventReceived: row.webhook_last_event_at,
+        connectionStatus: row.webhook_status,
+      })
+    })
+  }, [])
+
   function handleConnect() {
     setShowSetup(true)
     setSetupStep(1)
@@ -111,29 +128,23 @@ export default function WhatsAppIntegrationPage() {
     setIsSubmitting(true)
     setSetupStep(3)
 
-    // TODO: Replace with real API call
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 2000))
+    const { error } = await saveIntegration({ apiKey, instanceId, phoneNumber })
 
-      setStatus("connected")
-      setConnectionData({
-        phoneNumber,
-        lastActivity: new Date().toISOString(),
-      })
-      setWebhookStatus({
-        lastEventReceived: new Date().toISOString(),
-        connectionStatus: "active",
-      })
-
-      toast.success("WhatsApp conectado com sucesso!")
-      setTimeout(() => setShowSetup(false), 1500)
-    } catch {
+    if (error) {
       setStatus("error")
-      toast.error("Falha ao conectar. Verifique suas credenciais.")
+      toast.error("Falha ao salvar. Tente novamente.")
       setSetupStep(2)
-    } finally {
       setIsSubmitting(false)
+      return
     }
+
+    const now = new Date().toISOString()
+    setStatus("connected")
+    setConnectionData({ phoneNumber, lastActivity: now })
+    setWebhookStatus({ lastEventReceived: null, connectionStatus: "unknown" })
+    setIsSubmitting(false)
+    toast.success("WhatsApp conectado com sucesso!")
+    setTimeout(() => setShowSetup(false), 1500)
   }
 
   async function handleSendTest() {
@@ -144,13 +155,22 @@ export default function WhatsAppIntegrationPage() {
 
     setIsSendingTest(true)
 
-    // TODO: Replace with real API call
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1500))
-      toast.success(`Mensagem de teste enviada para ${testPhone}`)
-      setTestMessage("")
+      const res = await fetch("/api/whatsapp/test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: testPhone, message: testMessage }),
+      })
+
+      if (res.ok) {
+        toast.success(`Mensagem de teste enviada para ${testPhone}`)
+        setTestMessage("")
+      } else {
+        const body = await res.json().catch(() => ({})) as { error?: string }
+        toast.error(body.error ?? "Falha ao enviar mensagem de teste")
+      }
     } catch {
-      toast.error("Falha ao enviar mensagem de teste")
+      toast.error("Erro de rede ao enviar mensagem de teste")
     } finally {
       setIsSendingTest(false)
     }
