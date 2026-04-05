@@ -46,7 +46,7 @@ export default function DashboardPage() {
   const [period, setPeriod] = useState<PeriodType>("month")
   const { data: periodData, isPending: periodLoading } = useDashboardPeriod(tenant.id, period)
 
-  const showOnboarding = !isLoading && data!.totalAccounts === 0
+  const showOnboarding = !isLoading && (data?.totalAccounts ?? -1) === 0
 
   return (
     <div>

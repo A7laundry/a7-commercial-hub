@@ -125,10 +125,10 @@ export async function updateDealStage(
     return { error: err instanceof Error ? err.message : "Não autenticado" }
   }
 
-  // Fetch current deal
+  // Fetch current deal — include account_id for pipeline sync
   const { data: existing, error: fetchError } = await supabase
     .from("deals")
-    .select("id, stage, tenant_id")
+    .select("id, stage, tenant_id, account_id")
     .eq("id", dealId)
     .eq("tenant_id", tenantId)
     .single()
@@ -148,14 +148,6 @@ export async function updateDealStage(
 
   const fromStage = existing.stage as DealStage
 
-  // Fetch account_id for pipeline sync
-  const { data: dealForAccount } = await supabase
-    .from("deals")
-    .select("account_id")
-    .eq("id", dealId)
-    .eq("tenant_id", tenantId)
-    .single()
-
   const { error: updateError } = await supabase
     .from("deals")
     .update({ stage: newStage })
@@ -174,7 +166,7 @@ export async function updateDealStage(
   }
 
   // Sync account.pipeline_stage based on deal progression
-  if (dealForAccount?.account_id) {
+  if (existing.account_id) {
     const stageSyncMap: Partial<Record<DealStage, string>> = {
       proposal:    "quote_sent",
       negotiation: "negotiating",
@@ -186,7 +178,7 @@ export async function updateDealStage(
       await supabase
         .from("accounts")
         .update({ pipeline_stage: accountStage })
-        .eq("id", dealForAccount.account_id)
+        .eq("id", existing.account_id)
         .eq("tenant_id", tenantId)
     }
   }
