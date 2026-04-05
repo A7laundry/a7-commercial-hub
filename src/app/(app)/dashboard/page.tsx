@@ -5,7 +5,8 @@ import { useTenant } from "@/hooks/useTenant"
 import { useDashboardData } from "@/hooks/dashboard/useDashboardData"
 import { useDashboardPeriod, type PeriodType } from "@/hooks/dashboard/useDashboardPeriod"
 import { useDeals } from "@/hooks/deals/useDeals"
-import { PageHeader } from "@/components/shared/PageHeader"
+import { useExecutionQueue } from "@/hooks/dashboard/useExecutionQueue"
+import { useOnboardingState, type OnboardingState } from "@/hooks/useOnboardingState"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { UrgentActionsCard } from "@/components/modules/dashboard/UrgentActionsCard"
@@ -13,8 +14,6 @@ import { ExpiringContractsCard } from "@/components/modules/dashboard/ExpiringCo
 import { ExpiringDocsCard } from "@/components/modules/dashboard/ExpiringDocsCard"
 import { RecentAlertsCard } from "@/components/modules/dashboard/RecentAlertsCard"
 import { AccountsAtRiskCard } from "@/components/modules/dashboard/AccountsAtRiskCard"
-import { OpportunitiesFeedCard } from "@/components/modules/dashboard/OpportunitiesFeedCard"
-import { ActionCenterCard } from "@/components/modules/dashboard/ActionCenterCard"
 import {
   Building2,
   FileText,
@@ -23,7 +22,6 @@ import {
   FileX,
   Target,
   TrendingUp,
-  TrendingDown,
   Wallet,
   Trophy,
   Handshake,
@@ -34,10 +32,13 @@ import {
   CheckCircle2,
   Circle,
   ArrowRight,
+  ListChecks,
+  Zap,
 } from "lucide-react"
 import { formatCurrency } from "@/lib/utils"
 import Link from "next/link"
 import { motion } from "framer-motion"
+import { cn } from "@/lib/utils"
 
 export default function DashboardPage() {
   const { tenant } = useTenant()
@@ -45,28 +46,86 @@ export default function DashboardPage() {
   const { data: dealsData, isPending: dealsLoading } = useDeals(tenant.id)
   const [period, setPeriod] = useState<PeriodType>("month")
   const { data: periodData, isPending: periodLoading } = useDashboardPeriod(tenant.id, period)
+  const { data: queueItems = [] } = useExecutionQueue(tenant.id)
+  const onboarding = useOnboardingState(tenant.id)
 
-  const showOnboarding = !isLoading && (data?.totalAccounts ?? -1) === 0
+  const hasActivity = !isLoading && (data?.totalAccounts ?? 0) > 0
+  const urgentCount = queueItems.filter((i) => i.urgency === "urgent").length
+  const highCount = queueItems.filter((i) => i.urgency === "high").length
 
   return (
     <div>
-      <PageHeader
-        title="Dashboard"
-        description={`Bem-vindo, ${tenant.name}`}
-      />
+      {/* ── Onboarding (sem clientes) ─────────────────────────────────────── */}
+      {!onboarding.isLoading && !onboarding.allDone && (
+        <OnboardingChecklist onboarding={onboarding} />
+      )}
 
-      {/* Onboarding banner — shown only when no clients exist */}
-      {showOnboarding && <OnboardingBanner />}
+      {/* ── Entry point: O que fazer agora? (com clientes) ─────────────── */}
+      {hasActivity && queueItems.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6 rounded-xl border bg-gradient-to-r from-primary/5 to-primary/10 p-5"
+        >
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                <ListChecks className="w-4 h-4 text-primary" />
+              </div>
+              <div>
+                <h2 className="text-sm font-bold">O que fazer agora?</h2>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {urgentCount > 0 && (
+                    <span className="text-red-600 font-semibold">{urgentCount} urgente{urgentCount !== 1 ? "s" : ""} · </span>
+                  )}
+                  {highCount > 0 && (
+                    <span className="text-amber-600 font-semibold">{highCount} alta prioridade · </span>
+                  )}
+                  {queueItems.length} ações aguardando
+                </p>
+              </div>
+            </div>
+            <Link
+              href="/execution"
+              className="shrink-0 flex items-center gap-1.5 bg-primary text-primary-foreground text-sm font-semibold px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
+            >
+              <Zap className="w-3.5 h-3.5" />
+              Ver minha fila
+            </Link>
+          </div>
+
+          {/* Preview das top 3 ações urgentes */}
+          {urgentCount > 0 && (
+            <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-2">
+              {queueItems.filter((i) => i.urgency === "urgent").slice(0, 3).map((item) => (
+                <Link
+                  key={item.id}
+                  href={item.href}
+                  className="flex items-center gap-2 bg-background rounded-lg px-3 py-2 hover:shadow-sm transition-shadow border"
+                >
+                  <div className="w-6 h-6 rounded-full bg-red-100 flex items-center justify-center text-[10px] font-bold text-red-700 shrink-0">
+                    {item.priorityScore}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-medium truncate">{item.accountName}</p>
+                    <p className="text-[10px] text-muted-foreground truncate">{item.actionLabel}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </motion.div>
+      )}
 
       {/* KPI Row — 7 cards including deals pipeline */}
       <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-4 mb-6">
         {[
-          { title: "Clientes", value: isLoading ? null : data!.totalAccounts, sub: isLoading ? null : `${data!.activeAccounts} ativos`, icon: Building2, href: "/accounts", highlight: undefined as "warning" | "critical" | undefined },
-          { title: "Contratos ativos", value: isLoading ? null : data!.activeContracts, sub: isLoading ? null : `${(data!.expiringContracts + data!.expiredContracts)} com atenção`, icon: FileText, href: "/contracts", highlight: undefined as "warning" | "critical" | undefined },
-          { title: "Vencendo em breve", value: isLoading ? null : data!.expiringContracts, sub: "próximos 30 dias", icon: Clock, href: "/contracts?status=expiring", highlight: (!isLoading && data!.expiringContracts > 0 ? "warning" : undefined) as "warning" | "critical" | undefined },
-          { title: "Alertas abertos", value: isLoading ? null : data!.openAlerts, sub: "requerem ação", icon: Bell, href: "/alerts", highlight: (!isLoading && data!.openAlerts > 0 ? "critical" : undefined) as "warning" | "critical" | undefined },
-          { title: "Docs vencidos", value: isLoading ? null : data!.expiredDocuments, sub: isLoading ? null : `${data!.expiringDocuments} vencendo`, icon: FileX, href: "/documents", highlight: (!isLoading && data!.expiredDocuments > 0 ? "critical" : undefined) as "warning" | "critical" | undefined },
-          { title: "Valor da carteira", value: isLoading ? null : formatCurrency(data!.totalCarteiraValue, "BRL"), sub: "estimado total", icon: Wallet, href: "/accounts", highlight: undefined as "warning" | "critical" | undefined },
+          { title: "Clientes", value: isLoading ? null : (data?.totalAccounts ?? 0), sub: isLoading ? null : `${data?.activeAccounts ?? 0} ativos`, icon: Building2, href: "/accounts", highlight: undefined as "warning" | "critical" | undefined },
+          { title: "Contratos ativos", value: isLoading ? null : (data?.activeContracts ?? 0), sub: isLoading ? null : `${((data?.expiringContracts ?? 0) + (data?.expiredContracts ?? 0))} com atenção`, icon: FileText, href: "/contracts", highlight: undefined as "warning" | "critical" | undefined },
+          { title: "Vencendo em breve", value: isLoading ? null : (data?.expiringContracts ?? 0), sub: "próximos 30 dias", icon: Clock, href: "/contracts?status=expiring", highlight: (!isLoading && (data?.expiringContracts ?? 0) > 0 ? "warning" : undefined) as "warning" | "critical" | undefined },
+          { title: "Alertas abertos", value: isLoading ? null : (data?.openAlerts ?? 0), sub: "requerem ação", icon: Bell, href: "/alerts", highlight: (!isLoading && (data?.openAlerts ?? 0) > 0 ? "critical" : undefined) as "warning" | "critical" | undefined },
+          { title: "Docs vencidos", value: isLoading ? null : (data?.expiredDocuments ?? 0), sub: isLoading ? null : `${data?.expiringDocuments ?? 0} vencendo`, icon: FileX, href: "/documents", highlight: (!isLoading && (data?.expiredDocuments ?? 0) > 0 ? "critical" : undefined) as "warning" | "critical" | undefined },
+          { title: "Valor da carteira", value: isLoading ? null : formatCurrency(data?.totalCarteiraValue ?? 0, "BRL"), sub: "estimado total", icon: Wallet, href: "/accounts", highlight: undefined as "warning" | "critical" | undefined },
         ].map((kpi, i) => (
           <motion.div
             key={kpi.title}
@@ -184,19 +243,9 @@ export default function DashboardPage() {
         <Skeleton className="h-24 w-full mb-6" />
       ) : (
         <div className="mb-6">
-          <UrgentActionsCard actions={data!.urgentActions} />
+          <UrgentActionsCard actions={data?.urgentActions ?? []} />
         </div>
       )}
-
-      {/* Action Center — full width */}
-      <div className="mb-6">
-        <ActionCenterCard />
-      </div>
-
-      {/* Opportunities feed — full width */}
-      <div className="mb-6">
-        <OpportunitiesFeedCard tenantId={tenant.id} />
-      </div>
 
       {/* Mid row: Expiring Contracts + Expiring Docs */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -207,8 +256,8 @@ export default function DashboardPage() {
           </>
         ) : (
           <>
-            <ExpiringContractsCard contracts={data!.expiringContractsList} />
-            <ExpiringDocsCard documents={data!.expiringDocsList} />
+            <ExpiringContractsCard contracts={data?.expiringContractsList ?? []} />
+            <ExpiringDocsCard documents={data?.expiringDocsList ?? []} />
           </>
         )}
       </div>
@@ -222,8 +271,8 @@ export default function DashboardPage() {
           </>
         ) : (
           <>
-            <RecentAlertsCard alerts={data!.recentAlerts} />
-            <AccountsAtRiskCard accounts={data!.accountsAtRisk} />
+            <RecentAlertsCard alerts={data?.recentAlerts ?? []} />
+            <AccountsAtRiskCard accounts={data?.accountsAtRisk ?? []} />
           </>
         )}
       </div>
@@ -324,14 +373,11 @@ function PeriodStatBlock({
   )
 }
 
-// ── Onboarding Banner ─────────────────────────────────────────────────────────
+// ── Onboarding Checklist ───────────────────────────────────────────────────────
 
-function OnboardingBanner() {
-  const steps = [
-    { label: "Adicionar primeiro cliente", href: "/accounts", done: false },
-    { label: "Conectar WhatsApp (número)", href: "/guide", done: false },
-    { label: "Criar primeira oportunidade", href: "/deals", done: false },
-  ]
+function OnboardingChecklist({ onboarding }: { onboarding: OnboardingState }) {
+  const { steps, completedCount, totalCount } = onboarding
+  const progress = Math.round((completedCount / totalCount) * 100)
 
   return (
     <div className="mb-6 rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 p-5">
@@ -340,25 +386,43 @@ function OnboardingBanner() {
           <Sparkles className="w-4 h-4 text-primary" />
         </div>
         <div className="flex-1">
-          <h3 className="text-sm font-semibold">Comece aqui — configure o A7X</h3>
-          <p className="text-xs text-muted-foreground mt-0.5 mb-3">
-            Siga os 3 passos para ativar o sistema comercial.
-          </p>
+          <div className="flex items-center justify-between gap-2 mb-0.5">
+            <h3 className="text-sm font-semibold">Comece aqui — configure o A7X</h3>
+            <span className="text-xs text-muted-foreground font-medium">{completedCount}/{totalCount}</span>
+          </div>
+
+          {/* Progress bar */}
+          <div className="w-full bg-primary/10 rounded-full h-1.5 mb-3">
+            <div
+              className="bg-primary rounded-full h-1.5 transition-all duration-500"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+
           <ol className="space-y-2">
             {steps.map((step, i) => (
-              <li key={i}>
+              <li key={step.id}>
                 <Link
                   href={step.href}
-                  className="flex items-center gap-2 text-sm hover:text-primary transition-colors group"
+                  className={cn(
+                    "flex items-center gap-2.5 text-sm rounded-lg px-2 py-1.5 -mx-2 transition-colors group",
+                    step.done
+                      ? "opacity-60 cursor-default pointer-events-none"
+                      : "hover:bg-primary/10 hover:text-primary"
+                  )}
                 >
                   {step.done
                     ? <CheckCircle2 className="w-4 h-4 text-green-600 shrink-0" />
                     : <Circle className="w-4 h-4 text-muted-foreground shrink-0 group-hover:text-primary" />
                   }
-                  <span className={step.done ? "line-through text-muted-foreground" : ""}>
+                  <span className={cn("flex-1", step.done && "line-through text-muted-foreground")}>
                     {i + 1}. {step.label}
                   </span>
-                  <ArrowRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  {!step.done && (
+                    <span className="text-[11px] text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                      {step.cta} <ArrowRight className="w-3 h-3" />
+                    </span>
+                  )}
                 </Link>
               </li>
             ))}

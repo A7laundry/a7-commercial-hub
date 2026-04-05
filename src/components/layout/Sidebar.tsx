@@ -4,6 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useTenant } from "@/hooks/useTenant"
 import { useOpenAlertsCount } from "@/hooks/alerts/useOpenAlertsCount"
+import { useInboxUnreadCount } from "@/hooks/inbox/useInboxUnreadCount"
 import {
   LayoutDashboard,
   Building2,
@@ -45,9 +46,9 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: "Operações",
     items: [
-      { href: "/execution", label: "Minha Fila",          icon: ListChecks },
-      { href: "/deals",     label: "Oportunidades",       icon: Target },
-      { href: "/pipeline",  label: "Pipeline (Carteira)", icon: Kanban },
+      { href: "/execution", label: "Minha Fila",    icon: ListChecks },
+      { href: "/deals",     label: "Oportunidades", icon: Target },
+      { href: "/pipeline",  label: "Carteira",      icon: Kanban },
     ],
   },
   {
@@ -87,6 +88,7 @@ export function Sidebar() {
   const { tenant } = useTenant()
   const { collapsed, toggle } = useSidebarCollapsed()
   const { data: openAlertsCount = 0 } = useOpenAlertsCount(tenant.id)
+  const { data: inboxUnreadCount = 0 } = useInboxUnreadCount(tenant.id)
 
   return (
     <aside
@@ -129,6 +131,7 @@ export function Sidebar() {
               {group.items.map(({ href, label, icon: Icon, badge }) => {
                 const active = pathname === href || pathname.startsWith(`${href}/`)
                 const alertBadge = href === "/alerts" && openAlertsCount > 0 ? openAlertsCount : null
+                const inboxBadge = href === "/inbox" && inboxUnreadCount > 0 ? inboxUnreadCount : null
                 return (
                   <Link
                     key={href}
@@ -151,9 +154,9 @@ export function Sidebar() {
                             {alertBadge > 99 ? "99+" : alertBadge}
                           </span>
                         )}
-                        {badge && !alertBadge && (
-                          <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-sidebar-primary text-sidebar-primary-foreground leading-none">
-                            {badge}
+                        {inboxBadge && !alertBadge && (
+                          <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-blue-500 text-white leading-none">
+                            {inboxBadge > 99 ? "99+" : inboxBadge}
                           </span>
                         )}
                       </>

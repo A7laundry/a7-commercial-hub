@@ -1,8 +1,9 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import { useState, useTransition, useMemo } from "react"
 import { useTenant } from "@/hooks/useTenant"
 import { useCampaigns } from "@/hooks/campaigns/useCampaigns"
+import { useAccounts } from "@/hooks/accounts/useAccounts"
 import { useQueryClient } from "@tanstack/react-query"
 import { createCampaign } from "./actions"
 import { AccountSelector } from "@/components/modules/campaigns/AccountSelector"
@@ -14,6 +15,7 @@ import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { Megaphone, Send, X, History, BarChart2 } from "lucide-react"
 import type { CampaignType } from "@/types"
+import { daysSince } from "@/lib/commercial-intelligence"
 
 type Toast = { msg: string; ok: boolean } | null
 
@@ -22,11 +24,26 @@ export default function CampaignsPage() {
   const qc = useQueryClient()
   const { data: campaigns = [], isPending: isLoading } = useCampaigns(tenant.id)
 
+  const { data: allAccounts = [] } = useAccounts(tenant.id)
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [composing, setComposing] = useState(false)
   const [toast, setToast] = useState<Toast>(null)
   const [isPending, startTransition] = useTransition()
   const [view, setView] = useState<"selector" | "history" | "dashboard">("selector")
+
+  const audienceStats = useMemo(() => {
+    const sel = allAccounts.filter((a) => selected.has(a.id))
+    if (sel.length === 0) return null
+    const withValue = sel.filter((a) => a.estimated_value != null)
+    const avgTicket = withValue.length > 0
+      ? withValue.reduce((sum, a) => sum + (a.estimated_value ?? 0), 0) / withValue.length
+      : null
+    const withContact = sel.filter((a) => a.last_contact_at != null)
+    const avgDays = withContact.length > 0
+      ? withContact.reduce((sum, a) => sum + (daysSince(a.last_contact_at) ?? 0), 0) / withContact.length
+      : null
+    return { count: sel.length, avgTicket, avgDays: avgDays != null ? Math.round(avgDays) : null }
+  }, [allAccounts, selected])
 
   function showToast(msg: string, ok: boolean) {
     setToast({ msg, ok })
@@ -152,6 +169,7 @@ export default function CampaignsPage() {
                 <div className="flex-1 overflow-y-auto bg-card border rounded-lg p-4">
                   <CampaignComposer
                     selectedCount={selected.size}
+                    audienceStats={audienceStats}
                     onConfirm={handleConfirm}
                     onCancel={handleCancel}
                     isPending={isPending}

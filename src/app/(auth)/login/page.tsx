@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, Suspense } from "react"
 import { useActionState } from "react"
 import { useFormStatus } from "react-dom"
 import { useSearchParams } from "next/navigation"
@@ -28,7 +28,15 @@ function SubmitButton({ label, pendingLabel }: { label: string; pendingLabel: st
   )
 }
 
-export default function LoginPage() {
+export default function LoginPageWrapper() {
+  return (
+    <Suspense>
+      <LoginPage />
+    </Suspense>
+  )
+}
+
+function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [tab, setTab] = useState<"login" | "signup">("login")
   const [loginState, loginFormAction] = useActionState(loginAction, { error: null })

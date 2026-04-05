@@ -6,14 +6,33 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import { MessageSquare, Sparkles, Gift } from "lucide-react"
+import { MessageSquare, Sparkles, Gift, Users, Wallet, Clock } from "lucide-react"
+
+type AudienceStats = {
+  count: number
+  avgTicket: number | null
+  avgDays: number | null
+} | null
 
 type Props = {
   selectedCount: number
+  audienceStats?: AudienceStats
   onConfirm: (payload: { name: string; type: CampaignType; message: string }) => void
   onCancel: () => void
   isPending: boolean
   defaultType?: CampaignType
+}
+
+const CAMPAIGN_TYPE_DESCRIPTIONS: Partial<Record<CampaignType, string>> = {
+  reactivation: "Clientes sem contato há mais de 60 dias. Objetivo: reabrir conversa.",
+  follow_up:    "Acompanhamento pós-visita ou proposta enviada.",
+  upsell:       "Clientes ativos com potencial de ampliar o ticket.",
+  renewal:      "Contratos próximos do vencimento que precisam ser renovados.",
+  risk:         "Clientes em risco de cancelamento. Agir rápido.",
+  acquisition:  "Prospects que ainda não viraram clientes.",
+  recurrence:   "Reforço de relacionamento com clientes recorrentes.",
+  birthday:     "Mensagem comemorativa com oferta especial.",
+  custom:       "Mensagem personalizada sem segmento pré-definido.",
 }
 
 const CAMPAIGN_TYPES: { value: CampaignType; label: string; emoji: string; color: string }[] = [
@@ -40,7 +59,7 @@ const TEMPLATES: Partial<Record<CampaignType, string>> = {
   custom:       "",
 }
 
-export function CampaignComposer({ selectedCount, onConfirm, onCancel, isPending, defaultType }: Props) {
+export function CampaignComposer({ selectedCount, audienceStats, onConfirm, onCancel, isPending, defaultType }: Props) {
   const [name, setName] = useState("")
   const [type, setType] = useState<CampaignType>(defaultType ?? "follow_up")
   const [message, setMessage] = useState(TEMPLATES[defaultType ?? "follow_up"] ?? "")
@@ -77,11 +96,42 @@ export function CampaignComposer({ selectedCount, onConfirm, onCancel, isPending
 
   return (
     <div className="space-y-5">
-      {/* Header */}
-      <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 px-3 py-2 rounded-md">
-        <MessageSquare className="w-4 h-4" />
-        <span><strong className="text-foreground">{selectedCount}</strong> clientes selecionados para esta campanha</span>
-      </div>
+      {/* Audience preview */}
+      {audienceStats ? (
+        <div className="rounded-lg border bg-gradient-to-r from-primary/5 to-primary/10 p-3">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">Audiência selecionada</p>
+          <div className="flex items-center gap-4 flex-wrap">
+            <div className="flex items-center gap-1.5">
+              <Users className="w-3.5 h-3.5 text-primary shrink-0" />
+              <span className="text-sm font-bold text-primary">{audienceStats.count}</span>
+              <span className="text-xs text-muted-foreground">clientes</span>
+            </div>
+            {audienceStats.avgTicket != null && (
+              <div className="flex items-center gap-1.5">
+                <Wallet className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                <span className="text-sm font-bold text-emerald-700">
+                  {audienceStats.avgTicket.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 })}
+                </span>
+                <span className="text-xs text-muted-foreground">ticket médio</span>
+              </div>
+            )}
+            {audienceStats.avgDays != null && (
+              <div className="flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                <span className={cn("text-sm font-bold", audienceStats.avgDays > 30 ? "text-red-600" : "text-amber-700")}>
+                  {audienceStats.avgDays}d
+                </span>
+                <span className="text-xs text-muted-foreground">último contato médio</span>
+              </div>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 px-3 py-2 rounded-md">
+          <MessageSquare className="w-4 h-4" />
+          <span><strong className="text-foreground">{selectedCount}</strong> clientes selecionados para esta campanha</span>
+        </div>
+      )}
 
       {/* Name */}
       <div className="space-y-2">
@@ -115,6 +165,11 @@ export function CampaignComposer({ selectedCount, onConfirm, onCancel, isPending
             </button>
           ))}
         </div>
+        {CAMPAIGN_TYPE_DESCRIPTIONS[type] && (
+          <p className="text-[11px] text-muted-foreground pl-1">
+            {currentType?.emoji} {CAMPAIGN_TYPE_DESCRIPTIONS[type]}
+          </p>
+        )}
       </div>
 
       {/* Message */}

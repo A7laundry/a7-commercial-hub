@@ -6,7 +6,7 @@ import { useTenant } from "@/hooks/useTenant"
 import { useInbox, type Conversation } from "@/hooks/inbox/useInbox"
 import { useQueryClient } from "@tanstack/react-query"
 import { LinkAccountModal } from "@/components/modules/inbox/LinkAccountModal"
-import { MessageSquare, Send, Search, AlertCircle, Link2 } from "lucide-react"
+import { MessageSquare, Send, Search, AlertCircle, Link2, Filter } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -23,8 +23,12 @@ export default function InboxPage() {
   const [reply, setReply] = useState("")
   const [sending, setSending] = useState(false)
   const [linkPhone, setLinkPhone] = useState<string | null>(null)
+  const [unreadOnly, setUnreadOnly] = useState(false)
+
+  const unreadCount = conversations.filter((c) => c.unreadCount > 0).length
 
   const filtered = conversations.filter((c) => {
+    if (unreadOnly && c.unreadCount === 0) return false
     if (!search) return true
     const q = search.toLowerCase()
     return (
@@ -76,11 +80,27 @@ export default function InboxPage() {
           <div className="p-3 border-b">
             <div className="flex items-center justify-between mb-2">
               <h1 className="text-base font-semibold">Inbox</h1>
-              {unmappedCount > 0 && (
-                <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700">
-                  {unmappedCount} sem vínculo
-                </span>
-              )}
+              <div className="flex items-center gap-1.5">
+                {unmappedCount > 0 && (
+                  <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700">
+                    {unmappedCount} sem vínculo
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setUnreadOnly((v) => !v)}
+                  title={unreadOnly ? "Mostrar todas" : "Apenas não respondidas"}
+                  className={cn(
+                    "flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-full border transition-colors",
+                    unreadOnly
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "border-border text-muted-foreground hover:border-primary hover:text-primary"
+                  )}
+                >
+                  <Filter className="w-3 h-3" />
+                  {unreadOnly ? `Não respondidas (${unreadCount})` : unreadCount > 0 ? `${unreadCount} pendentes` : "Filtrar"}
+                </button>
+              </div>
             </div>
             <div className="relative">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
