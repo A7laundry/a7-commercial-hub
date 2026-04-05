@@ -40,7 +40,8 @@ export function useInbox(tenantId: string) {
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [tenantId, supabase, qc])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tenantId, qc])
 
   return useQuery<Conversation[]>({
     queryKey: ["inbox", tenantId],

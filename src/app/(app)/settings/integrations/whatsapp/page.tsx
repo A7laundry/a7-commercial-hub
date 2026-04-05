@@ -248,7 +248,7 @@ export default function WhatsAppIntegrationPage() {
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm" onClick={() => setShowSetup(true)} className="gap-2">
+                  <Button variant="outline" size="sm" onClick={() => { setSetupStep(1); setApiKey(""); setInstanceId(""); setPhoneNumber(""); setShowSetup(true) }} className="gap-2">
                     Reconfigurar
                   </Button>
                 </div>

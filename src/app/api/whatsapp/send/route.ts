@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 import { logger } from "@/lib/logger"
-import { isWhatsAppConfigured } from "@/lib/env"
 import { sendToMeta } from "@/lib/whatsapp"
 
 type SendBody = {
@@ -55,6 +54,20 @@ export async function POST(request: NextRequest) {
   }
 
   // ---------------------------------------------------------------------------
+  // 0. Verify account_id belongs to this tenant (cross-tenant write prevention)
+  // ---------------------------------------------------------------------------
+  const { data: acct } = await supabase
+    .from("accounts")
+    .select("id")
+    .eq("id", account_id)
+    .eq("tenant_id", tenant_id)
+    .maybeSingle()
+
+  if (!acct) {
+    return NextResponse.json({ error: "Account not found" }, { status: 404 })
+  }
+
+  // ---------------------------------------------------------------------------
   // 1. Insert message with send_status=pending BEFORE attempting send
   //    This ensures we always have a record, regardless of Meta API outcome.
   // ---------------------------------------------------------------------------
@@ -83,22 +96,35 @@ export async function POST(request: NextRequest) {
       entity_type: "account",
       error: insertError.message,
     })
-    return NextResponse.json({ error: insertError.message }, { status: 500 })
+    return NextResponse.json({ error: "Database error" }, { status: 500 })
   }
 
   const messageId = stored.id
 
   // ---------------------------------------------------------------------------
   // 2. Attempt Meta API send (with retry)
+  //    Credential priority: per-tenant DB config → env var fallback
   // ---------------------------------------------------------------------------
   let wa_message_id: string | null = null
-  let finalStatus: "sent" | "failed" = "failed"
+  let finalStatus: "sent" | "failed" | "pending" = "failed"
   let sendError: string | null = null
   let attempts = 0
 
-  if (isWhatsAppConfigured()) {
-    const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID!
-    const accessToken = process.env.WHATSAPP_ACCESS_TOKEN!
+  // Resolve credentials: prefer per-tenant DB config
+  const { data: waConfig } = await supabase
+    .from("whatsapp_integrations")
+    .select("instance_id, api_key, status")
+    .eq("tenant_id", tenant_id)
+    .maybeSingle()
+
+  const phoneNumberId =
+    (waConfig?.status === "connected" && waConfig.instance_id) ||
+    process.env.WHATSAPP_PHONE_NUMBER_ID
+  const accessToken =
+    (waConfig?.status === "connected" && waConfig.api_key) ||
+    process.env.WHATSAPP_ACCESS_TOKEN
+
+  if (phoneNumberId && accessToken) {
 
     const result = await sendToMeta(phoneNumberId, accessToken, phone, message)
     wa_message_id = result.wa_message_id
@@ -131,7 +157,7 @@ export async function POST(request: NextRequest) {
     }
   } else {
     // WhatsApp not configured — warn once, keep message as pending
-    finalStatus = "pending" as "sent" | "failed"
+    finalStatus = "pending"
     logger.warn({
       event: "whatsapp.send.not_configured",
       status: "skipped",
@@ -160,7 +186,7 @@ export async function POST(request: NextRequest) {
   //    (graceful degradation: allow CRM updates even without WhatsApp creds)
   //    NEVER update pipeline_stage based on a failed send.
   // ---------------------------------------------------------------------------
-  const sideEffectsAllowed = finalStatus === "sent" || !isWhatsAppConfigured()
+  const sideEffectsAllowed = finalStatus === "sent" || finalStatus === "pending"
 
   if (sideEffectsAllowed) {
     const accountUpdate: Record<string, unknown> = {

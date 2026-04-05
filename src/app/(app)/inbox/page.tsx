@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import { toast } from "sonner"
 import { useTenant } from "@/hooks/useTenant"
 import { useInbox, type Conversation } from "@/hooks/inbox/useInbox"
 import { useQueryClient } from "@tanstack/react-query"
@@ -44,7 +45,7 @@ export default function InboxPage() {
     if (!selected || !reply.trim()) return
     setSending(true)
     try {
-      await fetch("/api/whatsapp/send", {
+      const res = await fetch("/api/whatsapp/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -54,11 +55,18 @@ export default function InboxPage() {
           action_type: "follow_up",
         }),
       })
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({})) as { error?: string }
+        toast.error(body.error ?? "Falha ao enviar mensagem")
+        return
+      }
       setReply("")
       qc.invalidateQueries({ queryKey: ["inbox", tenant.id] })
       if (selected.accountId) {
         qc.invalidateQueries({ queryKey: ["whatsapp", tenant.id, selected.accountId] })
       }
+    } catch {
+      toast.error("Erro de rede ao enviar mensagem")
     } finally {
       setSending(false)
     }

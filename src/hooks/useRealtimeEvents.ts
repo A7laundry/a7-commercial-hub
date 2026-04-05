@@ -131,5 +131,6 @@ export function useRealtimeEvents(tenantId: string) {
       supabase.removeChannel(waChannel)
       supabase.removeChannel(alertsChannel)
     }
-  }, [tenantId, qc, supabase])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tenantId, qc])
 }

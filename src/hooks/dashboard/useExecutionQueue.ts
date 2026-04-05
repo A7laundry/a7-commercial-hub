@@ -155,7 +155,8 @@ export function useExecutionQueue(tenantId: string) {
       supabase.removeChannel(channel)
       if (debounceTimer.current) clearTimeout(debounceTimer.current)
     }
-  }, [tenantId, qc, supabase])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tenantId, qc])
 
   return useQuery<ExecutionItem[]>({
     queryKey: ["execution_queue", tenantId],
