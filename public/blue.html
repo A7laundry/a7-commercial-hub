@@ -1,0 +1,1211 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>A7X Comercial — Blueprint Técnico</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #161b27;
+    --surface2: #1e2535;
+    --border: #2a3245;
+    --accent: #4f8ef7;
+    --accent2: #34d399;
+    --accent3: #f59e0b;
+    --accent4: #f87171;
+    --text: #e2e8f0;
+    --text2: #8896b3;
+    --text3: #5a6a8a;
+    --code-bg: #0d1117;
+    --tag-bg: #1e2d4a;
+    --font: 'Inter', system-ui, -apple-system, sans-serif;
+    --mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 15px;
+    line-height: 1.7;
+  }
+
+  /* Layout */
+  .layout { display: flex; min-height: 100vh; }
+  .sidebar {
+    width: 260px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 24px 0;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    overflow-y: auto;
+    z-index: 100;
+  }
+  .main { margin-left: 260px; max-width: 960px; padding: 48px 56px; }
+
+  /* Sidebar */
+  .sidebar-brand {
+    padding: 0 24px 24px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+  .sidebar-brand h2 {
+    font-size: 18px;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .sidebar-brand p { font-size: 11px; color: var(--text3); margin-top: 2px; }
+  .sidebar-section { padding: 0 12px; margin-bottom: 4px; }
+  .sidebar-section-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--text3);
+    padding: 8px 12px 4px;
+  }
+  .sidebar-section a {
+    display: block;
+    padding: 6px 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    color: var(--text2);
+    font-size: 13px;
+    transition: all .15s;
+  }
+  .sidebar-section a:hover { background: var(--surface2); color: var(--text); }
+
+  /* Typography */
+  h1 { font-size: 32px; font-weight: 800; line-height: 1.2; margin-bottom: 12px; }
+  h2 {
+    font-size: 22px; font-weight: 700; margin: 52px 0 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+  }
+  h3 { font-size: 16px; font-weight: 600; margin: 28px 0 12px; color: var(--accent); }
+  h4 { font-size: 14px; font-weight: 600; margin: 20px 0 8px; color: var(--text2); }
+  p { margin-bottom: 14px; color: var(--text2); }
+  strong { color: var(--text); font-weight: 600; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* Hero */
+  .hero {
+    background: linear-gradient(135deg, #0d1b3e 0%, #12213a 50%, #0f2818 100%);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 40px 48px;
+    margin-bottom: 40px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(79,142,247,.15) 0%, transparent 70%);
+  }
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(79,142,247,.12);
+    border: 1px solid rgba(79,142,247,.3);
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 99px;
+    margin-bottom: 16px;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+  }
+  .hero h1 { font-size: 36px; }
+  .hero .subtitle { font-size: 16px; color: var(--text2); max-width: 600px; margin-bottom: 28px; }
+  .hero-meta { display: flex; gap: 24px; flex-wrap: wrap; }
+  .hero-meta-item { display: flex; flex-direction: column; gap: 2px; }
+  .hero-meta-item .label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: .08em; }
+  .hero-meta-item .value { font-size: 14px; font-weight: 600; color: var(--text); }
+
+  /* Tags */
+  .tag {
+    display: inline-block;
+    background: var(--tag-bg);
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 4px;
+    margin: 2px;
+    border: 1px solid rgba(79,142,247,.2);
+  }
+  .tag.green { background: rgba(52,211,153,.1); color: var(--accent2); border-color: rgba(52,211,153,.2); }
+  .tag.amber { background: rgba(245,158,11,.1); color: var(--accent3); border-color: rgba(245,158,11,.2); }
+  .tag.red { background: rgba(248,113,113,.1); color: var(--accent4); border-color: rgba(248,113,113,.2); }
+  .tag.gray { background: rgba(88,107,150,.1); color: var(--text2); border-color: var(--border); }
+
+  /* Code */
+  code {
+    font-family: var(--mono);
+    font-size: 13px;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--accent2);
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    overflow-x: auto;
+    margin: 16px 0 24px;
+  }
+  pre code { background: none; border: none; padding: 0; font-size: 13px; color: #a8b4d0; }
+  .comment { color: var(--text3); }
+  .kw { color: var(--accent); }
+  .str { color: var(--accent2); }
+  .num { color: var(--accent3); }
+
+  /* Tables */
+  .table-wrap { overflow-x: auto; margin: 16px 0 28px; border-radius: 8px; border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead { background: var(--surface2); }
+  th {
+    text-align: left; padding: 10px 14px;
+    font-size: 11px; font-weight: 600;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    border-bottom: 1px solid var(--border);
+  }
+  td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--text2); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,.02); }
+  td code { font-size: 12px; }
+
+  /* Cards */
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; margin: 20px 0 32px; }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    transition: border-color .2s;
+  }
+  .card:hover { border-color: rgba(79,142,247,.4); }
+  .card-icon { font-size: 22px; margin-bottom: 10px; }
+  .card h4 { margin: 0 0 6px; color: var(--text); font-size: 14px; }
+  .card p { font-size: 12px; margin: 0; color: var(--text3); }
+
+  /* Flow diagram */
+  .flow {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px;
+    margin: 16px 0 28px;
+  }
+  .flow-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .flow-step:last-child { margin-bottom: 0; }
+  .step-num {
+    width: 26px; height: 26px;
+    background: var(--accent);
+    color: #fff;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .step-content h4 { margin: 0 0 3px; font-size: 14px; color: var(--text); }
+  .step-content p { margin: 0; font-size: 13px; color: var(--text3); }
+  .flow-arrow { text-align: center; color: var(--text3); margin: -6px 0 -6px 10px; font-size: 18px; }
+
+  /* Section */
+  section { scroll-margin-top: 32px; }
+
+  /* Status pills */
+  .status { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; }
+  .status::before { content: ''; width: 7px; height: 7px; border-radius: 50%; }
+  .status.active::before { background: var(--accent2); }
+  .status.beta::before { background: var(--accent3); }
+  .status.planned::before { background: var(--text3); }
+
+  /* Divider */
+  .divider { border: none; border-top: 1px solid var(--border); margin: 8px 0 28px; }
+
+  /* Notice */
+  .notice {
+    background: rgba(79,142,247,.08);
+    border: 1px solid rgba(79,142,247,.25);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 16px 0 24px;
+    font-size: 13px;
+    color: var(--text2);
+  }
+  .notice strong { color: var(--accent); }
+
+  /* Grid 2col */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 16px 0 24px; }
+  @media (max-width: 700px) { .grid2 { grid-template-columns: 1fr; } .main { margin-left: 0; padding: 24px 20px; } .sidebar { display: none; } }
+
+  /* ERD */
+  .erd {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px;
+    margin: 16px 0 28px;
+    font-family: var(--mono);
+    font-size: 12px;
+    line-height: 1.8;
+    color: var(--text2);
+  }
+  .erd .entity { color: var(--accent); font-weight: 700; }
+  .erd .pk { color: var(--accent3); }
+  .erd .fk { color: var(--accent2); }
+  .erd .field { color: var(--text2); }
+  .erd .rel { color: var(--text3); font-style: italic; padding-left: 20px; }
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+<!-- ─── SIDEBAR ──────────────────────────────────── -->
+<nav class="sidebar">
+  <div class="sidebar-brand">
+    <h2>A7X Comercial</h2>
+    <p>Blueprint Técnico · v1.0</p>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Produto</div>
+    <a href="#overview">Visão Geral</a>
+    <a href="#prd">PRD — Requisitos</a>
+    <a href="#features">Módulos & Features</a>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Arquitetura</div>
+    <a href="#stack">Stack Tecnológico</a>
+    <a href="#database">Banco de Dados</a>
+    <a href="#api">API Routes</a>
+    <a href="#multitenant">Multi-tenancy & RLS</a>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Integrações</div>
+    <a href="#billing">Billing & Stripe</a>
+    <a href="#whatsapp">WhatsApp Business</a>
+    <a href="#cron">Cron & Automação</a>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Operação</div>
+    <a href="#envvars">Variáveis de Ambiente</a>
+    <a href="#flows">Fluxos Principais</a>
+    <a href="#roadmap">Roadmap</a>
+  </div>
+</nav>
+
+<!-- ─── MAIN CONTENT ─────────────────────────────── -->
+<main class="main">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-badge">⚡ SaaS B2B · CRM Comercial</div>
+    <h1>A7X Comercial</h1>
+    <p class="subtitle">
+      Plataforma SaaS multi-tenant de CRM e automação comercial para equipes de vendas B2B.
+      Gestão de contas, contratos, campanhas WhatsApp, pipeline de negócios e execução de ações prioritárias.
+    </p>
+    <div class="hero-meta">
+      <div class="hero-meta-item">
+        <span class="label">Framework</span>
+        <span class="value">Next.js 16 + React 19</span>
+      </div>
+      <div class="hero-meta-item">
+        <span class="label">Database</span>
+        <span class="value">Supabase (PostgreSQL)</span>
+      </div>
+      <div class="hero-meta-item">
+        <span class="label">Auth</span>
+        <span class="value">Supabase Auth</span>
+      </div>
+      <div class="hero-meta-item">
+        <span class="label">Payments</span>
+        <span class="value">Stripe v22</span>
+      </div>
+      <div class="hero-meta-item">
+        <span class="label">Deploy</span>
+        <span class="value">Vercel</span>
+      </div>
+      <div class="hero-meta-item">
+        <span class="label">Planos</span>
+        <span class="value">Free · Pro · Scale</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── VISÃO GERAL ─── -->
+  <section id="overview">
+    <h2>Visão Geral do Produto</h2>
+
+    <p>
+      A7X Comercial é um <strong>CRM SaaS multi-tenant</strong> focado em equipes de vendas B2B que gerenciam
+      carteiras de clientes com contratos recorrentes. O produto combina gestão operacional de clientes
+      (contas, contratos, documentos) com <strong>automação comercial via WhatsApp</strong> e um motor de
+      inteligência que prioriza ações de alto impacto.
+    </p>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-icon">🎯</div>
+        <h4>Execução Comercial</h4>
+        <p>Fila priorizada de ações: follow-up, reativação, upsell, renovação e proposta.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">💬</div>
+        <h4>WhatsApp Business</h4>
+        <p>Envio e recebimento de mensagens via Meta Cloud API com rastreamento completo.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📊</div>
+        <h4>Pipeline & Deals</h4>
+        <p>Kanban de negócios por estágio: lead → em atendimento → proposta → fechado.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📋</div>
+        <h4>Contratos</h4>
+        <p>Gestão de contratos ativos com alertas automáticos de vencimento e renovação.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📣</div>
+        <h4>Campanhas</h4>
+        <p>Campanhas em massa segmentadas por perfil: inativos, em risco, upsell.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🤖</div>
+        <h4>Inteligência Comercial</h4>
+        <p>Score de clientes, next best action, detecção de oportunidades de expansão.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🏢</div>
+        <h4>Portal B2B</h4>
+        <p>Portal de autoatendimento para clientes visualizarem contratos e documentos.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">💳</div>
+        <h4>Billing SaaS</h4>
+        <p>Planos Free / Pro / Scale com trial de 7 dias e gestão de assinaturas via Stripe.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── PRD ─── -->
+  <section id="prd">
+    <h2>PRD — Requisitos do Produto</h2>
+
+    <h3>Problema que resolve</h3>
+    <p>
+      Equipes comerciais B2B perdem receita por falta de visibilidade sobre quais clientes precisam de
+      atenção imediata. CRMs genéricos não priorizam ações, não integram com WhatsApp de forma nativa
+      e não geram alertas automáticos de contratos vencendo. O A7X resolve isso com um sistema de
+      <strong>execução guiada</strong>: o vendedor abre o app e já sabe exatamente o que fazer.
+    </p>
+
+    <h3>Usuário-alvo</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Perfil</th><th>Dor principal</th><th>Como o A7X ajuda</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Coordenador comercial</strong></td>
+            <td>Não sabe quais clientes estão em risco de churn</td>
+            <td>Dashboard com score, alertas e lista priorizada de ações</td>
+          </tr>
+          <tr>
+            <td><strong>Vendedor / SDR</strong></td>
+            <td>Tempo perdido decidindo a quem ligar/mensagear</td>
+            <td>Fila de execução com ações concretas e templates de mensagem</td>
+          </tr>
+          <tr>
+            <td><strong>Gestor de carteira</strong></td>
+            <td>Contratos vencendo sem alertas</td>
+            <td>Alertas automáticos gerados diariamente por cron job</td>
+          </tr>
+          <tr>
+            <td><strong>Cliente B2B</strong></td>
+            <td>Dificuldade de acessar contratos e documentos</td>
+            <td>Portal B2B de autoatendimento com link direto</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Requisitos funcionais</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>Requisito</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>RF-01</td><td>Cadastro e gestão de contas (clientes) com perfil completo</td><td><span class="status active">Implementado</span></td></tr>
+          <tr><td>RF-02</td><td>Pipeline de negócios em kanban por estágio</td><td><span class="status active">Implementado</span></td></tr>
+          <tr><td>RF-03</td><td>Gestão de contratos com valor, datas e renovação automática</td><td><span class="status active">Implementado</span></td></tr>
+          <tr><td>RF-04</td><td>Biblioteca de documentos com upload e controle de versão</td><td><span class="status active">Implementado</span></td></tr>
+          <tr><td>RF-05</td><td>Fila de execução priorizada por motor de regras declarativo</td><td><span class="status active">Implementado</span></td></tr>
+          <tr><td>RF-06</td><td>Inbox WhatsApp com mapeamento de número → conta</td><td><span class="status active">Implementado</span></td></tr>
+          <tr><td>RF-07</td><td>Envio de mensagens WhatsApp com trail de auditoria</td><td><span class="status active">Implementado</span></td></tr>
+          <tr><td>RF-08</td><td>Campanhas em massa com audiência segmentada</td><td><span class="status active">Implementado</span></td></tr>
+          <tr><td>RF-09</td><td>Alertas automáticos de contratos vencendo</td><td><span class="status active">Implementado</span></td></tr>
+          <tr><td>RF-10</td><td>Digest diário de operações via WhatsApp</td><td><span class="status active">Implementado</span></td></tr>
+          <tr><td>RF-11</td><td>Score comercial e next best action por conta</td><td><span class="status active">Implementado</span></td></tr>
+          <tr><td>RF-12</td><td>Portal B2B para clientes (contratos, docs, faturas)</td><td><span class="status active">Implementado</span></td></tr>
+          <tr><td>RF-13</td><td>Importação em massa via CSV/Excel</td><td><span class="status active">Implementado</span></td></tr>
+          <tr><td>RF-14</td><td>Billing SaaS com Stripe e planos Free/Pro/Scale</td><td><span class="status active">Implementado</span></td></tr>
+          <tr><td>RF-15</td><td>Central de configurações (perfil, org, segurança)</td><td><span class="status active">Implementado</span></td></tr>
+          <tr><td>RF-16</td><td>Suporte a múltiplos usuários por tenant com roles</td><td><span class="status beta">Parcial</span></td></tr>
+          <tr><td>RF-17</td><td>API pública (plano Scale)</td><td><span class="status planned">Planejado</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Requisitos não-funcionais</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Requisito</th><th>Decisão</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Multi-tenancy</strong></td><td>Todas as tabelas têm <code>tenant_id</code> + RLS no Supabase. Nenhum dado entre tenants.</td></tr>
+          <tr><td><strong>Segurança</strong></td><td>RLS obrigatório, service role apenas em routes server-side, HMAC para webhooks externos.</td></tr>
+          <tr><td><strong>Performance</strong></td><td>React Query com staleTime configurado por domínio. Supabase connection pooling via pgBouncer.</td></tr>
+          <tr><td><strong>Observabilidade</strong></td><td>Logging estruturado JSON em todas as API routes: event, status, tenant_id, entity_id.</td></tr>
+          <tr><td><strong>Idempotência</strong></td><td>Mensagens WhatsApp deduplicadas por <code>wa_message_id</code>. Alertas com onConflict upsert.</td></tr>
+          <tr><td><strong>Graceful degradation</strong></td><td>Mensagens armazenadas como "pending" se WhatsApp offline. Trail de auditoria garantido.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ─── FEATURES ─── -->
+  <section id="features">
+    <h2>Módulos & Features</h2>
+
+    <h3>🎯 Execução (/execution)</h3>
+    <p>
+      Motor de regras declarativo que transforma dados de contas, contratos e deals em uma
+      <strong>fila priorizada de ações</strong>. Cada regra tem: condição de match, tipo de ação,
+      score base e razão. A fila é reordenada por score total (urgência + valor).
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Tipo de ação</th><th>Trigger</th></tr></thead>
+        <tbody>
+          <tr><td>follow_up</td><td>Cliente sem contato por N dias</td></tr>
+          <tr><td>reactivation</td><td>Cliente inativo em pipeline</td></tr>
+          <tr><td>renewal</td><td>Contrato vencendo em &lt;30 dias</td></tr>
+          <tr><td>upsell</td><td>Cliente ativo com sinal de expansão</td></tr>
+          <tr><td>proposal</td><td>Deal em estágio avançado sem proposta enviada</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>💬 Inbox WhatsApp (/inbox)</h3>
+    <p>
+      Interface de mensagens agrupadas por contato com <strong>mapeamento número → conta</strong>.
+      Exibe conversas recebidas via webhook Meta. Operadores podem responder diretamente.
+      Comando "feito"/"ok" detectado automaticamente como <code>action_taken</code>.
+    </p>
+
+    <h3>📊 Pipeline & Deals (/deals, /pipeline)</h3>
+    <p>
+      Kanban de negócios com 6 estágios: <code>lead → in_service → quote_sent → negotiating → closed → recurring</code>.
+      Cada deal tem valor estimado, account vinculada, e histórico de mudanças de estágio.
+      Deals parados por 14+ dias são priorizados na fila de execução.
+    </p>
+
+    <h3>📣 Campanhas (/campaigns)</h3>
+    <p>
+      Construção de campanhas com <strong>audiências pré-definidas</strong> (inativos 30d, em risco,
+      oportunidade de upsell, renovação próxima etc.) e templates de mensagem variantes (formal/casual/breve).
+      Campanhas disponíveis a partir do plano Pro (20/mês) e ilimitadas no Scale.
+    </p>
+
+    <h3>📋 Contratos (/contracts)</h3>
+    <p>
+      Gestão completa de contratos com valor, moeda, datas, auto-renew e notas.
+      Status derivado automaticamente: <code>draft → active → expiring → expired → cancelled</code>.
+      Cron diário gera alertas para contratos expirando em &lt;30 dias.
+    </p>
+
+    <h3>🤖 Inteligência Comercial</h3>
+    <p>Funções puras (sem side effects) que derivam insights a partir dos dados:
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Função</th><th>Output</th></tr></thead>
+        <tbody>
+          <tr><td><code>CommercialScore</code></td><td>hot / warm / cold / at_risk / upsell</td></tr>
+          <tr><td><code>NextBestAction</code></td><td>Ação recomendada com contexto</td></tr>
+          <tr><td><code>OpportunitySignal</code></td><td>Sinais de expansão identificados</td></tr>
+          <tr><td><code>MessageSuggestion</code></td><td>Template sugerido por contexto</td></tr>
+          <tr><td><code>RiskClassification</code></td><td>Nível de risco: low / medium / high / critical</td></tr>
+          <tr><td><code>LTVComputation</code></td><td>Lifetime Value a partir de contratos</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>🏢 Portal B2B (/portal-clients)</h3>
+    <p>
+      Portal de autoatendimento para clientes finais acessarem contratos, documentos e faturas.
+      Gerenciado pelo tenant; acesso por link direto sem criação de conta completa.
+    </p>
+  </section>
+
+  <!-- ─── STACK ─── -->
+  <section id="stack">
+    <h2>Stack Tecnológico</h2>
+
+    <div class="grid2">
+      <div>
+        <h3>Frontend</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Lib</th><th>Versão</th><th>Uso</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Next.js</strong></td><td>16.2.1</td><td>App Router, Server Actions, Cron</td></tr>
+              <tr><td><strong>React</strong></td><td>19.2.4</td><td>UI layer</td></tr>
+              <tr><td><strong>Tailwind CSS</strong></td><td>v4</td><td>Styling</td></tr>
+              <tr><td><strong>shadcn/ui</strong></td><td>latest</td><td>Componentes base</td></tr>
+              <tr><td><strong>Lucide React</strong></td><td>1.7.0</td><td>Ícones</td></tr>
+              <tr><td><strong>Framer Motion</strong></td><td>12.38</td><td>Animações</td></tr>
+              <tr><td><strong>Sonner</strong></td><td>2.0.7</td><td>Toasts</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div>
+        <h3>Backend & Data</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Lib</th><th>Versão</th><th>Uso</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Supabase JS</strong></td><td>2.101.1</td><td>DB + Auth + Realtime</td></tr>
+              <tr><td><strong>Supabase SSR</strong></td><td>0.10.0</td><td>Server-side auth</td></tr>
+              <tr><td><strong>TanStack Query</strong></td><td>5.96</td><td>Cache, refetch, states</td></tr>
+              <tr><td><strong>Stripe</strong></td><td>22.0.0</td><td>Checkout + Webhooks</td></tr>
+              <tr><td><strong>PapaParse</strong></td><td>5.5.3</td><td>Import CSV</td></tr>
+              <tr><td><strong>XLSX</strong></td><td>0.18.5</td><td>Import Excel</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <h3>Arquitetura de Pastas</h3>
+    <pre><code>src/
+├── app/
+│   ├── (app)/              <span class="comment"># Área autenticada (layout: auth guard + tenant context)</span>
+│   │   ├── dashboard/
+│   │   ├── execution/
+│   │   ├── accounts/
+│   │   ├── campaigns/
+│   │   ├── deals/
+│   │   ├── pipeline/
+│   │   ├── contracts/
+│   │   ├── documents/
+│   │   ├── alerts/
+│   │   ├── inbox/
+│   │   ├── import/
+│   │   ├── portal-clients/
+│   │   └── settings/       <span class="comment"># Hub + profile + org + billing + whatsapp + security</span>
+│   ├── api/
+│   │   ├── accounts/search/
+│   │   ├── stripe/checkout + webhook/
+│   │   ├── whatsapp/send + test + ingest/
+│   │   └── cron/generate-alerts + digest/
+│   ├── login/
+│   ├── onboarding/
+│   └── portal/             <span class="comment"># Portal B2B (sem auth principal)</span>
+├── components/
+│   ├── layout/             <span class="comment"># AppShell, Sidebar, CommandPalette</span>
+│   ├── modules/            <span class="comment"># Componentes por domínio de negócio</span>
+│   ├── shared/             <span class="comment"># PageHeader, EmptyState, StatusBadge</span>
+│   ├── providers/          <span class="comment"># TenantProvider, ReactQueryProvider</span>
+│   └── ui/                 <span class="comment"># shadcn/ui components</span>
+├── hooks/                  <span class="comment"># Hooks por domínio: accounts/, deals/, inbox/...</span>
+└── lib/
+    ├── supabase/            <span class="comment"># client.ts, server.ts, service.ts</span>
+    ├── plans.ts             <span class="comment"># Definição de planos e limites</span>
+    ├── billing-guard.ts     <span class="comment"># Feature gates por plano</span>
+    ├── commercial-intelligence.ts
+    ├── execution-rules.ts
+    ├── whatsapp.ts
+    └── message-templates.ts</code></pre>
+  </section>
+
+  <!-- ─── DATABASE ─── -->
+  <section id="database">
+    <h2>Banco de Dados</h2>
+
+    <div class="notice">
+      <strong>Supabase PostgreSQL</strong> — RLS habilitado em <em>todas</em> as tabelas.
+      Função de segurança <code>public.my_tenant_ids()</code> retorna os tenant IDs do usuário autenticado
+      e é usada em todas as políticas de acesso.
+    </div>
+
+    <h3>Schema — Tabelas principais</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Tabela</th><th>Propósito</th><th>Chave RLS</th></tr></thead>
+        <tbody>
+          <tr><td><code>tenants</code></td><td>Organizações / workspaces</td><td>via tenant_users</td></tr>
+          <tr><td><code>tenant_users</code></td><td>Membros de cada tenant com role</td><td>user_id = auth.uid()</td></tr>
+          <tr><td><code>accounts</code></td><td>Clientes / contas da carteira</td><td>tenant_id</td></tr>
+          <tr><td><code>contracts</code></td><td>Contratos ativos e histórico</td><td>tenant_id</td></tr>
+          <tr><td><code>documents</code></td><td>Arquivos vinculados a conta/contrato</td><td>tenant_id</td></tr>
+          <tr><td><code>alerts</code></td><td>Alertas gerados por cron e manualmente</td><td>tenant_id</td></tr>
+          <tr><td><code>deals</code></td><td>Negócios no pipeline de vendas</td><td>tenant_id</td></tr>
+          <tr><td><code>deals_stage_history</code></td><td>Histórico de mudanças de estágio</td><td>via deals</td></tr>
+          <tr><td><code>campaigns</code></td><td>Campanhas de mensagens em massa</td><td>tenant_id</td></tr>
+          <tr><td><code>whatsapp_messages</code></td><td>Mensagens enviadas/recebidas</td><td>tenant_id</td></tr>
+          <tr><td><code>whatsapp_integrations</code></td><td>Credenciais Meta por tenant</td><td>tenant_id</td></tr>
+          <tr><td><code>phone_mappings</code></td><td>Telefone → conta</td><td>tenant_id</td></tr>
+          <tr><td><code>account_timeline</code></td><td>Log de atividades por conta</td><td>tenant_id</td></tr>
+          <tr><td><code>subscriptions</code></td><td>Assinaturas Stripe por tenant</td><td>tenant_id</td></tr>
+          <tr><td><code>portal_clients</code></td><td>Usuários do portal B2B</td><td>tenant_id</td></tr>
+          <tr><td><code>user_notifications</code></td><td>Notificações enviadas (anti-spam)</td><td>tenant_id</td></tr>
+          <tr><td><code>execution_queue</code></td><td>Fila de execução com snooze</td><td>tenant_id</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Diagrama de Entidades (ERD simplificado)</h3>
+    <div class="erd">
+<span class="entity">tenants</span>
+  <span class="pk">PK</span> id (uuid)
+  <span class="field">   name, slug, created_at, logo_url</span>
+
+<span class="rel">  ↓ 1:N</span>
+
+<span class="entity">tenant_users</span>
+  <span class="pk">PK</span> id (uuid)
+  <span class="fk">FK</span> tenant_id → tenants.id
+  <span class="fk">FK</span> user_id → auth.users.id
+  <span class="field">   role (owner|admin|member|viewer)</span>
+  <span class="field">   UNIQUE (tenant_id, user_id)</span>
+
+<span class="rel">  ↓ 1:N</span>
+
+<span class="entity">accounts</span>
+  <span class="pk">PK</span> id (uuid)
+  <span class="fk">FK</span> tenant_id → tenants.id
+  <span class="field">   name, segment, contact_name, contact_email</span>
+  <span class="field">   status (active|inactive|prospect)</span>
+  <span class="field">   pipeline_stage, commercial_status</span>
+  <span class="field">   last_contact_at, next_action, estimated_value</span>
+  <span class="field">   client_type (pf|pj), tags[], cpf, cnpj</span>
+
+<span class="rel">  ↓ 1:N                           ↓ 1:N</span>
+
+<span class="entity">contracts</span>                        <span class="entity">deals</span>
+  <span class="pk">PK</span> id (uuid)                       <span class="pk">PK</span> id (uuid)
+  <span class="fk">FK</span> tenant_id, account_id            <span class="fk">FK</span> tenant_id, account_id
+  <span class="field">   title, status, total_value          stage, estimated_value, title</span>
+  <span class="field">   starts_at, ends_at, auto_renew       expected_close_date</span>
+
+<span class="rel">  ↓ 1:N</span>
+
+<span class="entity">documents</span>    <span class="entity">alerts</span>    <span class="entity">whatsapp_messages</span>    <span class="entity">subscriptions</span>
+  <span class="fk">FK</span> tenant_id   <span class="fk">FK</span> tenant_id   <span class="fk">FK</span> tenant_id            <span class="fk">FK</span> tenant_id (UNIQUE)
+  <span class="fk">FK</span> account_id  <span class="fk">FK</span> contract_id  <span class="field">   direction (in/out)      stripe_subscription_id</span>
+  <span class="field">   storage_path   type, severity  send_status, wa_id       plan, status, trial_end</span>
+    </div>
+
+    <h3>Migrations</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Arquivo</th><th>Conteúdo</th></tr></thead>
+        <tbody>
+          <tr><td><code>20260331000001</code></td><td>Schema inicial: tenants, accounts, contracts, documents, alerts</td></tr>
+          <tr><td><code>20260331000002</code></td><td>Políticas RLS + <code>my_tenant_ids()</code></td></tr>
+          <tr><td><code>20260331000003</code></td><td>Políticas de onboarding</td></tr>
+          <tr><td><code>20260331000004-005</code></td><td>Storage de documentos + fixes</td></tr>
+          <tr><td><code>20260331000006</code></td><td>Pipeline CRM: deals, stages</td></tr>
+          <tr><td><code>20260331000007-008</code></td><td>Portal B2B + Campanhas</td></tr>
+          <tr><td><code>20260401000001-003</code></td><td>Enrichment de contas, daily performance, interaction outcomes</td></tr>
+          <tr><td><code>20260402000001-002</code></td><td>WhatsApp message status + deals module</td></tr>
+          <tr><td><code>20260403-20260405</code></td><td>Phone mapping v2, execution snoozes, timeline, notifications, WA integrations</td></tr>
+          <tr><td><code>20260405000004</code></td><td>Security fixes + RLS hardening</td></tr>
+          <tr><td><code>20260407000001</code></td><td>Onboarding activation system</td></tr>
+          <tr><td><code>20260408000001</code></td><td>Subscriptions (Stripe billing)</td></tr>
+          <tr><td><code>20260409000001</code></td><td>tenants.logo_url</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ─── API ─── -->
+  <section id="api">
+    <h2>API Routes</h2>
+
+    <h3>GET /api/accounts/search</h3>
+    <p>Busca textual de contas para componentes autocomplete. Respeita RLS — retorna só contas do tenant autenticado.</p>
+    <pre><code><span class="comment">// Query params</span>
+q=string      <span class="comment">// termo de busca</span>
+limit=number  <span class="comment">// máx 50, default 20</span>
+status=string <span class="comment">// filtro por status</span>
+
+<span class="comment">// Response</span>
+[{ id, name, status, segment }]</code></pre>
+
+    <h3>POST /api/stripe/checkout</h3>
+    <p>Cria sessão Stripe Checkout para upgrade de plano. Retorna URL para redirect.</p>
+    <pre><code><span class="comment">// Body</span>
+{ plan: "pro" | "scale" }
+
+<span class="comment">// Response</span>
+{ url: string }  <span class="comment">// URL do Stripe hosted checkout</span></code></pre>
+
+    <h3>POST /api/stripe/webhook</h3>
+    <p>Recebe eventos Stripe. Verifica assinatura HMAC. Atualiza tabela <code>subscriptions</code>.</p>
+    <pre><code><span class="comment">// Eventos tratados:</span>
+checkout.session.completed       <span class="comment">→ nova assinatura</span>
+customer.subscription.updated    <span class="comment">→ mudança de plano / renovação</span>
+customer.subscription.deleted    <span class="comment">→ cancelamento</span>
+invoice.paid                     <span class="comment">→ atualiza current_period_end</span></code></pre>
+
+    <h3>POST /api/whatsapp/send</h3>
+    <p>Envia mensagem WhatsApp via Meta Cloud API. Armazena audit trail <em>antes</em> de chamar a API.</p>
+    <pre><code><span class="comment">// Body</span>
+{
+  account_id: string
+  phone: string
+  message: string
+  action_type?: "follow_up" | "upsell" | "reactivation" | "proposal" | "renewal"
+}
+
+<span class="comment">// Retry: 3 tentativas com backoff 1s → 3s → 10s</span>
+<span class="comment">// Side effects no sucesso: last_contact_at, pipeline_stage, timeline</span></code></pre>
+
+    <h3>POST & GET /api/whatsapp/ingest</h3>
+    <p>Webhook Meta para mensagens recebidas. Suporta dois modos de auth:</p>
+    <pre><code><span class="comment">// Auth mode 1: Meta HMAC (X-Hub-Signature-256)</span>
+<span class="comment">// Auth mode 2: Internal API key (x-api-key header)</span>
+
+<span class="comment">// GET: verificação do webhook (hub.challenge)</span>
+<span class="comment">// POST: ingest de mensagens + status updates</span>
+<span class="comment">// Idempotência: skip por wa_message_id duplicado</span></code></pre>
+
+    <h3>GET /api/cron/generate-alerts</h3>
+    <p>Executa diariamente às 08:00. Gera alertas de contratos vencendo para todos os tenants.</p>
+
+    <h3>GET /api/cron/digest</h3>
+    <p>Executa diariamente às 08:05. Envia resumo operacional via WhatsApp para o número configurado.</p>
+  </section>
+
+  <!-- ─── MULTI-TENANCY ─── -->
+  <section id="multitenant">
+    <h2>Multi-tenancy & RLS</h2>
+
+    <p>
+      A isolação de dados é garantida em <strong>duas camadas</strong>:
+      na aplicação (queries sempre filtradas por <code>tenant_id</code>) e
+      no banco (RLS policies que impedem acesso mesmo em caso de bug na aplicação).
+    </p>
+
+    <h3>Função central de segurança</h3>
+    <pre><code><span class="comment">-- Retorna os tenant_ids do usuário autenticado</span>
+<span class="kw">CREATE FUNCTION</span> public.my_tenant_ids()
+<span class="kw">RETURNS</span> uuid[]
+<span class="kw">AS</span> $$
+  <span class="kw">SELECT ARRAY</span>(
+    <span class="kw">SELECT</span> tenant_id <span class="kw">FROM</span> tenant_users
+    <span class="kw">WHERE</span> user_id = auth.uid()
+  )
+$$ <span class="kw">LANGUAGE</span> sql SECURITY DEFINER;
+
+<span class="comment">-- Exemplo de policy usando a função:</span>
+<span class="kw">CREATE POLICY</span> "tenant_isolation" <span class="kw">ON</span> accounts
+  <span class="kw">USING</span> (tenant_id = <span class="kw">ANY</span>(public.my_tenant_ids()));</code></pre>
+
+    <h3>Roles de usuário</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Role</th><th>Permissões</th></tr></thead>
+        <tbody>
+          <tr><td><code>owner</code></td><td>Acesso total, pode editar organização e billing</td></tr>
+          <tr><td><code>admin</code></td><td>Acesso total, pode editar organização</td></tr>
+          <tr><td><code>member</code></td><td>Acesso operacional (contas, deals, inbox)</td></tr>
+          <tr><td><code>viewer</code></td><td>Somente leitura</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Padrão em server actions</h3>
+    <pre><code><span class="kw">async function</span> <span class="str">updateOrganizationName</span>(tenantId, name) {
+  <span class="comment">// 1. Verificar usuário autenticado</span>
+  <span class="kw">const</span> { data: { user } } = <span class="kw">await</span> supabase.auth.getUser()
+  <span class="kw">if</span> (!user) <span class="kw">return</span> { error: <span class="str">"Não autenticado"</span> }
+
+  <span class="comment">// 2. Verificar pertencimento ao tenant</span>
+  <span class="kw">const</span> { data: membership } = <span class="kw">await</span> supabase
+    .from(<span class="str">"tenant_users"</span>)
+    .select(<span class="str">"role"</span>)
+    .eq(<span class="str">"tenant_id"</span>, tenantId)
+    .eq(<span class="str">"user_id"</span>, user.id)
+    .single()
+
+  <span class="comment">// 3. Verificar role mínimo exigido</span>
+  <span class="kw">if</span> (!membership) <span class="kw">return</span> { error: <span class="str">"Acesso negado"</span> }
+  <span class="kw">if</span> (![<span class="str">"owner"</span>, <span class="str">"admin"</span>].includes(membership.role))
+    <span class="kw">return</span> { error: <span class="str">"Permissão insuficiente"</span> }
+
+  <span class="comment">// 4. Usar service client (bypassa RLS com autorização verificada)</span>
+  <span class="kw">const</span> service = createServiceClient()
+  <span class="kw">await</span> service.from(<span class="str">"tenants"</span>).update({ name }).eq(<span class="str">"id"</span>, tenantId)
+}</code></pre>
+  </section>
+
+  <!-- ─── BILLING ─── -->
+  <section id="billing">
+    <h2>Billing & Stripe</h2>
+
+    <h3>Planos</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Plano</th><th>Preço</th><th>Contas</th><th>Usuários</th><th>Mensagens</th><th>Campanhas</th><th>IA</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="tag gray">Free</span></td>
+            <td>R$ 0</td>
+            <td>50</td>
+            <td>1</td>
+            <td>100/mês</td>
+            <td>—</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><span class="tag">Pro</span></td>
+            <td>R$ 297/mês</td>
+            <td>500</td>
+            <td>3</td>
+            <td>Ilimitado</td>
+            <td>20/mês</td>
+            <td>✓</td>
+          </tr>
+          <tr>
+            <td><span class="tag amber">Scale</span></td>
+            <td>R$ 697/mês</td>
+            <td>Ilimitado</td>
+            <td>10</td>
+            <td>Ilimitado</td>
+            <td>Ilimitado</td>
+            <td>✓ + API</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Ciclo de vida da assinatura</h3>
+    <div class="flow">
+      <div class="flow-step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h4>Trial (7 dias)</h4>
+          <p>Novo tenant começa automaticamente com status <code>trialing</code> e limites do plano Pro.</p>
+        </div>
+      </div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h4>Checkout Stripe</h4>
+          <p>POST /api/stripe/checkout cria sessão e redireciona para Stripe hosted page.</p>
+        </div>
+      </div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h4>Webhook → Active</h4>
+          <p><code>checkout.session.completed</code> atualiza <code>subscriptions.status = 'active'</code>.</p>
+        </div>
+      </div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <h4>Renovação / Falha</h4>
+          <p><code>invoice.paid</code> → renova. <code>subscription.updated</code> com <code>past_due</code> → bloqueia features pagas.</p>
+        </div>
+      </div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-step">
+        <div class="step-num">5</div>
+        <div class="step-content">
+          <h4>Cancelamento</h4>
+          <p><code>subscription.deleted</code> → <code>status = 'canceled'</code>, volta para limites Free.</p>
+        </div>
+      </div>
+    </div>
+
+    <h3>Feature gates</h3>
+    <pre><code><span class="comment">// billing-guard.ts — verificado antes de criar conta ou campanha</span>
+<span class="kw">async function</span> checkAccountLimit(tenantId) {
+  <span class="kw">const</span> limits = getEffectiveLimits(plan, status)
+  <span class="kw">if</span> (limits.maxAccounts === -<span class="num">1</span>) <span class="kw">return</span> { allowed: <span class="kw">true</span> }
+  <span class="kw">const</span> count = <span class="kw">await</span> getAccountCount(tenantId)
+  <span class="kw">return</span> {
+    allowed: count &lt; limits.maxAccounts,
+    reason: <span class="str">`Limite de ${limits.maxAccounts} contas atingido`</span>
+  }
+}</code></pre>
+  </section>
+
+  <!-- ─── WHATSAPP ─── -->
+  <section id="whatsapp">
+    <h2>Integração WhatsApp Business</h2>
+
+    <h3>Arquitetura</h3>
+    <p>
+      Integração via <strong>Meta Cloud API</strong> (WhatsApp Business API v20+).
+      Credenciais armazenadas por tenant na tabela <code>whatsapp_integrations</code>
+      com fallback para variáveis de ambiente globais.
+    </p>
+
+    <div class="flow">
+      <div class="flow-step">
+        <div class="step-num">→</div>
+        <div class="step-content">
+          <h4>Envio (Outbound)</h4>
+          <p>App → POST /api/whatsapp/send → Meta Cloud API → update status em whatsapp_messages</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="step-num">←</div>
+        <div class="step-content">
+          <h4>Recebimento (Inbound)</h4>
+          <p>Meta → POST /api/whatsapp/ingest → resolve tenant → store message → update account timeline</p>
+        </div>
+      </div>
+    </div>
+
+    <h3>Segurança do webhook</h3>
+    <pre><code><span class="comment">// Verificação HMAC obrigatória para payloads Meta</span>
+<span class="kw">const</span> sig = request.headers.get(<span class="str">"x-hub-signature-256"</span>)
+<span class="kw">const</span> expected = <span class="str">"sha256="</span> + hmac(body, WHATSAPP_APP_SECRET)
+<span class="kw">if</span> (sig !== expected) <span class="kw">return</span> Response.json({ error: <span class="str">"Unauthorized"</span> }, { status: <span class="num">401</span> })</code></pre>
+
+    <h3>Status de mensagens</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Status</th><th>Significado</th></tr></thead>
+        <tbody>
+          <tr><td><code>pending</code></td><td>Salva no DB, aguardando envio à API</td></tr>
+          <tr><td><code>sent</code></td><td>Aceita pela Meta API (tem wa_message_id)</td></tr>
+          <tr><td><code>delivered</code></td><td>Entregue ao dispositivo</td></tr>
+          <tr><td><code>read</code></td><td>Lida pelo destinatário</td></tr>
+          <tr><td><code>failed</code></td><td>Falha após 3 tentativas</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Detecção de comandos de operador</h3>
+    <p>
+      Respostas do operador contendo "feito", "ok", "pronto", "concluído" são detectadas automaticamente
+      e registradas como <code>action_taken</code> no timeline da conta.
+    </p>
+  </section>
+
+  <!-- ─── CRON ─── -->
+  <section id="cron">
+    <h2>Cron & Automação</h2>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Job</th><th>Horário</th><th>Função</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>/api/cron/generate-alerts</code></td>
+            <td>08:00 diário</td>
+            <td>Percorre todos os tenants, gera alertas de contratos vencendo (&lt;30d) e vencidos</td>
+          </tr>
+          <tr>
+            <td><code>/api/cron/digest</code></td>
+            <td>08:05 diário</td>
+            <td>Envia resumo operacional via WhatsApp: alertas críticos, contas em risco, contratos vencendo, negociações paradas</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <pre><code><span class="comment">// vercel.json — configuração de cron</span>
+{
+  <span class="str">"crons"</span>: [
+    { <span class="str">"path"</span>: <span class="str">"/api/cron/generate-alerts"</span>, <span class="str">"schedule"</span>: <span class="str">"0 8 * * *"</span> },
+    { <span class="str">"path"</span>: <span class="str">"/api/cron/digest"</span>,           <span class="str">"schedule"</span>: <span class="str">"5 8 * * *"</span> }
+  ]
+}
+
+<span class="comment">// Autorização via secret header</span>
+Authorization: Bearer ${CRON_SECRET}</code></pre>
+  </section>
+
+  <!-- ─── ENV VARS ─── -->
+  <section id="envvars">
+    <h2>Variáveis de Ambiente</h2>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Variável</th><th>Obrigatória</th><th>Descrição</th></tr></thead>
+        <tbody>
+          <tr>
+            <td colspan="3" style="background:var(--surface2);color:var(--text3);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em">
+              Supabase
+            </td>
+          </tr>
+          <tr><td><code>NEXT_PUBLIC_SUPABASE_URL</code></td><td><span class="tag">Sim</span></td><td>URL do projeto Supabase</td></tr>
+          <tr><td><code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code></td><td><span class="tag">Sim</span></td><td>Chave pública anon (browser safe)</td></tr>
+          <tr><td><code>SUPABASE_SERVICE_ROLE_KEY</code></td><td><span class="tag">Sim</span></td><td>Chave service role — <strong>nunca expor ao browser</strong></td></tr>
+          <tr>
+            <td colspan="3" style="background:var(--surface2);color:var(--text3);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em">
+              App
+            </td>
+          </tr>
+          <tr><td><code>NEXT_PUBLIC_APP_URL</code></td><td><span class="tag">Sim</span></td><td>URL base do app (ex: https://app.a7x.com.br) — usada para redirects Stripe</td></tr>
+          <tr>
+            <td colspan="3" style="background:var(--surface2);color:var(--text3);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em">
+              Stripe
+            </td>
+          </tr>
+          <tr><td><code>STRIPE_SECRET_KEY</code></td><td><span class="tag">Sim</span></td><td>Chave secreta Stripe (sk_live_... ou sk_test_...)</td></tr>
+          <tr><td><code>STRIPE_WEBHOOK_SECRET</code></td><td><span class="tag">Sim</span></td><td>Segredo de verificação de webhook (whsec_...)</td></tr>
+          <tr><td><code>STRIPE_PRICE_PRO_MONTHLY</code></td><td><span class="tag">Sim</span></td><td>Price ID do plano Pro (price_...)</td></tr>
+          <tr><td><code>STRIPE_PRICE_SCALE_MONTHLY</code></td><td><span class="tag">Sim</span></td><td>Price ID do plano Scale (price_...)</td></tr>
+          <tr>
+            <td colspan="3" style="background:var(--surface2);color:var(--text3);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em">
+              WhatsApp (Meta Cloud API)
+            </td>
+          </tr>
+          <tr><td><code>WHATSAPP_PHONE_NUMBER_ID</code></td><td><span class="tag amber">Opcional*</span></td><td>Phone Number ID do Meta (* obrigatório se WA ativo)</td></tr>
+          <tr><td><code>WHATSAPP_ACCESS_TOKEN</code></td><td><span class="tag amber">Opcional*</span></td><td>Token de acesso permanente Meta</td></tr>
+          <tr><td><code>WHATSAPP_VERIFY_TOKEN</code></td><td><span class="tag amber">Opcional*</span></td><td>Token para verificação do webhook Meta</td></tr>
+          <tr><td><code>WHATSAPP_APP_SECRET</code></td><td><span class="tag amber">Opcional</span></td><td>App secret para verificação HMAC de payloads</td></tr>
+          <tr><td><code>WHATSAPP_API_KEY</code></td><td><span class="tag amber">Opcional</span></td><td>API key interna para ingest programático</td></tr>
+          <tr>
+            <td colspan="3" style="background:var(--surface2);color:var(--text3);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em">
+              Cron & Notificações
+            </td>
+          </tr>
+          <tr><td><code>CRON_SECRET</code></td><td><span class="tag">Sim</span></td><td>Bearer token para autorizar chamadas de cron</td></tr>
+          <tr><td><code>DIGEST_PHONE</code></td><td><span class="tag amber">Opcional</span></td><td>Número para receber digest diário (ex: +5511999...)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ─── FLOWS ─── -->
+  <section id="flows">
+    <h2>Fluxos Principais</h2>
+
+    <h3>Onboarding de novo tenant</h3>
+    <div class="flow">
+      <div class="flow-step"><div class="step-num">1</div><div class="step-content"><h4>Signup</h4><p>Usuário cria conta via email/senha → Supabase Auth cria <code>auth.users</code> entry.</p></div></div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-step"><div class="step-num">2</div><div class="step-content"><h4>Onboarding Wizard</h4><p>Sem tenant associado → redirect para <code>/onboarding</code>. Usuário define nome da organização.</p></div></div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-step"><div class="step-num">3</div><div class="step-content"><h4>Criação do tenant</h4><p>Server action cria <code>tenants</code> + <code>tenant_users</code> (role: owner) + <code>subscriptions</code> (trialing).</p></div></div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-step"><div class="step-num">4</div><div class="step-content"><h4>Trial ativo</h4><p>Usuário acessa o app com 7 dias de Pro. Banner de onboarding guia primeiros passos.</p></div></div>
+    </div>
+
+    <h3>Envio de mensagem WhatsApp (caminho feliz)</h3>
+    <div class="flow">
+      <div class="flow-step"><div class="step-num">1</div><div class="step-content"><h4>UI → POST /api/whatsapp/send</h4><p>account_id, phone, message, action_type enviados.</p></div></div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-step"><div class="step-num">2</div><div class="step-content"><h4>Audit trail criado</h4><p>Mensagem inserida com <code>send_status="pending"</code> antes de qualquer chamada externa.</p></div></div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-step"><div class="step-num">3</div><div class="step-content"><h4>Meta API chamada</h4><p>3 tentativas com backoff exponencial (1s → 3s → 10s).</p></div></div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-step"><div class="step-num">4</div><div class="step-content"><h4>Status atualizado</h4><p>Mensagem atualizada: <code>send_status="sent"</code>, <code>wa_message_id</code> salvo.</p></div></div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-step"><div class="step-num">5</div><div class="step-content"><h4>Side effects</h4><p>account.last_contact_at atualizado. Pipeline stage movido se action_type="proposal". Timeline entry criada.</p></div></div>
+    </div>
+
+    <h3>Fila de execução (por sessão do usuário)</h3>
+    <div class="flow">
+      <div class="flow-step"><div class="step-num">1</div><div class="step-content"><h4>useExecutionQueue()</h4><p>Carrega contas, deals e contratos do tenant via React Query.</p></div></div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-step"><div class="step-num">2</div><div class="step-content"><h4>Motor de regras</h4><p>Cada regra em <code>execution-rules.ts</code> avalia dados e retorna score. Regras mais urgentes têm score base maior.</p></div></div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-step"><div class="step-num">3</div><div class="step-content"><h4>Ordenação</h4><p>Items ordenados por score total descendente. Primeiro item = ação mais urgente.</p></div></div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-step"><div class="step-num">4</div><div class="step-content"><h4>Ação executada</h4><p>Vendedor envia mensagem, completa ação ou faz snooze → item sai da fila.</p></div></div>
+    </div>
+  </section>
+
+  <!-- ─── ROADMAP ─── -->
+  <section id="roadmap">
+    <h2>Roadmap</h2>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Sprint</th><th>Feature</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>Sprint 1–3</td><td>Schema inicial, RLS, Auth, Onboarding, Contas, Contratos</td><td><span class="status active">Entregue</span></td></tr>
+          <tr><td>Sprint 4–5</td><td>Pipeline CRM, Deals Kanban, Campanhas</td><td><span class="status active">Entregue</span></td></tr>
+          <tr><td>Sprint 6–7</td><td>WhatsApp send/receive, Inbox, Execução guiada</td><td><span class="status active">Entregue</span></td></tr>
+          <tr><td>Sprint 8</td><td>Portal B2B, Importação CSV/Excel</td><td><span class="status active">Entregue</span></td></tr>
+          <tr><td>Sprint 9</td><td>Onboarding wizard, Ativação SaaS</td><td><span class="status active">Entregue</span></td></tr>
+          <tr><td>Sprint 10</td><td>Billing Stripe, Planos, Feature gates</td><td><span class="status active">Entregue</span></td></tr>
+          <tr><td>Sprint 11</td><td>Central de Settings (perfil, org, segurança)</td><td><span class="status active">Entregue</span></td></tr>
+          <tr><td>Sprint 12</td><td>Multi-usuário por tenant (invite flow)</td><td><span class="status beta">Em progresso</span></td></tr>
+          <tr><td>Sprint 13</td><td>API pública (plano Scale), documentação OpenAPI</td><td><span class="status planned">Planejado</span></td></tr>
+          <tr><td>Sprint 14</td><td>Upload de logo e assets de organização</td><td><span class="status planned">Planejado</span></td></tr>
+          <tr><td>Sprint 15</td><td>Mobile (PWA / React Native)</td><td><span class="status planned">Planejado</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Dívidas técnicas conhecidas</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Item</th><th>Impacto</th></tr></thead>
+        <tbody>
+          <tr><td><code>tenant.name</code> no TenantProvider não reflete updates sem reload</td><td>Baixo — reload resolve</td></tr>
+          <tr><td>Upload de logo pendente (coluna criada, UI com "em breve")</td><td>Baixo — UI pronta</td></tr>
+          <tr><td>Invite de novos usuários para tenant ainda não implementado</td><td>Médio — bloqueante para times</td></tr>
+          <tr><td>Testes automatizados (unit + e2e) ainda não existem</td><td>Alto — risco em produção</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="margin-top:48px;padding-top:24px;border-top:1px solid var(--border);color:var(--text3);font-size:12px;">
+      Gerado em Abril 2026 · A7X Comercial · Blueprint v1.0
+    </div>
+  </section>
+
+</main>
+</div>
+
+</body>
+</html>
