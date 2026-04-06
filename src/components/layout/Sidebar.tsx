@@ -23,6 +23,7 @@ import {
   ListChecks,
   Menu,
   Settings2,
+  ShieldAlert,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useSidebarCollapsed } from "./AppShell"
@@ -104,6 +105,7 @@ type NavContentProps = {
   inboxUnreadCount: number
   executionUrgentCount?: number
   onNavigate?: () => void
+  userEmail?: string
 }
 
 function NavContent({
@@ -112,10 +114,22 @@ function NavContent({
   openAlertsCount,
   inboxUnreadCount,
   onNavigate,
+  userEmail,
 }: NavContentProps) {
+  const adminEmails = (process.env.NEXT_PUBLIC_ADMIN_EMAILS ?? "")
+    .split(",").map((e) => e.trim().toLowerCase()).filter(Boolean)
+  const isAdmin = !!userEmail && adminEmails.includes(userEmail.toLowerCase())
+
+  const groups: NavGroup[] = [
+    ...NAV_GROUPS,
+    ...(isAdmin
+      ? [{ label: "Admin", items: [{ href: "/admin", label: "Admin Panel", icon: ShieldAlert }] }]
+      : []),
+  ]
+
   return (
     <nav className="flex-1 py-3 px-2 overflow-y-auto">
-      {NAV_GROUPS.map((group, gi) => (
+      {groups.map((group, gi) => (
         <div key={gi}>
           {/* Separator between groups (skip before first) */}
           {gi > 0 && (
@@ -186,7 +200,7 @@ function NavContent({
 export function MobileSidebarTrigger() {
   const [open, setOpen] = useState(false)
   const pathname = usePathname()
-  const { tenant } = useTenant()
+  const { tenant, currentUser } = useTenant()
   const { data: openAlertsCount = 0 } = useOpenAlertsCount(tenant.id)
   const { data: inboxUnreadCount = 0 } = useInboxUnreadCount(tenant.id)
 
@@ -214,6 +228,7 @@ export function MobileSidebarTrigger() {
           openAlertsCount={openAlertsCount}
           inboxUnreadCount={inboxUnreadCount}
           onNavigate={() => setOpen(false)}
+          userEmail={currentUser.email}
         />
         <div className="px-4 py-3 border-t border-sidebar-border shrink-0">
           <p className="text-xs text-sidebar-foreground/60 truncate">{tenant.name}</p>
@@ -227,7 +242,7 @@ export function MobileSidebarTrigger() {
 
 export function Sidebar() {
   const pathname = usePathname()
-  const { tenant } = useTenant()
+  const { tenant, currentUser } = useTenant()
   const { collapsed, toggle } = useSidebarCollapsed()
   const { data: openAlertsCount = 0 } = useOpenAlertsCount(tenant.id)
   const { data: inboxUnreadCount = 0 } = useInboxUnreadCount(tenant.id)
@@ -265,6 +280,7 @@ export function Sidebar() {
         pathname={pathname}
         openAlertsCount={openAlertsCount}
         inboxUnreadCount={inboxUnreadCount}
+        userEmail={currentUser.email}
       />
 
       {/* Footer: tenant name */}
