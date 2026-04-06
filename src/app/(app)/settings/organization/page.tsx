@@ -92,6 +92,7 @@ export default function OrganizationPage() {
                 })}
                 readOnly
                 className="bg-muted text-muted-foreground cursor-default"
+                suppressHydrationWarning
               />
             </div>
 

@@ -134,8 +134,8 @@ export function UsersTable({ users }: { users: AdminUser[] }) {
                     <span className="italic text-muted-foreground/60 text-xs">—</span>
                   )}
                 </td>
-                <td className="px-4 py-3 text-muted-foreground text-xs">{fmt(user.last_sign_in_at)}</td>
-                <td className="px-4 py-3 text-muted-foreground text-xs">{fmt(user.created_at)}</td>
+                <td className="px-4 py-3 text-muted-foreground text-xs" suppressHydrationWarning>{fmt(user.last_sign_in_at)}</td>
+                <td className="px-4 py-3 text-muted-foreground text-xs" suppressHydrationWarning>{fmt(user.created_at)}</td>
               </tr>
             ))}
           </tbody>

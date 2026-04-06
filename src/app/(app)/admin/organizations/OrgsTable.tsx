@@ -145,7 +145,7 @@ export function OrgsTable({ orgs }: { orgs: AdminOrg[] }) {
                     {org.whatsapp_connected ? "✓ conectado" : "—"}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-muted-foreground text-xs">
+                <td className="px-4 py-3 text-muted-foreground text-xs" suppressHydrationWarning>
                   {new Date(org.created_at).toLocaleDateString("pt-BR")}
                 </td>
               </tr>
