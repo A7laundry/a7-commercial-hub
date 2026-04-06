@@ -22,8 +22,7 @@ import {
   ChevronLeft,
   ListChecks,
   Menu,
-  Smartphone,
-  CreditCard,
+  Settings2,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useSidebarCollapsed } from "./AppShell"
@@ -91,8 +90,7 @@ const NAV_GROUPS: NavGroup[] = [
       { href: "/portal-clients",                     label: "Portal B2B",  icon: Globe },
       { href: "/import",                             label: "Importar",    icon: Upload },
       { href: "/guide",                              label: "Guia",        icon: BookOpen },
-      { href: "/settings/billing",                   label: "Assinatura",  icon: CreditCard },
-      { href: "/settings/integrations/whatsapp",    label: "WhatsApp",    icon: Smartphone },
+      { href: "/settings",                             label: "Configurações", icon: Settings2 },
     ],
   },
 ]
