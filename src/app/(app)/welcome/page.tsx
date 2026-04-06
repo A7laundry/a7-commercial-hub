@@ -127,19 +127,24 @@ function StepOne({ onDone }: { onDone: (accountId: string, phone: string) => voi
 // ---------------------------------------------------------------------------
 
 function StepTwo({ onDone }: { onDone: () => void }) {
-  const [apiKey, setApiKey] = useState("")
-  const [instanceId, setInstanceId] = useState("")
-  const [phoneNumber, setPhoneNumber] = useState("")
-  const [submitting, setSubmitting] = useState(false)
+  const [accessToken, setAccessToken]     = useState("")
+  const [phoneNumberId, setPhoneNumberId] = useState("")
+  const [phoneNumber, setPhoneNumber]     = useState("")
+  const [submitting, setSubmitting]       = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!apiKey.trim() || !instanceId.trim() || !phoneNumber.trim()) {
+    if (!accessToken.trim() || !phoneNumberId.trim() || !phoneNumber.trim()) {
       toast.error("Preencha todos os campos obrigatórios")
       return
     }
     setSubmitting(true)
-    const result = await saveIntegration({ apiKey, instanceId, phoneNumber })
+    const result = await saveIntegration({
+      accessToken,
+      phoneNumberId,
+      phoneNumber,
+      wabaId: "",
+    })
     setSubmitting(false)
     if (result.error) {
       toast.error(result.error)
@@ -158,30 +163,31 @@ function StepTwo({ onDone }: { onDone: () => void }) {
           </div>
           <div>
             <CardTitle>Conectar WhatsApp</CardTitle>
-            <CardDescription>Insira as credenciais da sua API WhatsApp Business</CardDescription>
+            <CardDescription>Insira as credenciais da Meta Cloud API (Meta for Developers)</CardDescription>
           </div>
         </div>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="api-key">API Key *</Label>
+            <Label htmlFor="access-token">Access Token *</Label>
             <Input
-              id="api-key"
+              id="access-token"
               type="password"
-              placeholder="Cole sua API Key aqui"
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
+              placeholder="EAAxxxxxxxxxxxxx..."
+              value={accessToken}
+              onChange={(e) => setAccessToken(e.target.value)}
+              autoComplete="off"
               required
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="instance-id">Instance ID *</Label>
+            <Label htmlFor="phone-number-id">Phone Number ID *</Label>
             <Input
-              id="instance-id"
-              placeholder="Ex: instance_abc123"
-              value={instanceId}
-              onChange={(e) => setInstanceId(e.target.value)}
+              id="phone-number-id"
+              placeholder="1234567890123456"
+              value={phoneNumberId}
+              onChange={(e) => setPhoneNumberId(e.target.value)}
               required
             />
           </div>
@@ -201,7 +207,7 @@ function StepTwo({ onDone }: { onDone: () => void }) {
           <Button
             type="submit"
             className="w-full gap-2"
-            disabled={submitting || !apiKey.trim() || !instanceId.trim() || !phoneNumber.trim()}
+            disabled={submitting || !accessToken.trim() || !phoneNumberId.trim() || !phoneNumber.trim()}
           >
             {submitting ? (
               <Loader2 className="h-4 w-4 animate-spin" />

@@ -102,15 +102,11 @@ export async function POST(request: NextRequest) {
   const messageId = stored.id
 
   // ---------------------------------------------------------------------------
-  // 2. Attempt Meta API send (with retry)
-  //    Credential priority: per-tenant DB config → env var fallback
+  // 2. Resolve per-tenant credentials (no env var fallback in multi-tenant mode)
+  //    If the tenant has no connected integration, abort with a clear 409.
+  //    This prevents one tenant's messages from accidentally using another
+  //    tenant's credentials stored in env vars.
   // ---------------------------------------------------------------------------
-  let wa_message_id: string | null = null
-  let finalStatus: "sent" | "failed" | "pending" = "failed"
-  let sendError: string | null = null
-  let attempts = 0
-
-  // Resolve credentials: prefer per-tenant DB config
   const { data: waConfig } = await supabase
     .from("whatsapp_integrations")
     .select("instance_id, api_key, status")
@@ -118,52 +114,76 @@ export async function POST(request: NextRequest) {
     .maybeSingle()
 
   const phoneNumberId =
-    (waConfig?.status === "connected" && waConfig.instance_id) ||
-    process.env.WHATSAPP_PHONE_NUMBER_ID
+    waConfig?.status === "connected" && waConfig.instance_id?.trim()
+      ? waConfig.instance_id.trim()
+      : null
   const accessToken =
-    (waConfig?.status === "connected" && waConfig.api_key) ||
-    process.env.WHATSAPP_ACCESS_TOKEN
+    waConfig?.status === "connected" && waConfig.api_key?.trim()
+      ? waConfig.api_key.trim()
+      : null
 
-  if (phoneNumberId && accessToken) {
-
-    const result = await sendToMeta(phoneNumberId, accessToken, phone, message)
-    wa_message_id = result.wa_message_id
-    attempts = result.attempts
-    sendError = result.error
-
-    if (wa_message_id) {
-      finalStatus = "sent"
-      logger.info({
-        event: "whatsapp.send.success",
-        status: "ok",
-        tenant_id,
-        entity_id: messageId,
-        entity_type: "whatsapp_message",
-        attempt: attempts,
-        metadata: { wa_message_id, account_id },
+  if (!phoneNumberId || !accessToken) {
+    // Mark the pre-inserted message as failed so it doesn't linger as pending
+    await supabase
+      .from("whatsapp_messages")
+      .update({
+        send_status: "failed",
+        last_error: "WhatsApp não configurado para este tenant",
       })
-    } else {
-      finalStatus = "failed"
-      logger.error({
-        event: "whatsapp.send.failed",
-        status: "error",
-        tenant_id,
-        entity_id: messageId,
-        entity_type: "whatsapp_message",
-        attempt: attempts,
-        error: sendError ?? "Unknown Meta API error",
-        metadata: { account_id, phone },
-      })
-    }
-  } else {
-    // WhatsApp not configured — warn once, keep message as pending
-    finalStatus = "pending"
+      .eq("id", messageId)
+
     logger.warn({
       event: "whatsapp.send.not_configured",
       status: "skipped",
       tenant_id,
       entity_id: messageId,
-      metadata: { reason: "WHATSAPP_PHONE_NUMBER_ID or WHATSAPP_ACCESS_TOKEN not set" },
+      metadata: { reason: "No connected whatsapp_integrations row for tenant" },
+    })
+
+    return NextResponse.json(
+      {
+        error:
+          "WhatsApp não configurado. Acesse Configurações → Integrações → WhatsApp e conecte sua conta.",
+      },
+      { status: 409 }
+    )
+  }
+
+  // ---------------------------------------------------------------------------
+  // 3. Attempt Meta API send (with retry)
+  // ---------------------------------------------------------------------------
+  let wa_message_id: string | null = null
+  let finalStatus: "sent" | "failed" = "failed"
+  let sendError: string | null = null
+  let attempts = 0
+
+  const result = await sendToMeta(phoneNumberId, accessToken, phone, message)
+  wa_message_id = result.wa_message_id
+  attempts = result.attempts
+  sendError = result.error
+
+  if (wa_message_id) {
+    finalStatus = "sent"
+    logger.info({
+      event: "whatsapp.send.success",
+      status: "ok",
+      tenant_id,
+      entity_id: messageId,
+      entity_type: "whatsapp_message",
+      attempt: attempts,
+      metadata: { wa_message_id, account_id },
+    })
+  } else {
+    finalStatus = "failed"
+    logger.error({
+      event: "whatsapp.send.failed",
+      status: "error",
+      tenant_id,
+      entity_id: messageId,
+      entity_type: "whatsapp_message",
+      attempt: attempts,
+      error: sendError ?? "Unknown Meta API error",
+      metadata: { account_id, phone },
     })
   }
 
@@ -182,11 +202,10 @@ export async function POST(request: NextRequest) {
     .eq("id", messageId)
 
   // ---------------------------------------------------------------------------
-  // 4. Side effects — only execute if send succeeded OR WhatsApp not configured
-  //    (graceful degradation: allow CRM updates even without WhatsApp creds)
-  //    NEVER update pipeline_stage based on a failed send.
+  // 4. Side effects — only execute on confirmed send
+  //    NEVER update pipeline_stage or timeline based on a failed send.
   // ---------------------------------------------------------------------------
-  const sideEffectsAllowed = finalStatus === "sent" || finalStatus === "pending"
+  const sideEffectsAllowed = finalStatus === "sent"
 
   if (sideEffectsAllowed) {
     const accountUpdate: Record<string, unknown> = {

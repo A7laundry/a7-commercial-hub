@@ -11,6 +11,13 @@ const admin = createClient(
 
 // ---------------------------------------------------------------------------
 // GET — Meta webhook verification challenge
+//
+// Multi-tenant: validates hub.verify_token against the per-tenant token stored
+// in whatsapp_integrations.verify_token (set when operator configures the
+// integration). This replaces the single global WHATSAPP_VERIFY_TOKEN env var.
+//
+// Legacy fallback: if no tenant row is found, falls back to the env var so
+// existing single-tenant deployments keep working until they reconfigure.
 // ---------------------------------------------------------------------------
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
@@ -18,11 +25,33 @@ export async function GET(request: NextRequest) {
   const token = searchParams.get("hub.verify_token")
   const challenge = searchParams.get("hub.challenge")
 
-  if (mode === "subscribe" && token === process.env.WHATSAPP_VERIFY_TOKEN) {
+  if (mode !== "subscribe" || !token || !challenge) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+  }
+
+  // 1. Per-tenant lookup (preferred path)
+  const { data: integration } = await admin
+    .from("whatsapp_integrations")
+    .select("tenant_id")
+    .eq("verify_token", token)
+    .maybeSingle()
+
+  if (integration?.tenant_id) {
     logger.info({
       event: "whatsapp.webhook.verified",
       status: "ok",
-      metadata: { mode },
+      metadata: { mode, tenant_id: integration.tenant_id },
+    })
+    return new NextResponse(challenge, { status: 200 })
+  }
+
+  // 2. Legacy fallback: global env var (single-tenant / unconfigured tenants)
+  //    Will be removed once all tenants have reconfigured via the new UI.
+  if (process.env.WHATSAPP_VERIFY_TOKEN && token === process.env.WHATSAPP_VERIFY_TOKEN) {
+    logger.info({
+      event: "whatsapp.webhook.verified_legacy",
+      status: "ok",
+      metadata: { mode, path: "env_var_fallback" },
     })
     return new NextResponse(challenge, { status: 200 })
   }
@@ -30,7 +59,7 @@ export async function GET(request: NextRequest) {
   logger.warn({
     event: "whatsapp.webhook.verify_failed",
     status: "error",
-    metadata: { mode, token_match: false },
+    metadata: { mode },
   })
   return NextResponse.json({ error: "Forbidden" }, { status: 403 })
 }
