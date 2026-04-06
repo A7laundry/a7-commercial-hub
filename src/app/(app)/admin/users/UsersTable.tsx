@@ -116,7 +116,7 @@ export function UsersTable({ users }: { users: AdminUser[] }) {
                     <div className="flex items-center gap-2">
                       <Select
                         defaultValue={user.role ?? "member"}
-                        onValueChange={(role) => handleRoleChange(user, role)}
+                        onValueChange={(role) => handleRoleChange(user, role as string)}
                         disabled={loadingId === user.id}
                       >
                         <SelectTrigger className="h-7 text-xs w-28">

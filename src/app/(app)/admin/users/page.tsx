@@ -30,7 +30,7 @@ async function getAdminUsers() {
       created_at: u.created_at,
       last_sign_in_at: u.last_sign_in_at ?? null,
       provider,
-      tenant_name: m ? (m.tenants as { name: string } | null)?.name ?? null : null,
+      tenant_name: m ? (m.tenants as unknown as { name: string } | null)?.name ?? null : null,
       tenant_id: m?.tenant_id ?? null,
       role: m?.role ?? null,
     }
