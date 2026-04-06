@@ -105,7 +105,7 @@ export function CampaignDashboard() {
                 <Icon className={cn("w-4 h-4", kpi.color)} />
                 <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{kpi.label}</p>
               </div>
-              <p className={cn("text-2xl font-bold", kpi.color)}>{kpi.value}</p>
+              <p className={cn("text-2xl font-bold", kpi.color)} suppressHydrationWarning>{kpi.value}</p>
               <p className="text-[10px] text-muted-foreground mt-1">{kpi.sub}</p>
             </div>
           )
@@ -153,7 +153,7 @@ export function CampaignDashboard() {
                           <Clock className="w-2.5 h-2.5" />{c.pendingCount} pendentes
                         </span>
                       )}
-                      <span>{createdAt}</span>
+                      <span suppressHydrationWarning>{createdAt}</span>
                     </div>
                   </div>
 

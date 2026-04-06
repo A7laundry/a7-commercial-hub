@@ -130,7 +130,7 @@ export function CampaignCard({ campaign, onToast }: Props) {
                 {campaign.sent_count} enviadas
               </span>
             )}
-            <span>{createdAt}</span>
+            <span suppressHydrationWarning>{createdAt}</span>
           </div>
         </div>
 

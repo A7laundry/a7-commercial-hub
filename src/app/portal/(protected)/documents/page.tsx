@@ -65,7 +65,7 @@ export default function PortalDocumentsPage() {
                   <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                     <span className="text-xs text-muted-foreground">{doc.doc_type}</span>
                     {size && <span className="text-xs text-muted-foreground">· {size}</span>}
-                    {expires && <span className="text-xs text-muted-foreground">· Validade: {expires}</span>}
+                    {expires && <span className="text-xs text-muted-foreground" suppressHydrationWarning>· Validade: {expires}</span>}
                     <span className={cn("text-[10px] font-medium px-1.5 py-0.5 rounded-full", cfg.color)}>{cfg.label}</span>
                   </div>
                 </div>

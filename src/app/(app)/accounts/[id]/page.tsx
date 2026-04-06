@@ -210,10 +210,10 @@ export default function AccountDetailPage({
           <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">LTV</p>
           {ltv != null ? (
             <>
-              <p className="text-2xl font-bold text-green-700">
+              <p className="text-2xl font-bold text-green-700" suppressHydrationWarning>
                 {ltv.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 })}
               </p>
-              <p className="text-[10px] text-muted-foreground mt-1">
+              <p className="text-[10px] text-muted-foreground mt-1" suppressHydrationWarning>
                 R${account.estimated_value?.toLocaleString("pt-BR")} × {freqPerMonth}×/mês × {avgLifetime}m
               </p>
             </>
@@ -223,7 +223,7 @@ export default function AccountDetailPage({
         </div>
         <div className="bg-card border rounded-xl p-4">
           <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Ticket</p>
-          <p className="text-2xl font-bold">
+          <p className="text-2xl font-bold" suppressHydrationWarning>
             {account.estimated_value != null
               ? account.estimated_value.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 })
               : "—"}
@@ -239,11 +239,11 @@ export default function AccountDetailPage({
             daysSinceContact === null ? "text-muted-foreground" :
             daysSinceContact > 30 ? "text-red-600" :
             daysSinceContact > 14 ? "text-amber-600" : "text-foreground"
-          )}>
+          )} suppressHydrationWarning>
             {daysSinceContact === null ? "—" : daysSinceContact === 0 ? "hoje" : `${daysSinceContact}d`}
           </p>
           {account.last_contact_at && (
-            <p className="text-[10px] text-muted-foreground mt-1">
+            <p className="text-[10px] text-muted-foreground mt-1" suppressHydrationWarning>
               {new Date(account.last_contact_at).toLocaleDateString("pt-BR")}
             </p>
           )}
@@ -271,7 +271,7 @@ export default function AccountDetailPage({
           )}
           {account.last_contact_at && (
             <InfoTile icon={Calendar} label="Último contato">
-              {new Date(account.last_contact_at).toLocaleDateString("pt-BR")}
+              <span suppressHydrationWarning>{new Date(account.last_contact_at).toLocaleDateString("pt-BR")}</span>
             </InfoTile>
           )}
           {account.frequency && (
@@ -371,10 +371,10 @@ export default function AccountDetailPage({
             </div>
           )}
           <InfoTile icon={Clock} label="Criado em">
-            {new Date(account.created_at).toLocaleDateString("pt-BR")}
+            <span suppressHydrationWarning>{new Date(account.created_at).toLocaleDateString("pt-BR")}</span>
           </InfoTile>
           <InfoTile icon={Clock} label="Atualizado em">
-            {new Date(account.updated_at).toLocaleDateString("pt-BR")}
+            <span suppressHydrationWarning>{new Date(account.updated_at).toLocaleDateString("pt-BR")}</span>
           </InfoTile>
         </div>
       </section>

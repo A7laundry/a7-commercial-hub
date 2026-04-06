@@ -179,7 +179,7 @@ function AccountCard({
             "flex items-center gap-1",
             daysSinceContact > 30 && "text-red-500",
             daysSinceContact > 14 && daysSinceContact <= 30 && "text-amber-500"
-          )}>
+          )} suppressHydrationWarning>
             <Clock className="w-3 h-3" />
             {daysSinceContact === 0 ? "hoje" : `${daysSinceContact}d`}
           </span>

@@ -84,7 +84,7 @@ function AccountCard({ account }: { account: Account }) {
             <div className="flex items-center gap-1.5 text-xs">
               <DollarSign className="w-3 h-3 text-muted-foreground shrink-0" />
               <span className="text-muted-foreground">LTV:</span>
-              <span className="font-semibold text-green-700">
+              <span className="font-semibold text-green-700" suppressHydrationWarning>
                 {ltv.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 })}
               </span>
             </div>

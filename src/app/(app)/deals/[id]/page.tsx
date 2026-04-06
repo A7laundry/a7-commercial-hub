@@ -419,7 +419,7 @@ export default function DealDetailPage({
                         )}
                         <span>{entry.toLabel}</span>
                       </div>
-                      <time className="text-[10px] text-muted-foreground">
+                      <time className="text-[10px] text-muted-foreground" suppressHydrationWarning>
                         {new Date(entry.changed_at).toLocaleString("pt-BR", {
                           day: "2-digit", month: "2-digit", year: "2-digit",
                           hour: "2-digit", minute: "2-digit",

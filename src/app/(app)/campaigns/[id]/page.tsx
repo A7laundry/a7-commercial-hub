@@ -92,7 +92,7 @@ export default function CampaignDetailPage({
                 </span>
               )}
               {campaign.executed_at && (
-                <span className="text-xs text-muted-foreground">
+                <span className="text-xs text-muted-foreground" suppressHydrationWarning>
                   Executada em {new Date(campaign.executed_at).toLocaleString("pt-BR", {
                     day: "2-digit", month: "2-digit", year: "2-digit",
                     hour: "2-digit", minute: "2-digit",
@@ -167,7 +167,7 @@ export default function CampaignDetailPage({
                         <div className="flex items-center gap-3 text-[10px] text-muted-foreground mt-0.5">
                           {r.phone && <span>{r.phone}</span>}
                           {r.sent_at && (
-                            <span>
+                            <span suppressHydrationWarning>
                               {new Date(r.sent_at).toLocaleString("pt-BR", {
                                 day: "2-digit", month: "2-digit",
                                 hour: "2-digit", minute: "2-digit",

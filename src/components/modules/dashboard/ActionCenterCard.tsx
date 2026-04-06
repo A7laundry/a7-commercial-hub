@@ -147,7 +147,7 @@ export function ActionCenterCard() {
                     </Link>
                     <p className="text-[10px] text-muted-foreground">{item.reason}</p>
                     {item.ltv && (
-                      <p className="text-[10px] text-green-700 font-medium">
+                      <p className="text-[10px] text-green-700 font-medium" suppressHydrationWarning>
                         LTV {item.ltv.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 })}
                       </p>
                     )}

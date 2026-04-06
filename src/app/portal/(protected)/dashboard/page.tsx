@@ -70,7 +70,7 @@ export default function PortalDashboardPage() {
                 className="flex items-center justify-between p-3 rounded-md border bg-card hover:bg-muted/50 transition-colors">
                 <div>
                   <p className="text-sm font-medium">{c.title}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
+                  <p className="text-xs text-muted-foreground mt-0.5" suppressHydrationWarning>
                     Vence em {new Date(c.ends_at).toLocaleDateString("pt-BR")}
                   </p>
                 </div>

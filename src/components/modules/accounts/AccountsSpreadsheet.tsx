@@ -132,7 +132,7 @@ export function AccountsSpreadsheet({ tenantId }: Props) {
         )}
 
         <span className="ml-auto text-xs text-muted-foreground">
-          {isFetching && !isLoading ? "Atualizando..." : `${total.toLocaleString("pt-BR")} clientes`}
+          {isFetching && !isLoading ? "Atualizando..." : <span suppressHydrationWarning>{total.toLocaleString("pt-BR")} clientes</span>}
         </span>
       </div>
 
@@ -251,7 +251,7 @@ export function AccountsSpreadsheet({ tenantId }: Props) {
                 <tr key={i} className="border-b">
                   {Array.from({ length: 11 }).map((_, j) => (
                     <td key={j} className="px-3 py-1.5">
-                      <div className="h-3 bg-muted/60 rounded animate-pulse" style={{ width: `${40 + Math.random() * 40}%` }} />
+                      <div className="h-3 bg-muted/60 rounded animate-pulse" style={{ width: `${40 + ((i * 11 + j * 7) % 40)}%` }} />
                     </td>
                   ))}
                 </tr>
@@ -273,7 +273,7 @@ export function AccountsSpreadsheet({ tenantId }: Props) {
 
       {/* Pagination */}
       <div className="flex items-center justify-between text-xs text-muted-foreground shrink-0">
-        <span>
+        <span suppressHydrationWarning>
           Página {params.page} de {pages} · {total.toLocaleString("pt-BR")} clientes
         </span>
         <div className="flex items-center gap-1">
@@ -364,12 +364,12 @@ function AccountRow({ account, idx }: { account: Account; idx: number }) {
       <td className={cn("px-3 py-1.5 font-medium", COMMERCIAL_COLOR[account.commercial_status])}>
         {COMMERCIAL_LABEL[account.commercial_status] ?? account.commercial_status}
       </td>
-      <td className="px-3 py-1.5 text-right tabular-nums font-medium text-green-700">
+      <td className="px-3 py-1.5 text-right tabular-nums font-medium text-green-700" suppressHydrationWarning>
         {ltv != null
           ? ltv.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 })
           : "—"}
       </td>
-      <td className="px-3 py-1.5 text-right tabular-nums text-muted-foreground">
+      <td className="px-3 py-1.5 text-right tabular-nums text-muted-foreground" suppressHydrationWarning>
         {account.estimated_value != null
           ? account.estimated_value.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 })
           : "—"}

@@ -109,7 +109,7 @@ export function OpportunitiesFeedCard({ tenantId }: Props) {
                     )}
                   </div>
                   {item.ltv != null && (
-                    <span className="text-[10px] text-muted-foreground">
+                    <span className="text-[10px] text-muted-foreground" suppressHydrationWarning>
                       LTV {item.ltv.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 })}
                     </span>
                   )}

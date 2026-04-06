@@ -68,7 +68,7 @@ export function WhatsAppTimeline({ tenantId, accountId }: Props) {
             >
               {msg.message_text}
             </div>
-            <span className="text-[10px] text-muted-foreground px-1">
+            <span className="text-[10px] text-muted-foreground px-1" suppressHydrationWarning>
               {isOutbound ? "Você" : "Cliente"} · {timeStr}
             </span>
           </div>

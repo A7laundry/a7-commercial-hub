@@ -31,11 +31,11 @@ export default function PortalInvoicesPage() {
         <div className="grid grid-cols-2 gap-4">
           <div className="bg-card border rounded-lg p-4">
             <p className="text-xs text-muted-foreground mb-1">Total em aberto</p>
-            <p className="text-xl font-bold">{totalPending.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</p>
+            <p className="text-xl font-bold" suppressHydrationWarning>{totalPending.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</p>
           </div>
           <div className="bg-card border rounded-lg p-4">
             <p className="text-xs text-muted-foreground mb-1">Total pago</p>
-            <p className="text-xl font-bold text-green-600">{totalPaid.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</p>
+            <p className="text-xl font-bold text-green-600" suppressHydrationWarning>{totalPaid.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</p>
           </div>
         </div>
       )}
@@ -62,13 +62,13 @@ export default function PortalInvoicesPage() {
                     {inv.reference && <p className="text-xs text-muted-foreground mt-0.5">Ref: {inv.reference}</p>}
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-sm font-bold">{amount}</p>
+                    <p className="text-sm font-bold" suppressHydrationWarning>{amount}</p>
                     <span className={cn("text-[10px] font-medium px-1.5 py-0.5 rounded-full mt-1 inline-block", cfg.color)}>{cfg.label}</span>
                   </div>
                 </div>
                 <div className="mt-2 flex items-center gap-4 text-xs text-muted-foreground">
-                  <span>Vencimento: {dueDate}</span>
-                  {paidAt && <span>Pago em: {paidAt}</span>}
+                  <span suppressHydrationWarning>Vencimento: {dueDate}</span>
+                  {paidAt && <span suppressHydrationWarning>Pago em: {paidAt}</span>}
                   {inv.notes && <span className="truncate">{inv.notes}</span>}
                 </div>
               </div>

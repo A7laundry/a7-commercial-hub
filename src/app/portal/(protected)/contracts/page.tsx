@@ -50,9 +50,9 @@ export default function PortalContractsPage() {
                   <span className={cn("text-xs font-medium px-2 py-0.5 rounded-full shrink-0", cfg.color)}>{cfg.label}</span>
                 </div>
                 <div className="mt-3 grid grid-cols-3 gap-4">
-                  <div><p className="text-xs text-muted-foreground">Valor total</p><p className="text-sm font-medium mt-0.5">{totalFormatted}</p></div>
-                  <div><p className="text-xs text-muted-foreground">Início</p><p className="text-sm font-medium mt-0.5">{new Date(c.starts_at).toLocaleDateString("pt-BR")}</p></div>
-                  <div><p className="text-xs text-muted-foreground">Vencimento</p><p className="text-sm font-medium mt-0.5">{new Date(c.ends_at).toLocaleDateString("pt-BR")}</p></div>
+                  <div><p className="text-xs text-muted-foreground">Valor total</p><p className="text-sm font-medium mt-0.5" suppressHydrationWarning>{totalFormatted}</p></div>
+                  <div><p className="text-xs text-muted-foreground">Início</p><p className="text-sm font-medium mt-0.5" suppressHydrationWarning>{new Date(c.starts_at).toLocaleDateString("pt-BR")}</p></div>
+                  <div><p className="text-xs text-muted-foreground">Vencimento</p><p className="text-sm font-medium mt-0.5" suppressHydrationWarning>{new Date(c.ends_at).toLocaleDateString("pt-BR")}</p></div>
                 </div>
               </div>
             )

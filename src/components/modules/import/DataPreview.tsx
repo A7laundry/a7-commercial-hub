@@ -238,7 +238,7 @@ function KpiBox({
     <div className="bg-card border rounded-lg p-3">
       <Icon className="w-4 h-4 text-muted-foreground mb-1.5" />
       <p className="text-xs text-muted-foreground mb-0.5">{label}</p>
-      <p className={cn("font-bold", isText ? "text-sm" : "text-xl", accent)}>{value}</p>
+      <p className={cn("font-bold", isText ? "text-sm" : "text-xl", accent)} suppressHydrationWarning={isText}>{value}</p>
     </div>
   )
 }

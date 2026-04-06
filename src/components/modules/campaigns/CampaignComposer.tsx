@@ -109,7 +109,7 @@ export function CampaignComposer({ selectedCount, audienceStats, onConfirm, onCa
             {audienceStats.avgTicket != null && (
               <div className="flex items-center gap-1.5">
                 <Wallet className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                <span className="text-sm font-bold text-emerald-700">
+                <span className="text-sm font-bold text-emerald-700" suppressHydrationWarning>
                   {audienceStats.avgTicket.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 })}
                 </span>
                 <span className="text-xs text-muted-foreground">ticket médio</span>
@@ -234,7 +234,7 @@ export function CampaignComposer({ selectedCount, audienceStats, onConfirm, onCa
               </div>
             </div>
             {couponCode && (
-              <p className="text-xs text-muted-foreground bg-card border rounded px-2 py-1.5">
+              <p className="text-xs text-muted-foreground bg-card border rounded px-2 py-1.5" suppressHydrationWarning>
                 Preview: 🎁 Cupom especial: <strong>{couponCode}</strong>
                 {couponExpiry && ` (válido até ${new Date(couponExpiry).toLocaleDateString("pt-BR")})`}
               </p>

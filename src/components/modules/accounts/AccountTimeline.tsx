@@ -146,7 +146,7 @@ export function AccountTimeline({ tenantId, accountId }: Props) {
                   </div>
                   <div className="flex-1 min-w-0 pb-1">
                     <p className="text-sm leading-snug">{event.summary}</p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5">
+                    <p className="text-[10px] text-muted-foreground mt-0.5" suppressHydrationWarning>
                       {timeAgo(event.created_at)}
                     </p>
                   </div>
