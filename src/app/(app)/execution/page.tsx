@@ -383,7 +383,7 @@ function ExecutionQueue() {
                             )}
                             <div className="flex items-center gap-3 mt-1 flex-wrap">
                               {item.ltv && (
-                                <span className="text-[10px] text-emerald-700 font-medium">
+                                <span suppressHydrationWarning className="text-[10px] text-emerald-700 font-medium">
                                   LTV {item.ltv.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 })}
                                 </span>
                               )}

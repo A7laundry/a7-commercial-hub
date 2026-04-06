@@ -107,6 +107,14 @@ function BillingPageContent() {
   const { tenant } = useTenant()
   const planState = usePlan(tenant.id)
   const [upgrading, setUpgrading] = useState<PlanId | null>(null)
+  const [renewalText, setRenewalText] = useState<string | null>(null)
+  useEffect(() => {
+    if (planState.currentPeriodEnd && planState.status === "active") {
+      setRenewalText(daysFromNow(planState.currentPeriodEnd))
+    } else {
+      setRenewalText(null)
+    }
+  }, [planState.currentPeriodEnd, planState.status])
 
   async function handleUpgrade(planId: PlanId) {
     const plan = PLANS[planId]
@@ -146,8 +154,8 @@ function BillingPageContent() {
               <CardTitle className="text-base">Assinatura atual</CardTitle>
               <CardDescription>
                 Plano <span className="font-semibold">{planState.planName}</span>
-                {planState.currentPeriodEnd && planState.status === "active" && (
-                  <> · renova {daysFromNow(planState.currentPeriodEnd)}</>
+                {renewalText && (
+                  <> · renova {renewalText}</>
                 )}
               </CardDescription>
             </div>

@@ -163,7 +163,7 @@ export default function InboxPage() {
                       )}>
                         {conv.accountName ?? conv.phone}
                       </span>
-                      <span className="text-[10px] text-muted-foreground shrink-0">{time}</span>
+                      <span suppressHydrationWarning className="text-[10px] text-muted-foreground shrink-0">{time}</span>
                     </div>
                     <div className="flex items-center gap-1.5">
                       {isUnmapped && (
@@ -263,7 +263,7 @@ export default function InboxPage() {
                       >
                         {msg.message_text}
                       </div>
-                      <span className="text-[10px] text-muted-foreground px-1">{time}</span>
+                      <span suppressHydrationWarning className="text-[10px] text-muted-foreground px-1">{time}</span>
                     </div>
                   )
                 })}

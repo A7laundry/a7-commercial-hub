@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useTenant } from "@/hooks/useTenant"
 import { useDeals, useDealsRefetch, DEAL_STAGE_CONFIG } from "@/hooks/deals/useDeals"
 import type { DealStage } from "@/types"
@@ -15,12 +15,9 @@ export default function DealsPage() {
   const { data: dealsData, isPending: dealsLoading, refetch: refetchDeals } = useDeals(tenant.id)
   const invalidateDeals = useDealsRefetch(tenant.id)
 
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => { setMounted(true) }, [])
-
   const [createDealOpen, setCreateDealOpen] = useState(false)
 
-  const isLoading = !mounted || dealsLoading
+  const isLoading = dealsLoading
 
   if (isLoading) {
     return (
