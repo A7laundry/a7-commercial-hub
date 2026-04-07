@@ -34,6 +34,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton"
 import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
+import { formatDateBR } from "@/lib/format"
 import {
   computeCommercialScore,
   computeNextBestAction,
@@ -243,8 +244,8 @@ export default function AccountDetailPage({
             {daysSinceContact === null ? "—" : daysSinceContact === 0 ? "hoje" : `${daysSinceContact}d`}
           </p>
           {account.last_contact_at && (
-            <p className="text-[10px] text-muted-foreground mt-1" suppressHydrationWarning>
-              {new Date(account.last_contact_at).toLocaleDateString("pt-BR")}
+            <p className="text-[10px] text-muted-foreground mt-1">
+              {formatDateBR(account.last_contact_at)}
             </p>
           )}
         </div>
@@ -271,7 +272,7 @@ export default function AccountDetailPage({
           )}
           {account.last_contact_at && (
             <InfoTile icon={Calendar} label="Último contato">
-              <span suppressHydrationWarning>{new Date(account.last_contact_at).toLocaleDateString("pt-BR")}</span>
+              <span>{formatDateBR(account.last_contact_at)}</span>
             </InfoTile>
           )}
           {account.frequency && (
@@ -371,10 +372,10 @@ export default function AccountDetailPage({
             </div>
           )}
           <InfoTile icon={Clock} label="Criado em">
-            <span suppressHydrationWarning>{new Date(account.created_at).toLocaleDateString("pt-BR")}</span>
+            <span>{formatDateBR(account.created_at)}</span>
           </InfoTile>
           <InfoTile icon={Clock} label="Atualizado em">
-            <span suppressHydrationWarning>{new Date(account.updated_at).toLocaleDateString("pt-BR")}</span>
+            <span>{formatDateBR(account.updated_at)}</span>
           </InfoTile>
         </div>
       </section>

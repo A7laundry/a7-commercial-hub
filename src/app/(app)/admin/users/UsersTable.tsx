@@ -14,6 +14,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
 import { Loader2, Search } from "lucide-react"
+import { formatDateBR } from "@/lib/format"
 
 type AdminUser = {
   id: string
@@ -41,9 +42,7 @@ const PROVIDERS: Record<string, string> = {
 
 function fmt(iso: string | null) {
   if (!iso) return "—"
-  return new Date(iso).toLocaleDateString("pt-BR", {
-    day: "2-digit", month: "short", year: "numeric",
-  })
+  return formatDateBR(iso)
 }
 
 export function UsersTable({ users }: { users: AdminUser[] }) {
@@ -134,8 +133,8 @@ export function UsersTable({ users }: { users: AdminUser[] }) {
                     <span className="italic text-muted-foreground/60 text-xs">—</span>
                   )}
                 </td>
-                <td className="px-4 py-3 text-muted-foreground text-xs" suppressHydrationWarning>{fmt(user.last_sign_in_at)}</td>
-                <td className="px-4 py-3 text-muted-foreground text-xs" suppressHydrationWarning>{fmt(user.created_at)}</td>
+                <td className="px-4 py-3 text-muted-foreground text-xs">{fmt(user.last_sign_in_at)}</td>
+                <td className="px-4 py-3 text-muted-foreground text-xs">{fmt(user.created_at)}</td>
               </tr>
             ))}
           </tbody>

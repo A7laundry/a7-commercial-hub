@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { createClient } from "@/lib/supabase/client"
 import { PLANS, getEffectiveLimits, isSubscriptionActive, type PlanId, type SubscriptionStatus, type PlanLimits } from "@/lib/plans"
@@ -43,11 +44,18 @@ export function usePlan(tenantId: string): PlanState {
   const isActive = isSubscriptionActive(status)
   const isTrial = status === "trialing"
 
-  let daysLeftInTrial: number | null = null
-  if (isTrial && trialEnd) {
-    const ms = new Date(trialEnd).getTime() - Date.now()
-    daysLeftInTrial = Math.max(0, Math.ceil(ms / 86400000))
-  }
+  // daysLeftInTrial must not be computed during SSR/hydration — Date.now() on
+  // the server differs from the client's first render and causes React #418.
+  // We initialise to null and compute after mount only.
+  const [daysLeftInTrial, setDaysLeftInTrial] = useState<number | null>(null)
+  useEffect(() => {
+    if (isTrial && trialEnd) {
+      const ms = new Date(trialEnd).getTime() - Date.now()
+      setDaysLeftInTrial(Math.max(0, Math.ceil(ms / 86400000)))
+    } else {
+      setDaysLeftInTrial(null)
+    }
+  }, [isTrial, trialEnd])
 
   return {
     plan,

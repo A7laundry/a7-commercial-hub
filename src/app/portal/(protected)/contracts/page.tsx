@@ -5,6 +5,7 @@ import { usePortalContracts } from "@/hooks/portal/usePortalContracts"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
 import { FileText } from "lucide-react"
+import { formatDateBR } from "@/lib/format"
 
 const STATUS_CONFIG = {
   active:    { label: "Ativo",       color: "bg-green-100 text-green-700" },
@@ -51,8 +52,8 @@ export default function PortalContractsPage() {
                 </div>
                 <div className="mt-3 grid grid-cols-3 gap-4">
                   <div><p className="text-xs text-muted-foreground">Valor total</p><p className="text-sm font-medium mt-0.5" suppressHydrationWarning>{totalFormatted}</p></div>
-                  <div><p className="text-xs text-muted-foreground">Início</p><p className="text-sm font-medium mt-0.5" suppressHydrationWarning>{new Date(c.starts_at).toLocaleDateString("pt-BR")}</p></div>
-                  <div><p className="text-xs text-muted-foreground">Vencimento</p><p className="text-sm font-medium mt-0.5" suppressHydrationWarning>{new Date(c.ends_at).toLocaleDateString("pt-BR")}</p></div>
+                  <div><p className="text-xs text-muted-foreground">Início</p><p className="text-sm font-medium mt-0.5">{formatDateBR(c.starts_at)}</p></div>
+                  <div><p className="text-xs text-muted-foreground">Vencimento</p><p className="text-sm font-medium mt-0.5">{formatDateBR(c.ends_at)}</p></div>
                 </div>
               </div>
             )

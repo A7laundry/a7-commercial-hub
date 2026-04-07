@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useTransition, useEffect } from "react"
+import { useState, useTransition } from "react"
 import Link from "next/link"
 import { toast } from "sonner"
 import { useTenant } from "@/hooks/useTenant"
@@ -64,11 +64,8 @@ function StatusBadge({ status }: { status: ConversationStatus }) {
 // ---------------------------------------------------------------------------
 
 function WindowBadge({ expiresAt }: { expiresAt: string | null }) {
-  const [now, setNow] = useState<number | null>(null)
-  useEffect(() => { setNow(Date.now()) }, [])
-
-  if (!expiresAt || now === null) return null
-  const ms = new Date(expiresAt).getTime() - now
+  if (!expiresAt) return null
+  const ms = new Date(expiresAt).getTime() - Date.now()
   if (ms <= 0) {
     return (
       <span className="flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-red-100 text-red-700">
@@ -86,7 +83,9 @@ function WindowBadge({ expiresAt }: { expiresAt: string | null }) {
       hours < 4 ? "bg-red-100 text-red-700" : "bg-amber-100 text-amber-700"
     )}>
       <Clock className="w-3 h-3" />
-      {hours > 0 ? `${hours}h ${mins}min` : `${mins}min`}
+      <span suppressHydrationWarning>
+        {hours > 0 ? `${hours}h ${mins}min` : `${mins}min`}
+      </span>
     </span>
   )
 }
@@ -235,8 +234,6 @@ export default function InboxPage() {
 
   const [assignPending, startAssignTransition] = useTransition()
   const [statusPending, startStatusTransition] = useTransition()
-  const [clientNow, setClientNow] = useState<number | null>(null)
-  useEffect(() => { setClientNow(Date.now()) }, [])
 
   const { data: conversations = [], isPending: isLoading } = useInbox(
     tenant.id,
@@ -601,8 +598,8 @@ export default function InboxPage() {
                 </div>
               )}
 
-              {selected.windowExpiresAt && clientNow !== null &&
-                new Date(selected.windowExpiresAt).getTime() < clientNow && (
+              {selected.windowExpiresAt &&
+                new Date(selected.windowExpiresAt).getTime() < Date.now() && (
                 <div className="px-4 py-2 bg-red-50 border-b border-red-200 flex items-center gap-2">
                   <Clock className="w-4 h-4 text-red-600 shrink-0" />
                   <p className="text-xs text-red-800">

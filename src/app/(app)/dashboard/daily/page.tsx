@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useTenant } from "@/hooks/useTenant"
 import { useDailyPerformance, useSaveDailyGoal, OUTCOME_LABELS, OUTCOME_NEGATIVE } from "@/hooks/dashboard/useDailyPerformance"
 import { useLogOutcome, useDeleteOutcome } from "@/hooks/dashboard/useInteractionOutcomes"
@@ -101,7 +101,10 @@ function progressColorClass(pct: number): string {
 
 export default function DailyPerformancePage() {
   const { tenant } = useTenant()
-  const [selectedDate, setSelectedDate] = useState<string>(todayIso())
+  const [selectedDate, setSelectedDate] = useState<string>("")
+  useEffect(() => {
+    if (!selectedDate) setSelectedDate(todayIso())
+  }, [])
   const [copiedSummary, setCopiedSummary] = useState(false)
   const [summaryText, setSummaryText] = useState<string | null>(null)
   const [savedGoal, setSavedGoal] = useState(false)
@@ -122,7 +125,8 @@ export default function DailyPerformancePage() {
     notes: "",
   })
 
-  const { data, isPending: isLoading } = useDailyPerformance(tenant.id, selectedDate)
+  const { data, isPending } = useDailyPerformance(tenant.id, selectedDate)
+  const isLoading = !selectedDate || isPending
   const saveGoalMutation = useSaveDailyGoal(tenant.id, selectedDate)
   const logOutcomeMutation = useLogOutcome(tenant.id, selectedDate)
   const deleteOutcomeMutation = useDeleteOutcome(tenant.id, selectedDate)

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
 import { Search, Pencil, Check, X, Loader2 } from "lucide-react"
+import { formatDateBR } from "@/lib/format"
 
 type AdminOrg = {
   id: string
@@ -145,8 +146,8 @@ export function OrgsTable({ orgs }: { orgs: AdminOrg[] }) {
                     {org.whatsapp_connected ? "✓ conectado" : "—"}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-muted-foreground text-xs" suppressHydrationWarning>
-                  {new Date(org.created_at).toLocaleDateString("pt-BR")}
+                <td className="px-4 py-3 text-muted-foreground text-xs">
+                  {formatDateBR(org.created_at)}
                 </td>
               </tr>
             ))}

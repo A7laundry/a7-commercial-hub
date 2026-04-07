@@ -5,6 +5,7 @@ import { usePortalInvoices } from "@/hooks/portal/usePortalInvoices"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
 import { Receipt } from "lucide-react"
+import { formatCurrencyBR, formatDateBR } from "@/lib/format"
 
 const STATUS_CONFIG = {
   pending:   { label: "Pendente",  color: "bg-blue-100 text-blue-700" },
@@ -31,11 +32,11 @@ export default function PortalInvoicesPage() {
         <div className="grid grid-cols-2 gap-4">
           <div className="bg-card border rounded-lg p-4">
             <p className="text-xs text-muted-foreground mb-1">Total em aberto</p>
-            <p className="text-xl font-bold" suppressHydrationWarning>{totalPending.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</p>
+            <p className="text-xl font-bold">{formatCurrencyBR(totalPending)}</p>
           </div>
           <div className="bg-card border rounded-lg p-4">
             <p className="text-xs text-muted-foreground mb-1">Total pago</p>
-            <p className="text-xl font-bold text-green-600" suppressHydrationWarning>{totalPaid.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</p>
+            <p className="text-xl font-bold text-green-600">{formatCurrencyBR(totalPaid)}</p>
           </div>
         </div>
       )}
@@ -51,9 +52,9 @@ export default function PortalInvoicesPage() {
         <div className="space-y-2">
           {invoices.map((inv) => {
             const cfg = STATUS_CONFIG[inv.status]
-            const amount = inv.amount.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
-            const dueDate = new Date(inv.due_date).toLocaleDateString("pt-BR")
-            const paidAt = inv.paid_at ? new Date(inv.paid_at).toLocaleDateString("pt-BR") : null
+            const amount = formatCurrencyBR(inv.amount)
+            const dueDate = formatDateBR(inv.due_date)
+            const paidAt = inv.paid_at ? formatDateBR(inv.paid_at) : null
             return (
               <div key={inv.id} className="bg-card border rounded-lg p-4">
                 <div className="flex items-start justify-between gap-3">
@@ -62,13 +63,13 @@ export default function PortalInvoicesPage() {
                     {inv.reference && <p className="text-xs text-muted-foreground mt-0.5">Ref: {inv.reference}</p>}
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-sm font-bold" suppressHydrationWarning>{amount}</p>
+                    <p className="text-sm font-bold">{amount}</p>
                     <span className={cn("text-[10px] font-medium px-1.5 py-0.5 rounded-full mt-1 inline-block", cfg.color)}>{cfg.label}</span>
                   </div>
                 </div>
                 <div className="mt-2 flex items-center gap-4 text-xs text-muted-foreground">
-                  <span suppressHydrationWarning>Vencimento: {dueDate}</span>
-                  {paidAt && <span suppressHydrationWarning>Pago em: {paidAt}</span>}
+                  <span>Vencimento: {dueDate}</span>
+                  {paidAt && <span>Pago em: {paidAt}</span>}
                   {inv.notes && <span className="truncate">{inv.notes}</span>}
                 </div>
               </div>

@@ -9,6 +9,7 @@ import {
   Megaphone, Send, Users, CheckCircle2, TrendingUp,
   Clock, PhoneOff, BarChart2,
 } from "lucide-react"
+import { formatDateBR } from "@/lib/format"
 
 const TYPE_LABELS: Record<string, string> = {
   reactivation: "Reativação",
@@ -125,7 +126,7 @@ export function CampaignDashboard() {
             {recentCampaigns.map((c) => {
               const statusCfg = STATUS_CONFIG[c.status] ?? STATUS_CONFIG.draft
               const rate = c.totalCount > 0 ? Math.round((c.sentCount / c.totalCount) * 100) : 0
-              const createdAt = new Date(c.created_at).toLocaleDateString("pt-BR")
+              const createdAt = formatDateBR(c.created_at)
               return (
                 <Link key={c.id} href={`/campaigns/${c.id}`} className="px-4 py-3 flex items-center gap-3 hover:bg-muted/30 transition-colors">
                   <span className="text-base shrink-0">{TYPE_EMOJI[c.type] ?? "📢"}</span>
@@ -153,7 +154,7 @@ export function CampaignDashboard() {
                           <Clock className="w-2.5 h-2.5" />{c.pendingCount} pendentes
                         </span>
                       )}
-                      <span suppressHydrationWarning>{createdAt}</span>
+                      <span>{createdAt}</span>
                     </div>
                   </div>
 

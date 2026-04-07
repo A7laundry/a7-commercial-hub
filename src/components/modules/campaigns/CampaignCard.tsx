@@ -17,6 +17,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { cn } from "@/lib/utils"
+import { formatDateBR } from "@/lib/format"
 import {
   Send,
   Users,
@@ -99,7 +100,7 @@ export function CampaignCard({ campaign, onToast }: Props) {
   }
 
   const statusCfg = STATUS_CONFIG[campaign.status]
-  const createdAt = new Date(campaign.created_at).toLocaleDateString("pt-BR")
+  const createdAt = formatDateBR(campaign.created_at)
 
   const sentCount = recipients.filter((r) => r.status === "sent").length
   const pendingCount = recipients.filter((r) => r.status === "pending").length
@@ -130,7 +131,7 @@ export function CampaignCard({ campaign, onToast }: Props) {
                 {campaign.sent_count} enviadas
               </span>
             )}
-            <span suppressHydrationWarning>{createdAt}</span>
+            <span>{createdAt}</span>
           </div>
         </div>
 

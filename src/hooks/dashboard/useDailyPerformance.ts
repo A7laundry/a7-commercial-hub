@@ -122,6 +122,7 @@ export function useDailyPerformance(tenantId: string, date: string) {
   const supabase = createClient()
 
   return useQuery<DailyPerformanceData>({
+    enabled: !!date,
     queryKey: ["daily_performance", tenantId, date],
     queryFn: async () => {
       const dayStart = new Date(date + "T00:00:00").toISOString()
