@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "A7X Commercial Hub",
+    "slug": "a7x-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "scheme": "a7x",
+    "splash": {
+      "backgroundColor": "#022448"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.a7x.commercial"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#022448"
+      },
+      "package": "com.a7x.commercial"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font"
+    ]
+  }
+}
