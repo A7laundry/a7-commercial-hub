@@ -56,7 +56,7 @@ export default function PipelinePage() {
       <div className="px-6 py-4 border-b border-border bg-background shrink-0">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-lg font-semibold">Pipeline (Carteira)</h1>
+            <h1 className="text-xl font-extrabold font-headline text-[#022448]">Pipeline (Carteira)</h1>
 
             {!pipelineStats && (
               <p className="text-xs text-muted-foreground mt-0.5">
@@ -103,18 +103,43 @@ export default function PipelinePage() {
           </div>
         </div>
 
-        {/* Stage summary bar */}
+        {/* Stage stats cards */}
         {pipelineStats && (
-          <div className="flex items-center gap-6 mt-3 overflow-x-auto pb-0.5">
-            {Object.entries(pipelineStats.byStage).map(([stage, s]) => (
-              <div key={stage} className="shrink-0 text-center">
-                <div className="text-xs text-muted-foreground">
-                  {PIPELINE_STAGE_LABEL[stage] ?? stage}
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 px-6 pb-4 mt-3 -mx-6">
+            {(["lead", "in_service", "quote_sent", "recurring"] as const).map((stage) => {
+              const s = pipelineStats.byStage[stage]
+              if (!s) return null
+              return (
+                <div
+                  key={stage}
+                  className="bg-card rounded-xl p-4 shadow-[0_24px_40px_rgba(25,28,29,0.03)] border border-transparent"
+                >
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                    {PIPELINE_STAGE_LABEL[stage] ?? stage}
+                  </p>
+                  <p className="text-2xl font-extrabold font-headline text-[#022448] mt-1">
+                    {s.count}
+                  </p>
+                  <p className="text-xs font-medium text-[#F5A623] mt-0.5">
+                    {formatCurrency(s.value, "BRL")}
+                  </p>
                 </div>
-                <div className="text-sm font-semibold">{s.count}</div>
-              </div>
-            ))}
-            <div className="shrink-0 ml-auto">
+              )
+            })}
+            {/* Total carteira summary card */}
+            <div className="bg-card rounded-xl p-4 shadow-[0_24px_40px_rgba(25,28,29,0.03)] border border-transparent">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                Total Carteira
+              </p>
+              <p className="text-2xl font-extrabold font-headline text-[#022448] mt-1">
+                {pipelineStats.totalAccounts}
+              </p>
+              <p className="text-xs font-medium text-[#F5A623] mt-0.5">
+                {formatCurrency(pipelineStats.totalEstimatedValue, "BRL")}
+              </p>
+            </div>
+
+            <div className="col-span-2 md:col-span-5 flex justify-end -mt-1">
               <Link
                 href="/deals"
                 className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"

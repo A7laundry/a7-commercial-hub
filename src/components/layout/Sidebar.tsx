@@ -19,6 +19,7 @@ import {
   Megaphone,
   MessageSquare,
   BarChart3,
+  FileBarChart2,
   BookOpen,
   Target,
   ChevronLeft,
@@ -91,6 +92,7 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: "Analytics",
     items: [
+      { href: "/relatorios",      label: "Relatórios", icon: FileBarChart2 },
       { href: "/dashboard/daily", label: "Desempenho", icon: BarChart3 },
     ],
   },

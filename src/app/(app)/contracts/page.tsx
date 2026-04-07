@@ -25,6 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { formatCurrencyBR } from "@/lib/format"
 import type { Contract } from "@/types"
 
 export default function ContractsPage() {
@@ -46,6 +47,14 @@ export default function ContractsPage() {
     qc.invalidateQueries({ queryKey: ["contracts", tenant.id] })
   }
 
+  const totalContracts = allContracts.length
+  const totalAtivos = allContracts.filter((c) => c.status === "active").length
+  const totalVencendo = allContracts.filter((c) => c.status === "expiring").length
+  const totalVencidos = allContracts.filter((c) => c.status === "expired").length
+  const valorAtivos = allContracts
+    .filter((c) => c.status === "active")
+    .reduce((sum, c) => sum + (c.total_value ?? 0), 0)
+
   return (
     <div>
       <PageHeader
@@ -59,8 +68,45 @@ export default function ContractsPage() {
         }
       />
 
+      {/* KPI Stats Strip */}
+      <div className="grid grid-cols-4 gap-4 px-6 py-4 bg-background border-b">
+        {isLoading ? (
+          <>
+            {[0, 1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="bg-card rounded-xl p-4 shadow-[0_24px_40px_rgba(25,28,29,0.03)] border border-transparent"
+              >
+                <div className="animate-pulse w-20 h-3 bg-slate-200 rounded mb-3" />
+                <div className="animate-pulse w-16 h-6 bg-slate-200 rounded" />
+              </div>
+            ))}
+          </>
+        ) : (
+          <>
+            <div className="bg-card rounded-xl p-4 shadow-[0_24px_40px_rgba(25,28,29,0.03)] border border-transparent">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total</p>
+              <p className="text-2xl font-extrabold font-headline text-[#022448] mt-1">{totalContracts}</p>
+            </div>
+            <div className="bg-card rounded-xl p-4 shadow-[0_24px_40px_rgba(25,28,29,0.03)] border border-transparent">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Ativos</p>
+              <p className="text-2xl font-extrabold font-headline text-emerald-600 mt-1">{totalAtivos}</p>
+              <p className="text-[11px] text-slate-400 mt-0.5 font-medium">{formatCurrencyBR(valorAtivos)}</p>
+            </div>
+            <div className="bg-card rounded-xl p-4 shadow-[0_24px_40px_rgba(25,28,29,0.03)] border border-transparent">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Vencendo</p>
+              <p className="text-2xl font-extrabold font-headline text-amber-600 mt-1">{totalVencendo}</p>
+            </div>
+            <div className="bg-card rounded-xl p-4 shadow-[0_24px_40px_rgba(25,28,29,0.03)] border border-transparent">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Vencidos</p>
+              <p className="text-2xl font-extrabold font-headline text-red-600 mt-1">{totalVencidos}</p>
+            </div>
+          </>
+        )}
+      </div>
+
       {/* Status filter */}
-      <div className="flex items-center gap-3 mb-5">
+      <div className="flex items-center gap-3 px-6 py-4">
         <Select
           value={statusFilter}
           onValueChange={(v) =>
@@ -85,27 +131,31 @@ export default function ContractsPage() {
       </div>
 
       {error ? (
-        <p className="text-sm text-destructive">Erro ao carregar contratos.</p>
+        <p className="text-sm text-destructive px-6">Erro ao carregar contratos.</p>
       ) : !isLoading && contracts.length === 0 ? (
-        <EmptyState
-          icon={FileText}
-          title="Nenhum contrato encontrado"
-          description={
-            statusFilter !== "all"
-              ? "Nenhum contrato com esse status."
-              : "Crie seu primeiro contrato para começar."
-          }
-          action={
-            statusFilter === "all" ? (
-              <Button size="sm" onClick={() => setCreating(true)}>
-                <Plus className="w-4 h-4 mr-1" />
-                Novo contrato
-              </Button>
-            ) : undefined
-          }
-        />
+        <div className="px-6">
+          <EmptyState
+            icon={FileText}
+            title="Nenhum contrato encontrado"
+            description={
+              statusFilter !== "all"
+                ? "Nenhum contrato com esse status."
+                : "Crie seu primeiro contrato para começar."
+            }
+            action={
+              statusFilter === "all" ? (
+                <Button size="sm" onClick={() => setCreating(true)}>
+                  <Plus className="w-4 h-4 mr-1" />
+                  Novo contrato
+                </Button>
+              ) : undefined
+            }
+          />
+        </div>
       ) : (
-        <ContractsTable contracts={contracts} isLoading={isLoading} />
+        <div className="px-6">
+          <ContractsTable contracts={contracts} isLoading={isLoading} />
+        </div>
       )}
 
       {/* Create dialog */}
