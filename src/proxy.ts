@@ -2,7 +2,7 @@ import { createServerClient } from "@supabase/ssr"
 import { NextRequest, NextResponse } from "next/server"
 
 // Paths that do NOT require authentication
-const PUBLIC_PATHS = ["/login", "/onboarding"]
+const PUBLIC_PATHS = ["/", "/login", "/onboarding"]
 
 // Client portal has its own auth flow — do not redirect
 const PORTAL_PREFIX = "/portal"

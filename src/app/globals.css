@@ -1,4 +1,55 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Space+Grotesk:wght@300..700&display=swap');
+/* Fonts loaded via next/font/google in layout.tsx — no external import needed */
+
+/* Hero full-screen — Ken Burns alive effect */
+@keyframes kenBurns {
+  0%   { transform: scale(1.08) translateX(-3%)  translateY(1%); }
+  40%  { transform: scale(1.05) translateX(-1%)  translateY(-0.5%); }
+  70%  { transform: scale(1.1)  translateX(2%)   translateY(-1%); }
+  100% { transform: scale(1.08) translateX(-3%)  translateY(1%); }
+}
+
+@keyframes heroPulse {
+  0%, 100% { opacity: 0.55; }
+  50%       { opacity: 0.45; }
+}
+
+@keyframes heroShimmer {
+  0%   { transform: translateX(-120%) skewX(-15deg); opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { transform: translateX(220%)  skewX(-15deg); opacity: 0; }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.hero-bg-img {
+  animation: kenBurns 32s ease-in-out infinite;
+  will-change: transform;
+}
+
+.hero-overlay {
+  animation: heroPulse 6s ease-in-out infinite;
+}
+
+.hero-shimmer::after {
+  content: '';
+  position: absolute;
+  inset-y: 0;
+  left: 0;
+  width: 30%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.04), transparent);
+  animation: heroShimmer 8s ease-in-out infinite 3s;
+  pointer-events: none;
+}
+
+.hero-text-1 { animation: fadeUp 0.8s ease both 0.2s; }
+.hero-text-2 { animation: fadeUp 0.8s ease both 0.4s; }
+.hero-text-3 { animation: fadeUp 0.8s ease both 0.6s; }
+.hero-text-4 { animation: fadeUp 0.8s ease both 0.8s; }
+.hero-text-5 { animation: fadeUp 0.8s ease both 1.0s; }
 
 @import "tailwindcss";
 @import "tw-animate-css";
@@ -12,6 +63,7 @@
   --font-sans: "Geist", "Geist Fallback", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "Geist Mono", "Geist Mono Fallback", ui-monospace, monospace;
   --font-heading: var(--font-heading);
+  --font-headline: var(--font-headline);
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
   --color-warning: var(--warning);
@@ -112,9 +164,16 @@
   --sidebar-border: oklch(0.27 0.018 255);
   --sidebar-ring: oklch(0.50 0.19 256);
 
-  /* Fonts */
-  --font-sans: 'DM Sans', system-ui, -apple-system, sans-serif;
-  --font-heading: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+  /* Fonts — variables injected by next/font in layout.tsx */
+  --font-sans: var(--font-inter), var(--font-dm-sans), system-ui, -apple-system, sans-serif;
+  --font-heading: var(--font-space-grotesk), system-ui, -apple-system, sans-serif;
+  --font-headline: var(--font-manrope), system-ui, -apple-system, sans-serif;
+
+  /* Design system — navy/amber palette */
+  --navy-primary: #022448;
+  --navy-secondary: #1E3A5F;
+  --amber-primary: #F5A623;
+  --surface-bg: #f8f9fa;
 }
 
 .dark {
