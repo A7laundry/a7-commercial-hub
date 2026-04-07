@@ -16,6 +16,8 @@ import { ExpiringContractsCard } from "@/components/modules/dashboard/ExpiringCo
 import { ExpiringDocsCard } from "@/components/modules/dashboard/ExpiringDocsCard"
 import { RecentAlertsCard } from "@/components/modules/dashboard/RecentAlertsCard"
 import { AccountsAtRiskCard } from "@/components/modules/dashboard/AccountsAtRiskCard"
+import { PendingReportBanner } from "@/components/modules/dashboard/PendingReportBanner"
+import { OperatorUsageCard } from "@/components/modules/dashboard/OperatorUsageCard"
 import {
   Building2,
   FileText,
@@ -58,6 +60,14 @@ export default function DashboardPage() {
 
   return (
     <div>
+      {/* ── Pending report banner ─────────────────────────────────────── */}
+      <PendingReportBanner />
+
+      {/* ── Operator daily activity ──────────────────────────────────── */}
+      <div className="mb-6">
+        <OperatorUsageCard />
+      </div>
+
       {/* ── Entry point: O que fazer agora? (com clientes) ─────────────── */}
       {hasActivity && queueItems.length > 0 && (
         <motion.div
