@@ -35,8 +35,14 @@ export default async function AppLayout({
     email: user.email ?? "",
   }
 
+  const adminEmails = (process.env.ADMIN_EMAILS ?? "")
+    .split(",")
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean)
+  const isSuperAdmin = adminEmails.length > 0 && adminEmails.includes((user.email ?? "").toLowerCase())
+
   return (
-    <TenantProvider tenant={tenant} currentUser={currentUser}>
+    <TenantProvider tenant={tenant} currentUser={currentUser} isSuperAdmin={isSuperAdmin}>
       <AppShell>{children}</AppShell>
     </TenantProvider>
   )

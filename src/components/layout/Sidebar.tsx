@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { useTenant } from "@/hooks/useTenant"
+import { useTenantContext } from "@/components/providers/TenantProvider"
 import { useOpenAlertsCount } from "@/hooks/alerts/useOpenAlertsCount"
 import { useInboxUnreadCount } from "@/hooks/inbox/useInboxUnreadCount"
 import { useUserProfile } from "@/hooks/useUserProfile"
@@ -116,7 +116,7 @@ type NavContentProps = {
   inboxUnreadCount: number
   executionUrgentCount?: number
   onNavigate?: () => void
-  userEmail?: string
+  isAdmin?: boolean
 }
 
 function NavContent({
@@ -125,11 +125,8 @@ function NavContent({
   openAlertsCount,
   inboxUnreadCount,
   onNavigate,
-  userEmail,
+  isAdmin = false,
 }: NavContentProps) {
-  const adminEmails = (process.env.NEXT_PUBLIC_ADMIN_EMAILS ?? "")
-    .split(",").map((e) => e.trim().toLowerCase()).filter(Boolean)
-  const isAdmin = !!userEmail && adminEmails.includes(userEmail.toLowerCase())
 
   const groups: NavGroup[] = [
     ...NAV_GROUPS,
@@ -211,7 +208,7 @@ function NavContent({
 export function MobileSidebarTrigger() {
   const [open, setOpen] = useState(false)
   const pathname = usePathname()
-  const { tenant, currentUser } = useTenant()
+  const { tenant, currentUser, isSuperAdmin } = useTenantContext()
   const { data: openAlertsCount = 0 } = useOpenAlertsCount(tenant.id)
   const { data: inboxUnreadCount = 0 } = useInboxUnreadCount(tenant.id)
   const { data: profile } = useUserProfile(currentUser.user_id)
@@ -244,7 +241,7 @@ export function MobileSidebarTrigger() {
           openAlertsCount={openAlertsCount}
           inboxUnreadCount={inboxUnreadCount}
           onNavigate={() => setOpen(false)}
-          userEmail={currentUser.email}
+          isAdmin={isSuperAdmin || currentUser.role === "owner" || currentUser.role === "admin"}
         />
         <div className="px-3 py-3 border-t border-sidebar-border shrink-0">
           <div className="flex items-center gap-2.5 min-w-0">
@@ -273,7 +270,7 @@ export function MobileSidebarTrigger() {
 
 export function Sidebar() {
   const pathname = usePathname()
-  const { tenant, currentUser } = useTenant()
+  const { tenant, currentUser, isSuperAdmin } = useTenantContext()
   const { collapsed, toggle } = useSidebarCollapsed()
   const { data: openAlertsCount = 0 } = useOpenAlertsCount(tenant.id)
   const { data: inboxUnreadCount = 0 } = useInboxUnreadCount(tenant.id)
@@ -316,7 +313,7 @@ export function Sidebar() {
         pathname={pathname}
         openAlertsCount={openAlertsCount}
         inboxUnreadCount={inboxUnreadCount}
-        userEmail={currentUser.email}
+        isAdmin={isSuperAdmin || currentUser.role === "owner" || currentUser.role === "admin"}
       />
 
       {/* Footer: user info */}
