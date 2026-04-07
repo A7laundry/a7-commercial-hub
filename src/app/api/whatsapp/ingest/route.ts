@@ -159,6 +159,7 @@ async function handleMetaWebhook(
   try {
     const entries = (body.entry as unknown[]) ?? []
     const processed: string[] = []
+    const processedTenants = new Set<string>()
 
     let statusesUpdated = 0
 
@@ -239,11 +240,37 @@ async function handleMetaWebhook(
             continue
           }
 
+          // Upsert conversation (atomic unread_count increment)
+          const { data: convRow, error: convError } = await admin.rpc(
+            "upsert_wa_conversation",
+            {
+              p_tenant_id:       tenant_id,
+              p_phone:           from,
+              p_account_id:      account_id ?? null,
+              p_direction:       "inbound",
+              p_message_preview: text,
+              p_message_at:      timestamp,
+            }
+          )
+
+          if (convError) {
+            logger.error({
+              event: "whatsapp.ingest.upsert_conversation_failed",
+              status: "error",
+              tenant_id,
+              error: convError.message,
+              metadata: { wa_message_id, phone: from },
+            })
+          }
+
+          const conversation_id = convError ? null : (convRow as string)
+
           const { error } = await admin
             .from("whatsapp_messages")
             .insert({
               tenant_id,
               account_id,
+              conversation_id,
               phone: from,
               message_text: text,
               direction: "inbound",
@@ -296,6 +323,7 @@ async function handleMetaWebhook(
           }
 
           processed.push(wa_message_id)
+          processedTenants.add(tenant_id)
 
           logger.info({
             event: "whatsapp.ingest.message_stored",
@@ -379,6 +407,25 @@ async function handleMetaWebhook(
           })
         }
       }
+    }
+
+    // P2 fix: update webhook observability fields for each tenant that had
+    // at least one message successfully processed this batch.
+    if (processedTenants.size > 0) {
+      const updateNow = new Date().toISOString()
+      await Promise.all(
+        Array.from(processedTenants).map((tid) =>
+          admin
+            .from("whatsapp_integrations")
+            .update({
+              webhook_last_event_at: updateNow,
+              webhook_status: "active",
+              updated_at: updateNow,
+            })
+            .eq("tenant_id", tid)
+            .eq("status", "connected")
+        )
+      )
     }
 
     return NextResponse.json(

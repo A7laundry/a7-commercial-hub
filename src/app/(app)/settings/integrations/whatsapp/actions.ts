@@ -1,6 +1,7 @@
 "use server"
 
 import { createClient } from "@/lib/supabase/server"
+import { createServiceClient } from "@/lib/supabase/service"
 import { randomUUID } from "crypto"
 
 async function getTenantId(supabase: Awaited<ReturnType<typeof createClient>>) {
@@ -108,6 +109,19 @@ export async function saveIntegration(input: {
   )
 
   if (error) return { error: error.message }
+
+  // P0 fix: populate whatsapp_tenant_config so inbound messages from new contacts
+  // can be routed to the correct tenant via phone_number_id → tenant_id lookup.
+  const service = createServiceClient()
+  const { error: configError } = await service
+    .from("whatsapp_tenant_config")
+    .upsert(
+      { tenant_id: tenantId, phone_number_id: input.phoneNumberId.trim() },
+      { onConflict: "phone_number_id" }
+    )
+
+  if (configError) return { error: configError.message }
+
   return { error: null, verify_token: verifyToken }
 }
 

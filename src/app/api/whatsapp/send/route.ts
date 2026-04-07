@@ -8,6 +8,7 @@ type SendBody = {
   phone: string
   message: string
   action_type?: "follow_up" | "upsell" | "reactivation" | "proposal" | "renewal"
+  conversation_id?: string
 }
 
 // ---------------------------------------------------------------------------
@@ -44,7 +45,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 })
   }
 
-  const { account_id, phone, message, action_type } = body
+  const { account_id, phone, message, action_type, conversation_id } = body
 
   if (!account_id || !phone || !message) {
     return NextResponse.json(
@@ -52,6 +53,8 @@ export async function POST(request: NextRequest) {
       { status: 422 }
     )
   }
+
+  const now = new Date().toISOString()
 
   // ---------------------------------------------------------------------------
   // 0. Verify account_id belongs to this tenant (cross-tenant write prevention)
@@ -76,10 +79,11 @@ export async function POST(request: NextRequest) {
     .insert({
       tenant_id,
       account_id,
+      conversation_id: conversation_id ?? null,
       phone,
       message_text: message,
       direction: "outbound",
-      received_at: new Date().toISOString(),
+      received_at: now,
       processed: false,
       send_status: "pending",
       send_attempts: 0,
@@ -188,7 +192,7 @@ export async function POST(request: NextRequest) {
   }
 
   // ---------------------------------------------------------------------------
-  // 3. Update message record with real send status
+  // 3b. Update message record with real send status
   // ---------------------------------------------------------------------------
   await supabase
     .from("whatsapp_messages")
@@ -202,7 +206,43 @@ export async function POST(request: NextRequest) {
     .eq("id", messageId)
 
   // ---------------------------------------------------------------------------
-  // 4. Side effects — only execute on confirmed send
+  // 4. Upsert conversation (resets unread_count) — only on confirmed send
+  // ---------------------------------------------------------------------------
+  if (finalStatus === "sent") {
+    const { data: convId, error: convError } = await supabase.rpc(
+      "upsert_wa_conversation",
+      {
+        p_tenant_id:       tenant_id,
+        p_phone:           phone,
+        p_account_id:      account_id,
+        p_direction:       "outbound",
+        p_message_preview: message,
+        p_message_at:      now,
+      }
+    )
+
+    if (!convError && convId) {
+      const resolvedConvId = convId as string
+
+      // Backfill conversation_id if not supplied by caller
+      if (!conversation_id) {
+        await supabase
+          .from("whatsapp_messages")
+          .update({ conversation_id: resolvedConvId })
+          .eq("id", messageId)
+      }
+
+      // Set first_response_at once (SLA: time-to-first-reply)
+      await supabase
+        .from("wa_conversations")
+        .update({ first_response_at: now })
+        .eq("id", resolvedConvId)
+        .is("first_response_at", null)
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // 5. Side effects — only execute on confirmed send
   //    NEVER update pipeline_stage or timeline based on a failed send.
   // ---------------------------------------------------------------------------
   const sideEffectsAllowed = finalStatus === "sent"

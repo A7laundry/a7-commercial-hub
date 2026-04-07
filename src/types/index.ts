@@ -126,17 +126,34 @@ export type WhatsAppMessage = {
   id: string
   tenant_id: string
   account_id: string | null
+  conversation_id: string | null
   phone: string
   message_text: string
   direction: "inbound" | "outbound"
   wa_message_id: string | null
   received_at: string
   processed: boolean
-  send_status: "pending" | "sent" | "delivered" | "failed"
+  send_status: "pending" | "sent" | "delivered" | "read" | "failed"
   send_attempts: number
   last_error: string | null
   delivered_at: string | null
   created_at: string
+}
+
+export type WaConversation = {
+  id: string
+  tenant_id: string
+  account_id: string | null
+  phone: string
+  status: "open" | "resolved" | "archived"
+  assigned_to: string | null
+  last_message_at: string | null
+  last_message_preview: string | null
+  last_message_direction: "inbound" | "outbound" | null
+  unread_count: number
+  window_expires_at: string | null
+  created_at: string
+  updated_at: string
 }
 
 export type PhoneMapping = {

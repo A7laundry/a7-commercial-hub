@@ -1,23 +1,43 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
-import type { WhatsAppMessage } from "@/types"
+import type { ConversationStatus } from "@/app/(app)/inbox/actions"
+
+export type { ConversationStatus }
+
+export type InboxFilter =
+  | "all"         // everything except spam
+  | "open"        // open + pending_customer + pending_internal
+  | "mine"        // assigned to current user, not resolved/spam
+  | "unassigned"  // no assignee, not resolved/spam
+  | "resolved"    // resolved only
+  | "spam"        // spam only
 
 export type Conversation = {
-  key: string               // account_id or phone
+  id: string
+  key: string                // alias for id, kept for backwards compat
   accountId: string | null
   accountName: string | null
   phone: string
-  lastMessage: WhatsAppMessage
-  unreadCount: number       // inbound messages with no subsequent outbound
-  messages: WhatsAppMessage[]
+  status: ConversationStatus
+  assignedTo: string | null
+  assignedAt: string | null
+  unreadCount: number
+  lastMessageAt: string | null
+  lastMessagePreview: string | null
+  lastMessageDirection: "inbound" | "outbound" | null
+  windowExpiresAt: string | null
 }
 
-export function useInbox(tenantId: string) {
+export function useInbox(
+  tenantId: string,
+  filter: InboxFilter = "all",
+  userId?: string | null
+) {
   const supabase = createClient()
   const qc = useQueryClient()
 
-  // Supabase Realtime: invalidate query on any insert to whatsapp_messages
+  // Realtime: invalidate all filter caches on any conversation change
   useEffect(() => {
     if (!tenantId) return
 
@@ -26,13 +46,15 @@ export function useInbox(tenantId: string) {
       .on(
         "postgres_changes",
         {
-          event: "INSERT",
+          event: "*",
           schema: "public",
-          table: "whatsapp_messages",
+          table: "wa_conversations",
           filter: `tenant_id=eq.${tenantId}`,
         },
         () => {
+          // Invalidate all ["inbox", tenantId, *] keys
           qc.invalidateQueries({ queryKey: ["inbox", tenantId] })
+          qc.invalidateQueries({ queryKey: ["inbox:unread-count", tenantId] })
         }
       )
       .subscribe()
@@ -44,21 +66,56 @@ export function useInbox(tenantId: string) {
   }, [tenantId, qc])
 
   return useQuery<Conversation[]>({
-    queryKey: ["inbox", tenantId],
+    queryKey: ["inbox", tenantId, filter, userId ?? ""],
     queryFn: async () => {
-      // Fetch last 500 messages
-      const { data: messages, error } = await supabase
-        .from("whatsapp_messages")
-        .select("*")
+      let query = supabase
+        .from("wa_conversations")
+        .select(`
+          id, phone, account_id, status,
+          assigned_to, assigned_at,
+          unread_count, last_message_at,
+          last_message_preview, last_message_direction,
+          window_expires_at
+        `)
         .eq("tenant_id", tenantId)
-        .order("received_at", { ascending: false })
-        .limit(500)
+        .order("last_message_at", { ascending: false, nullsFirst: false })
+        .limit(100)
 
+      // Apply server-side filter
+      switch (filter) {
+        case "all":
+          query = query.not("status", "eq", "spam")
+          break
+        case "open":
+          query = query.in("status", ["open", "pending_customer", "pending_internal"])
+          break
+        case "mine":
+          if (userId) {
+            query = query
+              .eq("assigned_to", userId)
+              .in("status", ["open", "pending_customer", "pending_internal"])
+          }
+          break
+        case "unassigned":
+          query = query
+            .is("assigned_to", null)
+            .in("status", ["open", "pending_customer", "pending_internal"])
+          break
+        case "resolved":
+          query = query.eq("status", "resolved")
+          break
+        case "spam":
+          query = query.eq("status", "spam")
+          break
+      }
+
+      const { data: rows, error } = await query
       if (error) throw error
-      const allMessages = (messages ?? []) as WhatsAppMessage[]
 
-      // Fetch account names for joined display
-      const accountIds = [...new Set(allMessages.map((m) => m.account_id).filter(Boolean))] as string[]
+      // Fetch account names in one query
+      const accountIds = [...new Set(
+        (rows ?? []).map((r) => r.account_id).filter(Boolean) as string[]
+      )]
       const accountNames: Record<string, string> = {}
       if (accountIds.length > 0) {
         const { data: accounts } = await supabase
@@ -70,45 +127,23 @@ export function useInbox(tenantId: string) {
         }
       }
 
-      // Group by account_id (or phone fallback)
-      const groups = new Map<string, WhatsAppMessage[]>()
-      for (const msg of allMessages) {
-        const key = msg.account_id ?? msg.phone
-        if (!groups.has(key)) groups.set(key, [])
-        groups.get(key)!.push(msg)
-      }
-
-      const conversations: Conversation[] = []
-      for (const [key, msgs] of groups) {
-        // msgs are already sorted desc; reverse for timeline
-        const sorted = [...msgs].sort(
-          (a, b) => new Date(a.received_at).getTime() - new Date(b.received_at).getTime()
-        )
-        const lastMessage = sorted[sorted.length - 1]
-        const lastOutboundIdx = sorted.map((m) => m.direction).lastIndexOf("outbound")
-        const unreadCount = lastOutboundIdx === -1
-          ? sorted.filter((m) => m.direction === "inbound").length
-          : sorted.slice(lastOutboundIdx + 1).filter((m) => m.direction === "inbound").length
-
-        conversations.push({
-          key,
-          accountId: lastMessage.account_id,
-          accountName: lastMessage.account_id ? (accountNames[lastMessage.account_id] ?? null) : null,
-          phone: lastMessage.phone,
-          lastMessage,
-          unreadCount,
-          messages: sorted,
-        })
-      }
-
-      // Sort by last message time desc
-      return conversations.sort(
-        (a, b) =>
-          new Date(b.lastMessage.received_at).getTime() -
-          new Date(a.lastMessage.received_at).getTime()
-      )
+      return (rows ?? []).map((r) => ({
+        id: r.id,
+        key: r.id,
+        accountId: r.account_id,
+        accountName: r.account_id ? (accountNames[r.account_id] ?? null) : null,
+        phone: r.phone,
+        status: r.status as ConversationStatus,
+        assignedTo: r.assigned_to,
+        assignedAt: r.assigned_at,
+        unreadCount: r.unread_count ?? 0,
+        lastMessageAt: r.last_message_at,
+        lastMessagePreview: r.last_message_preview,
+        lastMessageDirection: r.last_message_direction as "inbound" | "outbound" | null,
+        windowExpiresAt: r.window_expires_at,
+      }))
     },
     staleTime: 30_000,
-    refetchInterval: 120_000, // Fallback poll — realtime handles instant updates
+    refetchInterval: 120_000,
   })
 }
