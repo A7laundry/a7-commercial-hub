@@ -4,6 +4,7 @@ import { Users } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
+import { UserAvatar } from "@/components/shared/UserAvatar"
 import { useTenant } from "@/hooks/useTenant"
 import { useOperatorDailyActivity } from "@/hooks/dashboard/useOperatorDailyActivity"
 import { formatCurrencyBR } from "@/lib/format"
@@ -64,6 +65,12 @@ export function OperatorUsageCard() {
                   role="listitem"
                   className="flex items-center gap-3 rounded-lg border px-3 py-2.5"
                 >
+                  {/* Avatar */}
+                  <UserAvatar
+                    displayName={operator.operator_name}
+                    size={32}
+                  />
+
                   {/* Name + badge */}
                   <div className="flex min-w-0 flex-1 items-center gap-2">
                     <span className="truncate text-sm font-medium">
@@ -104,6 +111,7 @@ function OperatorUsageSkeleton() {
     <div className="space-y-2" aria-busy="true" aria-label="Carregando operadores">
       {[1, 2, 3].map((i) => (
         <div key={i} className="flex items-center gap-3 rounded-lg border px-3 py-2.5">
+          <Skeleton className="h-8 w-8 rounded-full shrink-0" />
           <Skeleton className="h-4 flex-1" />
           <Skeleton className="h-4 w-16" />
           <Skeleton className="h-4 w-20" />

@@ -5,6 +5,8 @@ import { usePathname } from "next/navigation"
 import { useTenant } from "@/hooks/useTenant"
 import { useOpenAlertsCount } from "@/hooks/alerts/useOpenAlertsCount"
 import { useInboxUnreadCount } from "@/hooks/inbox/useInboxUnreadCount"
+import { useUserProfile } from "@/hooks/useUserProfile"
+import { UserAvatar } from "@/components/shared/UserAvatar"
 import {
   LayoutDashboard,
   Building2,
@@ -29,6 +31,13 @@ import { cn } from "@/lib/utils"
 import { useSidebarCollapsed } from "./AppShell"
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { useState } from "react"
+
+const ROLE_LABEL: Record<string, string> = {
+  owner: "Proprietário",
+  admin: "Administrador",
+  member: "Membro",
+  viewer: "Visualizador",
+}
 
 type NavItem = {
   href: string
@@ -203,6 +212,11 @@ export function MobileSidebarTrigger() {
   const { tenant, currentUser } = useTenant()
   const { data: openAlertsCount = 0 } = useOpenAlertsCount(tenant.id)
   const { data: inboxUnreadCount = 0 } = useInboxUnreadCount(tenant.id)
+  const { data: profile } = useUserProfile(currentUser.user_id)
+
+  const displayName = profile?.display_name ?? null
+  const avatarUrl = profile?.avatar_url ?? null
+  const roleLabel = ROLE_LABEL[currentUser.role] ?? currentUser.role
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -230,8 +244,23 @@ export function MobileSidebarTrigger() {
           onNavigate={() => setOpen(false)}
           userEmail={currentUser.email}
         />
-        <div className="px-4 py-3 border-t border-sidebar-border shrink-0">
-          <p className="text-xs text-sidebar-foreground/60 truncate">{tenant.name}</p>
+        <div className="px-3 py-3 border-t border-sidebar-border shrink-0">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <UserAvatar
+              avatarUrl={avatarUrl}
+              displayName={displayName}
+              email={currentUser.email}
+              size={32}
+            />
+            <div className="flex flex-col min-w-0 flex-1">
+              <span className="text-xs font-medium text-sidebar-foreground truncate leading-tight">
+                {displayName ?? currentUser.email}
+              </span>
+              <span className="text-[10px] text-sidebar-foreground/50 truncate leading-tight mt-0.5">
+                {roleLabel}
+              </span>
+            </div>
+          </div>
         </div>
       </SheetContent>
     </Sheet>
@@ -246,6 +275,11 @@ export function Sidebar() {
   const { collapsed, toggle } = useSidebarCollapsed()
   const { data: openAlertsCount = 0 } = useOpenAlertsCount(tenant.id)
   const { data: inboxUnreadCount = 0 } = useInboxUnreadCount(tenant.id)
+  const { data: profile } = useUserProfile(currentUser.user_id)
+
+  const displayName = profile?.display_name ?? null
+  const avatarUrl = profile?.avatar_url ?? null
+  const roleLabel = ROLE_LABEL[currentUser.role] ?? currentUser.role
 
   return (
     <aside
@@ -283,12 +317,37 @@ export function Sidebar() {
         userEmail={currentUser.email}
       />
 
-      {/* Footer: tenant name */}
-      {!collapsed && (
-        <div className="px-4 py-3 border-t border-sidebar-border shrink-0">
-          <p className="text-xs text-sidebar-foreground/60 truncate">{tenant.name}</p>
-        </div>
-      )}
+      {/* Footer: user info */}
+      <div className={cn(
+        "border-t border-sidebar-border shrink-0",
+        collapsed ? "px-2 py-3 flex justify-center" : "px-3 py-3"
+      )}>
+        {collapsed ? (
+          <UserAvatar
+            avatarUrl={avatarUrl}
+            displayName={displayName}
+            email={currentUser.email}
+            size={32}
+          />
+        ) : (
+          <div className="flex items-center gap-2.5 min-w-0">
+            <UserAvatar
+              avatarUrl={avatarUrl}
+              displayName={displayName}
+              email={currentUser.email}
+              size={32}
+            />
+            <div className="flex flex-col min-w-0 flex-1">
+              <span className="text-xs font-medium text-sidebar-foreground truncate leading-tight">
+                {displayName ?? currentUser.email}
+              </span>
+              <span className="text-[10px] text-sidebar-foreground/50 truncate leading-tight mt-0.5">
+                {roleLabel}
+              </span>
+            </div>
+          </div>
+        )}
+      </div>
     </aside>
   )
 }
