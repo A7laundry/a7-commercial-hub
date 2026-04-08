@@ -5,7 +5,7 @@ import { useActionState } from "react"
 import { useFormStatus } from "react-dom"
 import { useSearchParams } from "next/navigation"
 import { motion } from "framer-motion"
-import { loginAction, signupAction } from "./actions"
+import { loginAction, signupAction, type AuthState } from "./actions"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -39,8 +39,8 @@ export default function LoginPageWrapper() {
 function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [tab, setTab] = useState<"login" | "signup">("login")
-  const [loginState, loginFormAction] = useActionState(loginAction, { error: null })
-  const [signupState, signupFormAction] = useActionState(signupAction, { error: null })
+  const [loginState, loginFormAction] = useActionState<AuthState, FormData>(loginAction, { error: null })
+  const [signupState, signupFormAction] = useActionState<AuthState, FormData>(signupAction, { error: null })
   const [googleLoading, setGoogleLoading] = useState(false)
   const searchParams = useSearchParams()
   const oauthError = searchParams.get("error")
@@ -144,6 +144,17 @@ function LoginPage() {
             </TabsContent>
 
             <TabsContent value="signup" className="mt-0">
+              {signupState.emailSent ? (
+                <div className="text-center py-6 space-y-3">
+                  <div className="mx-auto w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+                    <Mail className="w-6 h-6 text-green-600" />
+                  </div>
+                  <p className="font-semibold text-foreground">Verifique seu e-mail</p>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Enviamos um link de confirmação. Clique no link para ativar sua conta e acessar o sistema.
+                  </p>
+                </div>
+              ) : (
               <form action={signupFormAction} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="reg-name">Nome Completo</Label>
@@ -191,6 +202,7 @@ function LoginPage() {
                 </div>
                 <SubmitButton label="Criar Conta" pendingLabel="Criando..." />
               </form>
+              )}
             </TabsContent>
 
             <div className="relative my-6">

@@ -1,23 +1,15 @@
 "use server"
 
-import { redirect } from "next/navigation"
+import { redirect, RedirectType } from "next/navigation"
+import { headers } from "next/headers"
 import { createClient } from "@/lib/supabase/server"
-import { createClient as createAdminClient } from "@supabase/supabase-js"
 
-type State = { error: string | null }
-
-function getAdminClient() {
-  return createAdminClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } }
-  )
-}
+export type AuthState = { error: string | null; emailSent?: boolean }
 
 export async function loginAction(
-  _prev: State,
+  _prev: AuthState,
   formData: FormData
-): Promise<State> {
+): Promise<AuthState> {
   const email = formData.get("email") as string
   const password = formData.get("password") as string
 
@@ -29,26 +21,26 @@ export async function loginAction(
 }
 
 export async function signupAction(
-  _prev: State,
+  _prev: AuthState,
   formData: FormData
-): Promise<State> {
+): Promise<AuthState> {
   const email = formData.get("email") as string
   const password = formData.get("password") as string
 
-  // Create user via admin API so email is auto-confirmed (no confirmation email required)
-  const admin = getAdminClient()
-  const { error: createError } = await admin.auth.admin.createUser({
+  const headersList = await headers()
+  const origin = headersList.get("origin") ?? headersList.get("x-forwarded-host") ?? ""
+
+  const supabase = await createClient()
+  const { error } = await supabase.auth.signUp({
     email,
     password,
-    email_confirm: true,
+    options: {
+      emailRedirectTo: `${origin}/auth/callback?next=/onboarding`,
+    },
   })
 
-  if (createError) return { error: createError.message }
+  if (error) return { error: error.message }
 
-  // Sign in immediately to establish session in cookies
-  const supabase = await createClient()
-  const { error: signInError } = await supabase.auth.signInWithPassword({ email, password })
-
-  if (signInError) return { error: signInError.message }
-  redirect("/onboarding")
+  // Don't auto-login — user must verify email first
+  return { error: null, emailSent: true }
 }

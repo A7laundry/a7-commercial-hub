@@ -2,7 +2,7 @@ import { createServerClient } from "@supabase/ssr"
 import { NextRequest, NextResponse } from "next/server"
 
 // Paths that do NOT require authentication
-const PUBLIC_PATHS = ["/", "/login", "/onboarding"]
+const PUBLIC_PATHS = ["/", "/login", "/onboarding", "/verify-email"]
 
 // Client portal has its own auth flow — do not redirect
 const PORTAL_PREFIX = "/portal"
@@ -90,6 +90,13 @@ export async function proxy(request: NextRequest) {
     const loginUrl = request.nextUrl.clone()
     loginUrl.pathname = "/login"
     return NextResponse.redirect(loginUrl)
+  }
+
+  // Block access for users who haven't confirmed their email yet
+  if (!user.email_confirmed_at && pathname !== "/verify-email") {
+    const verifyUrl = request.nextUrl.clone()
+    verifyUrl.pathname = "/verify-email"
+    return NextResponse.redirect(verifyUrl)
   }
 
   return response
