@@ -7,8 +7,45 @@ const PUBLIC_PATHS = ["/", "/login", "/onboarding"]
 // Client portal has its own auth flow — do not redirect
 const PORTAL_PREFIX = "/portal"
 
+// ── IP-based rate limiting for auth-adjacent endpoints ────────────────────────
+// In-memory per Edge instance — good for burst protection.
+// For cluster-wide limits use Redis/Upstash.
+const AUTH_RATE_LIMIT = 10    // max requests
+const AUTH_WINDOW_MS  = 60_000 // per 60 s
+
+const rateLimitStore = new Map<string, { count: number; resetAt: number }>()
+
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now()
+  const entry = rateLimitStore.get(ip)
+  if (!entry || now > entry.resetAt) {
+    rateLimitStore.set(ip, { count: 1, resetAt: now + AUTH_WINDOW_MS })
+    return true
+  }
+  if (entry.count >= AUTH_RATE_LIMIT) return false
+  entry.count++
+  return true
+}
+
+const RATE_LIMITED_PREFIXES = ["/login", "/signup", "/forgot-password", "/api/auth"]
+
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
+
+  // ── Rate limiting ──────────────────────────────────────────────────────────
+  if (RATE_LIMITED_PREFIXES.some((p) => pathname.startsWith(p))) {
+    const ip =
+      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+      request.headers.get("x-real-ip") ??
+      "unknown"
+
+    if (!checkRateLimit(ip)) {
+      return new NextResponse("Too Many Requests", {
+        status: 429,
+        headers: { "Retry-After": "60", "Content-Type": "text/plain" },
+      })
+    }
+  }
 
   // Let public paths, portal, API routes and static assets pass through
   if (

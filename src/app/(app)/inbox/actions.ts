@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { createClient } from "@/lib/supabase/server"
 import { createServiceClient } from "@/lib/supabase/service"
-import { logger } from "@/lib/logger"
+import { logger, maskPhone } from "@/lib/logger"
 
 export type ConversationStatus =
   | "open"
@@ -302,7 +302,7 @@ export async function mapPhoneToAccount(
       .eq("tenant_id", tenantId)
   }
 
-  logger.info({ event: "phone_mapping.create", status: "ok", tenant_id: tenantId, entity_id: accountId, metadata: { phone: normalized, source: "manual" } })
+  logger.info({ event: "phone_mapping.create", status: "ok", tenant_id: tenantId, entity_id: accountId, metadata: { phone: maskPhone(normalized), source: "manual" } })
 
   revalidatePath("/inbox")
   revalidatePath(`/accounts/${accountId}`)
@@ -334,7 +334,7 @@ export async function unmapPhone(
 
   if (error) return { error: error.message }
 
-  logger.info({ event: "phone_mapping.delete", status: "ok", tenant_id: tenantId, metadata: { phone: normalized } })
+  logger.info({ event: "phone_mapping.delete", status: "ok", tenant_id: tenantId, metadata: { phone: maskPhone(normalized) } })
 
   revalidatePath("/inbox")
   return { error: null }
@@ -404,7 +404,7 @@ export async function createAccountFromInbox(
     .eq("tenant_id", tenantId)
     .eq("phone", normalized)
 
-  logger.info({ event: "account.create_from_inbox", status: "ok", tenant_id: tenantId, entity_id: accountId, metadata: { phone: normalized } })
+  logger.info({ event: "account.create_from_inbox", status: "ok", tenant_id: tenantId, entity_id: accountId, metadata: { phone: maskPhone(normalized) } })
 
   revalidatePath("/inbox")
   revalidatePath("/accounts")

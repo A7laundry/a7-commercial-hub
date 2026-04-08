@@ -25,6 +25,13 @@ export function FileDropzone({ onParsed }: Props) {
       setStatus("parsing")
       setError(null)
 
+      const MAX_BYTES = 5 * 1024 * 1024 // 5 MB
+      if (file.size > MAX_BYTES) {
+        setError("Arquivo muito grande. O limite é 5 MB.")
+        setStatus("error")
+        return
+      }
+
       const ext = file.name.split(".").pop()?.toLowerCase()
 
       try {

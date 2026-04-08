@@ -54,6 +54,13 @@ export const logger = {
   },
 }
 
+/** LGPD: mask a phone number — keeps country code + last 4 digits */
+export function maskPhone(phone: string): string {
+  // E.164 format: +5511987654321 → +55119****4321
+  if (phone.length <= 6) return "****"
+  return phone.slice(0, phone.length - 8) + "****" + phone.slice(-4)
+}
+
 /** Convenience: log a caught error with context */
 export function logError(
   event: string,
