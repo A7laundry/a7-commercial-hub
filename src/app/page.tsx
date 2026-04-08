@@ -70,20 +70,12 @@ export default function LandingPage() {
           />
         </div>
 
-        {/* Dark overlay — garante legibilidade do texto */}
+        {/* Dark overlay — leve para a imagem respirar */}
         <div
           className="hero-overlay absolute inset-0"
           style={{
             background:
-              "linear-gradient(to bottom, rgba(8,12,20,0.55) 0%, rgba(8,12,20,0.45) 35%, rgba(8,12,20,0.65) 75%, #080C14 100%)",
-          }}
-        />
-        {/* Radial escuro centrado — reforça contraste onde o texto está */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background:
-              "radial-gradient(ellipse 80% 60% at 50% 50%, rgba(8,12,20,0.45) 0%, transparent 70%)",
+              "linear-gradient(to bottom, rgba(8,12,20,0.35) 0%, rgba(8,12,20,0.1) 35%, rgba(8,12,20,0.55) 75%, #080C14 100%)",
           }}
         />
         {/* Side vignettes */}
@@ -108,6 +100,15 @@ export default function LandingPage() {
 
         {/* Content — centered, full impact */}
         <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-6" style={{ paddingTop: "80px" }}>
+          {/* Backdrop suave atrás do texto — contraste sem matar a imagem */}
+          <div
+            className="absolute inset-x-0 pointer-events-none"
+            style={{
+              top: "50%", transform: "translateY(-55%)",
+              height: "70%",
+              background: "radial-gradient(ellipse 70% 90% at 50% 50%, rgba(8,12,20,0.55) 0%, transparent 75%)",
+            }}
+          />
 
           {/* Pill badge */}
           <div
@@ -129,7 +130,7 @@ export default function LandingPage() {
               fontFamily: "'Space Grotesk', sans-serif",
               fontSize: "clamp(3rem, 7vw, 6.5rem)",
               letterSpacing: "-0.04em",
-              textShadow: "0 2px 4px rgba(0,0,0,0.9), 0 4px 24px rgba(0,0,0,0.7), 0 8px 48px rgba(0,0,0,0.5)",
+              textShadow: "0 2px 16px rgba(0,0,0,0.8), 0 4px 32px rgba(0,0,0,0.5)",
             }}
           >
             Quantos clientes você
@@ -149,8 +150,8 @@ export default function LandingPage() {
           <p
             className="hero-text-3 text-xl leading-relaxed mb-10 max-w-xl"
             style={{
-              color: "rgba(255,255,255,0.92)",
-              textShadow: "0 1px 3px rgba(0,0,0,0.9), 0 4px 20px rgba(0,0,0,0.7)",
+              color: "rgba(255,255,255,0.85)",
+              textShadow: "0 2px 12px rgba(0,0,0,0.7)",
             }}
           >
             O A7 organiza sua carteira, centraliza o WhatsApp da equipe
