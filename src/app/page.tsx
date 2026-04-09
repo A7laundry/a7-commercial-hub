@@ -98,102 +98,99 @@ export default function LandingPage() {
         {/* Efeitos animados sobre a imagem */}
         <HeroEffects />
 
-        {/* Content — centered, full impact */}
-        <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-6" style={{ paddingTop: "80px" }}>
-          {/* Backdrop suave atrás do texto — contraste sem matar a imagem */}
-          <div
-            className="absolute inset-x-0 pointer-events-none"
-            style={{
-              top: "50%", transform: "translateY(-55%)",
-              height: "70%",
-              background: "radial-gradient(ellipse 70% 90% at 50% 50%, rgba(8,12,20,0.55) 0%, transparent 75%)",
-            }}
-          />
+        {/* Content — centered */}
+        <div className="relative z-10 flex flex-col items-center justify-center h-full px-6" style={{ paddingTop: "80px" }}>
 
-          {/* Pill badge */}
+          {/* ── GLASS CARD — cria contraste sem matar a imagem ── */}
           <div
-            className="hero-text-1 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-full mb-8"
+            className="hero-text-1 flex flex-col items-center text-center w-full max-w-2xl px-10 py-12 rounded-3xl"
             style={{
-              background: "rgba(59,130,246,0.15)",
-              color: "#60A5FA",
-              border: "1px solid rgba(59,130,246,0.3)",
-              backdropFilter: "blur(8px)",
+              background: "rgba(8,12,20,0.72)",
+              backdropFilter: "blur(24px)",
+              WebkitBackdropFilter: "blur(24px)",
+              border: "1px solid rgba(255,255,255,0.09)",
+              boxShadow: "0 32px 80px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)",
             }}
           >
-            CRM Comercial para Lavanderias
-          </div>
-
-          {/* Headline — massive */}
-          <h1
-            className="hero-text-2 font-black leading-[1.0] mb-6 max-w-5xl"
-            style={{
-              fontFamily: "'Space Grotesk', sans-serif",
-              fontSize: "clamp(3rem, 7vw, 6.5rem)",
-              letterSpacing: "-0.04em",
-              textShadow: "0 2px 16px rgba(0,0,0,0.8), 0 4px 32px rgba(0,0,0,0.5)",
-            }}
-          >
-            Quantos clientes você
-            <br />
-            <span
+            {/* Pill badge */}
+            <div
+              className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-full mb-7"
               style={{
-                background: "linear-gradient(135deg, #ffffff 0%, #60A5FA 50%, #3B82F6 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
+                background: "rgba(59,130,246,0.18)",
+                color: "#60A5FA",
+                border: "1px solid rgba(59,130,246,0.35)",
               }}
             >
-              perdeu sem saber?
-            </span>
-          </h1>
+              CRM Comercial para Lavanderias
+            </div>
 
-          {/* Subheadline */}
-          <p
-            className="hero-text-3 text-xl leading-relaxed mb-10 max-w-xl"
-            style={{
-              color: "rgba(255,255,255,0.85)",
-              textShadow: "0 2px 12px rgba(0,0,0,0.7)",
-            }}
-          >
-            O A7 organiza sua carteira, centraliza o WhatsApp da equipe
-            e dispara campanhas para os clientes certos.
-            <br />
-            <strong style={{ color: "#fff" }}>Venda mais. Sem aumentar o time.</strong>
-          </p>
-
-          {/* CTAs */}
-          <div className="hero-text-4 flex items-center gap-4 flex-wrap justify-center">
-            <Link
-              href="/login"
-              className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-bold text-lg transition-all hover:scale-105 hover:opacity-95"
+            {/* Headline */}
+            <h1
+              className="hero-text-2 font-black leading-[1.05] mb-5"
               style={{
-                background: "linear-gradient(135deg, #3B82F6, #1D4ED8)",
-                boxShadow: "0 8px 40px rgba(59,130,246,0.5), 0 0 0 1px rgba(255,255,255,0.1)",
+                fontFamily: "'Space Grotesk', sans-serif",
+                fontSize: "clamp(2.4rem, 5.5vw, 4.5rem)",
+                letterSpacing: "-0.04em",
                 color: "#fff",
               }}
             >
-              Começar grátis por 15 dias
-              <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
-                <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </Link>
-            <Link
-              href="#como-funciona"
-              className="inline-flex items-center gap-2 px-6 py-4 rounded-xl font-semibold text-base transition-all hover:scale-105"
-              style={{
-                background: "rgba(255,255,255,0.08)",
-                border: "1px solid rgba(255,255,255,0.2)",
-                backdropFilter: "blur(8px)",
-                color: "#fff",
-              }}
-            >
-              Ver como funciona →
-            </Link>
-          </div>
+              Quantos clientes você
+              <br />
+              <span
+                style={{
+                  background: "linear-gradient(135deg, #ffffff 0%, #60A5FA 50%, #3B82F6 100%)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                }}
+              >
+                perdeu sem saber?
+              </span>
+            </h1>
 
-          {/* Microcopy */}
-          <p className="hero-text-5 text-sm mt-5" style={{ color: "rgba(255,255,255,0.4)" }}>
-            Sem cartão de crédito. Sem compromisso.
-          </p>
+            {/* Subheadline */}
+            <p
+              className="hero-text-3 text-lg leading-relaxed mb-8"
+              style={{ color: "rgba(255,255,255,0.78)", maxWidth: "480px" }}
+            >
+              O A7 organiza sua carteira, centraliza o WhatsApp da equipe
+              e dispara campanhas para os clientes certos.{" "}
+              <strong style={{ color: "#fff" }}>Venda mais. Sem aumentar o time.</strong>
+            </p>
+
+            {/* CTAs */}
+            <div className="hero-text-4 flex items-center gap-3 flex-wrap justify-center">
+              <Link
+                href="/login"
+                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl font-bold text-base transition-all hover:scale-105 hover:opacity-95"
+                style={{
+                  background: "linear-gradient(135deg, #3B82F6, #1D4ED8)",
+                  boxShadow: "0 8px 32px rgba(59,130,246,0.45)",
+                  color: "#fff",
+                }}
+              >
+                Começar grátis por 15 dias
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </Link>
+              <Link
+                href="#como-funciona"
+                className="inline-flex items-center gap-2 px-5 py-3.5 rounded-xl font-semibold text-base transition-all hover:scale-105"
+                style={{
+                  background: "rgba(255,255,255,0.07)",
+                  border: "1px solid rgba(255,255,255,0.18)",
+                  color: "#fff",
+                }}
+              >
+                Ver como funciona →
+              </Link>
+            </div>
+
+            {/* Microcopy */}
+            <p className="hero-text-5 text-xs mt-4" style={{ color: "rgba(255,255,255,0.35)" }}>
+              Sem cartão de crédito. Sem compromisso.
+            </p>
+          </div>
 
           {/* Scroll cue */}
           <div
