@@ -5,7 +5,7 @@ import { useActionState } from "react"
 import { useFormStatus } from "react-dom"
 import { useSearchParams } from "next/navigation"
 import { motion } from "framer-motion"
-import { loginAction, signupAction, type AuthState } from "./actions"
+import { loginAction, signupAction, resetPasswordAction, type AuthState } from "./actions"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -16,7 +16,7 @@ import {
   CardHeader,
 } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Eye, EyeOff, Mail, Lock, User, ArrowRight } from "lucide-react"
+import { Eye, EyeOff, Mail, Lock, User, ArrowRight, ChevronLeft } from "lucide-react"
 
 function SubmitButton({ label, pendingLabel }: { label: string; pendingLabel: string }) {
   const { pending } = useFormStatus()
@@ -39,8 +39,10 @@ export default function LoginPageWrapper() {
 function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [tab, setTab] = useState<"login" | "signup">("login")
+  const [forgotPassword, setForgotPassword] = useState(false)
   const [loginState, loginFormAction] = useActionState<AuthState, FormData>(loginAction, { error: null })
   const [signupState, signupFormAction] = useActionState<AuthState, FormData>(signupAction, { error: null })
+  const [resetState, resetFormAction] = useActionState<AuthState, FormData>(resetPasswordAction, { error: null })
   const [googleLoading, setGoogleLoading] = useState(false)
   const searchParams = useSearchParams()
   const oauthError = searchParams.get("error")
@@ -76,6 +78,60 @@ function LoginPage() {
       </div>
 
       <Card className="border-border/50 shadow-xl">
+        {forgotPassword ? (
+          <>
+            <CardHeader className="pb-2">
+              <button
+                type="button"
+                onClick={() => setForgotPassword(false)}
+                className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground w-fit"
+              >
+                <ChevronLeft className="h-4 w-4" /> Voltar
+              </button>
+            </CardHeader>
+            <CardContent className="pt-2">
+              {resetState.resetSent ? (
+                <div className="text-center py-6 space-y-3">
+                  <div className="mx-auto w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+                    <Mail className="w-6 h-6 text-green-600" />
+                  </div>
+                  <p className="font-semibold text-foreground">Verifique seu e-mail</p>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Enviamos um link para redefinir sua senha. Clique no link para criar uma nova senha.
+                  </p>
+                </div>
+              ) : (
+                <form action={resetFormAction} className="space-y-4">
+                  <div className="space-y-1 mb-2">
+                    <p className="font-semibold text-foreground">Recuperar senha</p>
+                    <p className="text-sm text-muted-foreground">Informe seu e-mail e enviaremos um link de redefinição.</p>
+                  </div>
+                  {resetState.error && (
+                    <p className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-md">
+                      {resetState.error}
+                    </p>
+                  )}
+                  <div className="space-y-2">
+                    <Label htmlFor="reset-email">E-mail</Label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="reset-email"
+                        name="email"
+                        type="email"
+                        placeholder="seu@email.com"
+                        className="pl-10"
+                        autoComplete="email"
+                        required
+                      />
+                    </div>
+                  </div>
+                  <SubmitButton label="Enviar link" pendingLabel="Enviando..." />
+                </form>
+              )}
+            </CardContent>
+          </>
+        ) : (
         <Tabs value={tab} onValueChange={(v) => setTab(v as "login" | "signup")}>
           <CardHeader className="pb-2">
             <TabsList className="grid w-full grid-cols-2">
@@ -115,6 +171,7 @@ function LoginPage() {
                       type="button"
                       className="text-xs text-primary hover:underline"
                       tabIndex={-1}
+                      onClick={() => setForgotPassword(true)}
                     >
                       Esqueceu a senha?
                     </button>
@@ -231,6 +288,7 @@ function LoginPage() {
             </Button>
           </CardContent>
         </Tabs>
+        )}
       </Card>
     </motion.div>
   )

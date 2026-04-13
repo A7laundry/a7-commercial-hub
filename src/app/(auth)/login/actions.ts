@@ -4,7 +4,7 @@ import { redirect, RedirectType } from "next/navigation"
 import { headers } from "next/headers"
 import { createClient } from "@/lib/supabase/server"
 
-export type AuthState = { error: string | null; emailSent?: boolean }
+export type AuthState = { error: string | null; emailSent?: boolean; resetSent?: boolean }
 
 export async function loginAction(
   _prev: AuthState,
@@ -43,4 +43,23 @@ export async function signupAction(
 
   // Don't auto-login — user must verify email first
   return { error: null, emailSent: true }
+}
+
+export async function resetPasswordAction(
+  _prev: AuthState,
+  formData: FormData
+): Promise<AuthState> {
+  const email = formData.get("email") as string
+
+  const headersList = await headers()
+  const origin = headersList.get("origin") ?? headersList.get("x-forwarded-host") ?? ""
+
+  const supabase = await createClient()
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${origin}/auth/callback?next=/reset-password`,
+  })
+
+  if (error) return { error: error.message }
+
+  return { error: null, resetSent: true }
 }
