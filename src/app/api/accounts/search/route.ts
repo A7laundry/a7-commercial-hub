@@ -5,6 +5,8 @@ import { createClient } from "@/lib/supabase/server"
 // GET /api/accounts/search?q=&limit=20&status=
 // Server-side account search with RLS. Used by AccountSearchSelect.
 // ---------------------------------------------------------------------------
+export const dynamic = "force-dynamic"
+
 export async function GET(request: NextRequest) {
   const supabase = await createClient()
 

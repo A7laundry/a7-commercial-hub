@@ -33,6 +33,7 @@ export default function AccountsPage() {
     qc.invalidateQueries({ queryKey: ["accounts", tenant.id] })
     qc.invalidateQueries({ queryKey: ["accounts_table", tenant.id] })
     qc.invalidateQueries({ queryKey: ["pipeline", tenant.id] })
+    router.refresh()
   }
 
   const totalClientes = accounts.length
@@ -147,7 +148,7 @@ export default function AccountsPage() {
       </div>
 
       {/* Create wizard dialog */}
-      <Dialog open={creating} onOpenChange={setCreating}>
+      <Dialog open={creating} onOpenChange={(open) => { if (!open) router.refresh(); setCreating(open) }}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>Novo cliente</DialogTitle>
