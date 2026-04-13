@@ -32,6 +32,7 @@ export default function AccountsPage() {
   function handleSuccess(accountId: string) {
     qc.invalidateQueries({ queryKey: ["accounts", tenant.id] })
     qc.invalidateQueries({ queryKey: ["accounts_table", tenant.id] })
+    qc.invalidateQueries({ queryKey: ["pipeline", tenant.id] })
   }
 
   const totalClientes = accounts.length

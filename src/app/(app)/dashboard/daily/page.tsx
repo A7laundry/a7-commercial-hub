@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useSearchParams } from "next/navigation"
 import { useTenant } from "@/hooks/useTenant"
 import { useDailyPerformance, useSaveDailyGoal, OUTCOME_LABELS, OUTCOME_NEGATIVE } from "@/hooks/dashboard/useDailyPerformance"
 import { useLogOutcome, useDeleteOutcome } from "@/hooks/dashboard/useInteractionOutcomes"
@@ -101,9 +102,10 @@ function progressColorClass(pct: number): string {
 
 export default function DailyPerformancePage() {
   const { tenant } = useTenant()
+  const searchParams = useSearchParams()
   const [selectedDate, setSelectedDate] = useState<string>("")
   useEffect(() => {
-    if (!selectedDate) setSelectedDate(todayIso())
+    if (!selectedDate) setSelectedDate(searchParams.get("date") ?? todayIso())
   }, [])
   const [copiedSummary, setCopiedSummary] = useState(false)
   const [summaryText, setSummaryText] = useState<string | null>(null)

@@ -408,5 +408,6 @@ export async function createAccountFromInbox(
 
   revalidatePath("/inbox")
   revalidatePath("/accounts")
+  revalidatePath("/pipeline")
   return { error: null, accountId }
 }

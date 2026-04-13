@@ -101,6 +101,7 @@ export async function createAccountFull(
       )
 
     revalidatePath("/accounts")
+    revalidatePath("/pipeline")
     return { error: null, accountId, phone: normalizedPhone }
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error"
