@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Sidebar, MobileSidebarTrigger } from "./Sidebar"
 import { CommandPalette } from "./CommandPalette"
+import { InternalChat } from "./InternalChat"
 import { cn } from "@/lib/utils"
 import { Search, User, Settings, LogOut } from "lucide-react"
 import { Toaster } from "sonner"
@@ -119,8 +120,8 @@ function UserMenu() {
 // ── Realtime events — mounted once, provides tenant-wide live signals ──────────
 
 function RealtimeProvider() {
-  const { tenant } = useTenant()
-  useRealtimeEvents(tenant.id)
+  const { tenant, currentUser } = useTenant()
+  useRealtimeEvents(tenant.id, currentUser.user_id)
   return null
 }
 
@@ -158,8 +159,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 ⌘K
               </kbd>
             </button>
-            {/* Push user menu to the right */}
-            <div className="ml-auto">
+            {/* Push to right */}
+            <div className="ml-auto flex items-center gap-2">
+              <InternalChat />
               <UserMenu />
             </div>
           </header>

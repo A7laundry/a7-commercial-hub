@@ -36,7 +36,14 @@ type AlertInsertPayload = {
   tenant_id: string
 }
 
-export function useRealtimeEvents(tenantId: string) {
+type ChatInsertPayload = {
+  sender_id: string
+  receiver_id: string
+  content: string
+  tenant_id: string
+}
+
+export function useRealtimeEvents(tenantId: string, currentUserId?: string) {
   const qc = useQueryClient()
   const supabase = createClient()
   // Toast cooldown: map of account_id (or phone) → last toast timestamp
@@ -127,10 +134,38 @@ export function useRealtimeEvents(tenantId: string) {
       )
       .subscribe()
 
+    // ── Channel 3: internal chat messages ────────────────────────────────────
+    let chatChannel: ReturnType<typeof supabase.channel> | null = null
+    if (currentUserId) {
+      chatChannel = supabase
+        .channel(`realtime:chat:${tenantId}:${currentUserId}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "internal_messages",
+            filter: `receiver_id=eq.${currentUserId}`,
+          },
+          (payload) => {
+            const msg = payload.new as ChatInsertPayload
+            qc.invalidateQueries({ queryKey: ["chat:unread", tenantId] })
+            qc.invalidateQueries({ queryKey: ["chat:members", tenantId] })
+
+            toast(`Nova mensagem interna`, {
+              description: msg.content.length > 60 ? msg.content.slice(0, 60) + "…" : msg.content,
+              duration: 4_000,
+            })
+          }
+        )
+        .subscribe()
+    }
+
     return () => {
       supabase.removeChannel(waChannel)
       supabase.removeChannel(alertsChannel)
+      if (chatChannel) supabase.removeChannel(chatChannel)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tenantId, qc])
+  }, [tenantId, currentUserId, qc])
 }
