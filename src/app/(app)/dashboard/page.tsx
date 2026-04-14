@@ -16,6 +16,7 @@ import { ExpiringContractsCard } from "@/components/modules/dashboard/ExpiringCo
 import { ExpiringDocsCard } from "@/components/modules/dashboard/ExpiringDocsCard"
 import { RecentAlertsCard } from "@/components/modules/dashboard/RecentAlertsCard"
 import { AccountsAtRiskCard } from "@/components/modules/dashboard/AccountsAtRiskCard"
+import { RecentAccountsCard } from "@/components/modules/dashboard/RecentAccountsCard"
 import { PendingReportBanner } from "@/components/modules/dashboard/PendingReportBanner"
 import { OperatorUsageCard } from "@/components/modules/dashboard/OperatorUsageCard"
 import { OperatorPerformanceCard } from "@/components/modules/dashboard/OperatorPerformanceCard"
@@ -471,7 +472,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Bottom row: Recent Alerts + Accounts at Risk */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-24">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
         {isLoading ? (
           <>
             <Skeleton className="h-52 w-full" />
@@ -483,6 +484,11 @@ export default function DashboardPage() {
             <AccountsAtRiskCard accounts={data?.accountsAtRisk ?? []} />
           </>
         )}
+      </div>
+
+      {/* Recent accounts — últimos 10 cadastrados */}
+      <div className="pb-24">
+        <RecentAccountsCard tenantId={tenant.id} />
       </div>
 
       {/* ── Floating HUD glassmorphic ──────────────────────────────────── */}
