@@ -6,6 +6,7 @@ import { useTenant } from "@/hooks/useTenant"
 import { useDailyPerformance, useSaveDailyGoal, OUTCOME_LABELS, OUTCOME_NEGATIVE } from "@/hooks/dashboard/useDailyPerformance"
 import { useLogOutcome, useDeleteOutcome } from "@/hooks/dashboard/useInteractionOutcomes"
 import { PageHeader } from "@/components/shared/PageHeader"
+import { AccountSearchSelect, type AccountOption } from "@/components/shared/AccountSearchSelect"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
 import {
@@ -118,6 +119,8 @@ export default function DailyPerformancePage() {
 
   // Outcome form state
   const [showOutcomeForm, setShowOutcomeForm] = useState(false)
+  const [linkedAccount, setLinkedAccount] = useState<AccountOption | null>(null)
+  const [manualName, setManualName] = useState(false)
   const [outcomeForm, setOutcomeForm] = useState({
     account_name: "",
     operator_name: "",
@@ -163,8 +166,10 @@ export default function DailyPerformancePage() {
 
   async function handleLogOutcome(e: React.FormEvent) {
     e.preventDefault()
+    const accountName = manualName ? outcomeForm.account_name : (linkedAccount?.name ?? outcomeForm.account_name)
     await logOutcomeMutation.mutateAsync({
-      account_name: outcomeForm.account_name,
+      account_name: accountName,
+      account_id: linkedAccount?.id ?? null,
       operator_name: outcomeForm.operator_name || "Equipe",
       unit: outcomeForm.unit || undefined,
       outcome_type: outcomeForm.outcome_type,
@@ -172,6 +177,8 @@ export default function DailyPerformancePage() {
       notes: outcomeForm.notes || undefined,
     })
     setOutcomeForm({ account_name: "", operator_name: "", unit: "", outcome_type: "sale", revenue_amount: "", notes: "" })
+    setLinkedAccount(null)
+    setManualName(false)
     setShowOutcomeForm(false)
   }
 
@@ -534,14 +541,29 @@ ${goalBlock}`
           {showOutcomeForm && (
             <form onSubmit={handleLogOutcome} className="space-y-3 border rounded-lg p-4 bg-muted/30">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <Input
-                  placeholder="Cliente / Prospect"
-                  value={outcomeForm.account_name}
-                  onChange={(e) =>
-                    setOutcomeForm((f) => ({ ...f, account_name: e.target.value }))
-                  }
-                  required
-                />
+                <div className="space-y-1">
+                  {manualName ? (
+                    <Input
+                      placeholder="Nome do cliente"
+                      value={outcomeForm.account_name}
+                      onChange={(e) => setOutcomeForm((f) => ({ ...f, account_name: e.target.value }))}
+                      required
+                    />
+                  ) : (
+                    <AccountSearchSelect
+                      value={linkedAccount}
+                      onChange={(acc) => { setLinkedAccount(acc); setOutcomeForm((f) => ({ ...f, account_name: acc?.name ?? "" })) }}
+                      placeholder="Buscar cliente..."
+                    />
+                  )}
+                  <button
+                    type="button"
+                    className="text-[11px] text-muted-foreground hover:text-primary underline-offset-2 hover:underline"
+                    onClick={() => { setManualName((v) => !v); setLinkedAccount(null); setOutcomeForm((f) => ({ ...f, account_name: "" })) }}
+                  >
+                    {manualName ? "Buscar na carteira" : "Digitar nome manualmente"}
+                  </button>
+                </div>
                 <Input
                   placeholder="Operador"
                   value={outcomeForm.operator_name}
@@ -595,7 +617,7 @@ ${goalBlock}`
               <div className="flex gap-2">
                 <Button
                   type="submit"
-                  disabled={logOutcomeMutation.isPending || !outcomeForm.account_name}
+                  disabled={logOutcomeMutation.isPending || (!linkedAccount && !outcomeForm.account_name)}
                   size="sm"
                 >
                   {logOutcomeMutation.isPending ? "Registrando..." : "Registrar"}

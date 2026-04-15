@@ -11,6 +11,12 @@ export type LogOutcomeInput = {
   notes?: string
 }
 
+// Maps outcome types to pipeline stages (only positive outcomes update the stage)
+const OUTCOME_TO_STAGE: Record<string, string> = {
+  sale:       "sucesso",
+  quote_only: "proposta",
+}
+
 export function useLogOutcome(tenantId: string, date: string) {
   const supabase = createClient()
   const qc = useQueryClient()
@@ -33,10 +39,22 @@ export function useLogOutcome(tenantId: string, date: string) {
         .select()
         .single()
       if (error) throw error
+
+      // Update pipeline stage when a linked account has a positive outcome
+      const newStage = OUTCOME_TO_STAGE[input.outcome_type]
+      if (input.account_id && newStage) {
+        await supabase
+          .from("accounts")
+          .update({ pipeline_stage: newStage, last_contact_at: new Date().toISOString() })
+          .eq("id", input.account_id)
+          .eq("tenant_id", tenantId)
+      }
+
       return data
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["daily_performance", tenantId, date] })
+      qc.invalidateQueries({ queryKey: ["pipeline", tenantId] })
     },
   })
 }
