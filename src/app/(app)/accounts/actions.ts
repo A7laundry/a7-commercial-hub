@@ -68,9 +68,7 @@ export async function createAccountFull(
         contact_email: data.email,
         contact_name: data.contact_name || null,
         segment: data.segment || null,
-        // P0 FIX: No default pipeline_stage — accounts must be explicitly placed in pipeline.
-        // Pass pipeline_stage only if explicitly provided by the caller.
-        ...(data.pipeline_stage ? { pipeline_stage: data.pipeline_stage } : {}),
+        pipeline_stage: data.pipeline_stage || "lead",
         commercial_status: "active",
         status: "active",
         estimated_value: isNaN(estimatedValue as number) ? null : estimatedValue,
@@ -177,7 +175,6 @@ export async function markAccountLost(
     .from("accounts")
     .update({
       commercial_status: "lost",
-      pipeline_stage: "closed",
       loss_reason,
       notes: loss_notes ?? null,
     })

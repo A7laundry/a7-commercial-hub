@@ -33,6 +33,8 @@ export default function AccountsPage() {
     qc.invalidateQueries({ queryKey: ["accounts", tenant.id] })
     qc.invalidateQueries({ queryKey: ["accounts_table", tenant.id] })
     qc.invalidateQueries({ queryKey: ["pipeline", tenant.id] })
+    qc.invalidateQueries({ queryKey: ["dashboard", tenant.id] })
+    qc.invalidateQueries({ queryKey: ["dashboard:recent-accounts", tenant.id] })
     router.refresh()
   }
 
