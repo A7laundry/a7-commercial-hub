@@ -116,12 +116,12 @@ export async function checkAutomationTriggers(tenantId: string) {
     })
   }
 
-  // Reactivation: accounts in negotiating stage for 14+ days
+  // Reactivation: accounts in proposta stage for 14+ days
   const { data: stalledNegotiations } = await supabase
     .from("accounts")
     .select("id")
     .eq("tenant_id", tenantId)
-    .eq("pipeline_stage", "negotiating")
+    .eq("pipeline_stage", "proposta")
     .lt("updated_at", fourteenDaysAgo)
 
   for (const acc of stalledNegotiations ?? []) {
@@ -129,7 +129,7 @@ export async function checkAutomationTriggers(tenantId: string) {
       tenant_id: tenantId,
       account_id: acc.id,
       type: "reactivation",
-      reason: "Negociação parada há mais de 14 dias",
+      reason: "Proposta parada há mais de 14 dias",
       status: "pending",
     })
   }

@@ -106,15 +106,15 @@ export type DailyPerformanceData = {
 // ── Internal constants ────────────────────────────────────────────────────────
 
 const PIPELINE_LABELS: Record<string, string> = {
-  lead: "Lead",
-  in_service: "Em serviço",
-  quote_sent: "Proposta",
-  negotiating: "Negociando",
-  closed: "Fechado",
-  recurring: "Recorrente",
+  lead:       "Lead",
+  em_contato: "Em contato",
+  proposta:   "Proposta",
+  sucesso:    "Sucesso",
+  cliente:    "Cliente ativo",
+  recorrente: "Recorrente",
 }
 
-const PIPELINE_ORDER = ["lead", "in_service", "quote_sent", "negotiating", "closed", "recurring"]
+const PIPELINE_ORDER = ["lead", "em_contato", "proposta", "sucesso", "cliente", "recorrente"]
 
 // ── Hook ──────────────────────────────────────────────────────────────────────
 

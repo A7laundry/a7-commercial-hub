@@ -119,8 +119,8 @@ export function inferPipelineStage(row: Partial<ImportRow>): PipelineStage {
   const hasFrequency = row.frequency && row.frequency.length > 0
   const isRecurring = /mensal|seman|diári|recorr|fixo|regular/i.test(row.frequency ?? "")
 
-  if (hasValue && isRecurring) return "recurring"
-  if (hasValue) return "in_service"
+  if (hasValue && isRecurring) return "recorrente"
+  if (hasValue) return "em_contato"
   return "lead"
 }
 

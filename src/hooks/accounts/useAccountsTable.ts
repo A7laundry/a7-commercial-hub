@@ -165,20 +165,20 @@ function applyFilters(q: any, filters: TableFilters) {
     const d30 = new Date(now.getTime() - 30 * 86400000).toISOString()
 
     if (filters.score === "at_risk") {
-      q = q.or(`commercial_status.eq.at_risk,and(pipeline_stage.eq.negotiating,last_contact_at.lt.${d14})`)
+      q = q.or(`commercial_status.eq.at_risk,and(pipeline_stage.eq.proposta,last_contact_at.lt.${d14})`)
     } else if (filters.score === "hot") {
       q = q
-        .in("pipeline_stage", ["negotiating", "quote_sent"])
+        .eq("pipeline_stage", "proposta")
         .gte("last_contact_at", d7)
         .eq("commercial_status", "active")
     } else if (filters.score === "cold") {
       q = q.or(`last_contact_at.is.null,last_contact_at.lt.${d30}`)
     } else if (filters.score === "upsell") {
-      q = q.in("pipeline_stage", ["recurring", "closed"])
+      q = q.in("pipeline_stage", ["recorrente", "sucesso"])
     } else if (filters.score === "warm") {
       q = q
         .gte("last_contact_at", d30)
-        .not("pipeline_stage", "in", '("negotiating","quote_sent","recurring","closed")')
+        .not("pipeline_stage", "in", '("proposta","recorrente","sucesso")')
         .eq("commercial_status", "active")
     }
   }

@@ -254,7 +254,7 @@ export async function POST(request: NextRequest) {
 
     // Pipeline stage update ONLY on confirmed send
     if (action_type === "proposal" && finalStatus === "sent") {
-      accountUpdate.pipeline_stage = "negotiating"
+      accountUpdate.pipeline_stage = "proposta"
     } else if (
       action_type === "reactivation" &&
       finalStatus === "sent"

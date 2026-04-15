@@ -33,12 +33,12 @@ type Props = {
 }
 
 const PIPELINE_LABELS: Record<PipelineStage, string> = {
-  lead:        "Lead",
-  in_service:  "Em serviço",
-  quote_sent:  "Proposta",
-  negotiating: "Negociando",
-  closed:      "Fechado",
-  recurring:   "Recorrente",
+  lead:       "Lead",
+  em_contato: "Em contato",
+  proposta:   "Proposta",
+  sucesso:    "Sucesso",
+  cliente:    "Cliente ativo",
+  recorrente: "Recorrente",
 }
 
 type Tab = "smart" | "manual"

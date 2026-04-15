@@ -42,14 +42,14 @@ function deriveOpportunities(row: ImportRow, score: Score): string[] {
   if (score === "cold" && value > 0) ops.push("Follow-up — cliente com valor sem contato recente")
   if (days !== null && days > 90) ops.push(`Sem contato há ${days} dias`)
   if (value > 5000) ops.push("Alto valor — prioridade comercial")
-  if (row.pipeline_stage === "recurring" && value < 3000) ops.push("Potencial de expansão de contrato")
+  if (row.pipeline_stage === "recorrente" && value < 3000) ops.push("Potencial de expansão de contrato")
 
   return ops
 }
 
 function deriveSegmentGroup(row: ImportRow, score: Score): SegmentGroup {
   const value = row.estimated_value ?? 0
-  const isRecurring = row.pipeline_stage === "recurring"
+  const isRecurring = row.pipeline_stage === "recorrente"
 
   if (row.status === "inactive") return "inactive"
   if (value > 5000) return "high_value"

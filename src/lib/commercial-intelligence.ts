@@ -107,18 +107,18 @@ export function computeCommercialScore(
   // at_risk: explicit commercial_status or stalled negotiation
   if (account.commercial_status === "at_risk") return "at_risk"
   if (
-    account.pipeline_stage === "negotiating" &&
+    account.pipeline_stage === "proposta" &&
     daysSinceContact !== null &&
     daysSinceContact > 14
   ) return "at_risk"
 
-  // upsell: recurring/closed account with expiring contract
+  // upsell: recorrente/sucesso account with expiring contract
   const hasExpiringContract = contracts.some((c) => {
     const status = deriveContractStatus(c.starts_at, c.ends_at)
     return status === "expiring" || status === "active"
   })
   if (
-    (account.pipeline_stage === "recurring" || account.pipeline_stage === "closed") &&
+    (account.pipeline_stage === "recorrente" || account.pipeline_stage === "sucesso") &&
     hasExpiringContract
   ) return "upsell"
 
@@ -126,7 +126,7 @@ export function computeCommercialScore(
   if (
     daysSinceContact !== null &&
     daysSinceContact <= 7 &&
-    (account.pipeline_stage === "negotiating" || account.pipeline_stage === "quote_sent")
+    account.pipeline_stage === "proposta"
   ) return "hot"
 
   // cold: no contact in 30+ days
@@ -167,8 +167,8 @@ export function computeNextBestAction(
   if (score === "at_risk") {
     return {
       label: "Contato urgente",
-      description: account.pipeline_stage === "negotiating"
-        ? `Negociação parada há ${daysSinceContact} dias. Ligue ou envie mensagem hoje.`
+      description: account.pipeline_stage === "proposta"
+        ? `Proposta parada há ${daysSinceContact} dias. Ligue ou envie mensagem hoje.`
         : "Conta em risco. Identifique o bloqueio e aja agora.",
       priority: "urgent",
       type: "follow_up",
@@ -191,7 +191,7 @@ export function computeNextBestAction(
     }
   }
 
-  if (account.pipeline_stage === "quote_sent") {
+  if (account.pipeline_stage === "proposta") {
     const d = daysSinceContact ?? 0
     return {
       label: "Follow-up de proposta",
@@ -200,15 +200,6 @@ export function computeNextBestAction(
         : "Proposta enviada recentemente. Agende follow-up para 7 dias após envio.",
       priority: d > 7 ? "high" : "normal",
       type: "follow_up",
-    }
-  }
-
-  if (account.pipeline_stage === "negotiating") {
-    return {
-      label: "Avançar negociação",
-      description: "Defina próximos passos concretos e prazo para fechamento.",
-      priority: "high",
-      type: "proposal",
     }
   }
 
@@ -252,11 +243,11 @@ export function computeOpportunitySignals(
   const signals: OpportunitySignal[] = []
   const daysSinceContact = daysSince(account.last_contact_at)
 
-  // Stalled negotiation
-  if (account.pipeline_stage === "negotiating" && daysSinceContact !== null && daysSinceContact > 14) {
+  // Stalled proposal
+  if (account.pipeline_stage === "proposta" && daysSinceContact !== null && daysSinceContact > 14) {
     signals.push({
       id: "stalled_negotiation",
-      label: "Negociação parada",
+      label: "Proposta parada",
       description: `Sem movimentação há ${daysSinceContact} dias nesta etapa.`,
       severity: "critical",
     })
@@ -303,7 +294,7 @@ export function computeOpportunitySignals(
 
   // Low estimated value vs recurring potential
   if (
-    account.pipeline_stage === "recurring" &&
+    account.pipeline_stage === "recorrente" &&
     account.estimated_value !== null &&
     account.estimated_value < 5000
   ) {
@@ -353,7 +344,7 @@ export function getMessageSuggestions(
     },
   ]
 
-  if (score === "upsell" || account.pipeline_stage === "recurring") {
+  if (score === "upsell" || account.pipeline_stage === "recorrente") {
     suggestions.push({
       type: "upsell",
       label: "Oportunidade de expansão",
@@ -370,7 +361,7 @@ export function getMessageSuggestions(
     })
   }
 
-  if (account.pipeline_stage === "quote_sent") {
+  if (account.pipeline_stage === "proposta") {
     suggestions.push({
       type: "follow_up",
       label: "Follow-up de proposta",

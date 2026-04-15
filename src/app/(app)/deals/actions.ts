@@ -193,10 +193,10 @@ export async function updateDealStage(
   // Sync account.pipeline_stage based on deal progression
   if (existing.account_id) {
     const stageSyncMap: Partial<Record<DealStage, string>> = {
-      proposal:    "quote_sent",
-      negotiation: "negotiating",
-      contacted:   "lead",
-      qualified:   "lead",
+      proposal:    "proposta",
+      negotiation: "proposta",
+      contacted:   "em_contato",
+      qualified:   "em_contato",
     }
     const accountStage = stageSyncMap[newStage]
     if (accountStage) {
@@ -288,7 +288,7 @@ export async function markDealWon(dealId: string): Promise<{ error: string | nul
   if (existing.account_id) {
     await supabase
       .from("accounts")
-      .update({ pipeline_stage: "recurring", commercial_status: "active" })
+      .update({ pipeline_stage: "recorrente", commercial_status: "active" })
       .eq("id", existing.account_id)
       .eq("tenant_id", tenantId)
   }

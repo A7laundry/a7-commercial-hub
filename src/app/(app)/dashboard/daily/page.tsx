@@ -60,12 +60,12 @@ function formatDateBr(iso: string): string {
 // ── Stage config ──────────────────────────────────────────────────────────────
 
 const STAGE_CONFIG: Record<string, { label: string; colorClass: string }> = {
-  lead:        { label: "Lead",             colorClass: "bg-slate-400" },
-  in_service:  { label: "Em atendimento",   colorClass: "bg-blue-500" },
-  quote_sent:  { label: "Proposta enviada", colorClass: "bg-amber-500" },
-  negotiating: { label: "Negociando",       colorClass: "bg-orange-500" },
-  closed:      { label: "Fechado",          colorClass: "bg-green-600" },
-  recurring:   { label: "Recorrente",       colorClass: "bg-emerald-500" },
+  lead:       { label: "Lead",          colorClass: "bg-slate-400" },
+  em_contato: { label: "Em contato",    colorClass: "bg-blue-500" },
+  proposta:   { label: "Proposta",      colorClass: "bg-amber-500" },
+  sucesso:    { label: "Sucesso",       colorClass: "bg-orange-500" },
+  cliente:    { label: "Cliente ativo", colorClass: "bg-green-600" },
+  recorrente: { label: "Recorrente",    colorClass: "bg-emerald-500" },
 }
 
 // ── Outcome badge color ───────────────────────────────────────────────────────

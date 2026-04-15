@@ -40,7 +40,7 @@ export const AUDIENCE_PRESETS: AudiencePreset[] = [
     campaignType: "follow_up",
     filter: (a) => {
       const d = daysSince(a.last_contact_at)
-      return a.pipeline_stage === "negotiating" && d !== null && d > 7
+      return a.pipeline_stage === "proposta" && d !== null && d > 7
     },
     messageHint: "Retomar negociações que esfriaram",
   },
@@ -52,7 +52,7 @@ export const AUDIENCE_PRESETS: AudiencePreset[] = [
     campaignType: "upsell",
     filter: (a) => {
       return (
-        a.pipeline_stage === "recurring" &&
+        a.pipeline_stage === "recorrente" &&
         a.estimated_value !== null &&
         a.estimated_value < 500
       )
@@ -90,7 +90,7 @@ export const AUDIENCE_PRESETS: AudiencePreset[] = [
       const d = daysSince(a.last_contact_at)
       const freq = parseFrequencyPerMonth(a.frequency)
       return (
-        (a.pipeline_stage === "in_service" || a.pipeline_stage === "recurring") &&
+        (a.pipeline_stage === "em_contato" || a.pipeline_stage === "recorrente") &&
         freq >= 3 &&
         d !== null &&
         d > 21
@@ -106,7 +106,7 @@ export const AUDIENCE_PRESETS: AudiencePreset[] = [
     campaignType: "follow_up",
     filter: (a) => {
       const d = daysSince(a.last_contact_at)
-      return a.pipeline_stage === "quote_sent" && (d === null || d > 3)
+      return a.pipeline_stage === "proposta" && (d === null || d > 3)
     },
     messageHint: "Verificar se proposta foi recebida",
   },
@@ -118,7 +118,7 @@ export const AUDIENCE_PRESETS: AudiencePreset[] = [
     campaignType: "follow_up",
     filter: (a) => {
       return (
-        a.pipeline_stage === "negotiating" &&
+        a.pipeline_stage === "proposta" &&
         a.estimated_value !== null &&
         a.estimated_value >= 500
       )

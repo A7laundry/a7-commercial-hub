@@ -184,7 +184,7 @@ const EXECUTION_RULES: ExecutionRule[] = [
     actionType: "follow_up",
     baseScore: 68,
     match: (ctx) => {
-      if (ctx.account.pipeline_stage !== "quote_sent") return false
+      if (ctx.account.pipeline_stage !== "proposta") return false
       return ctx.daysSinceContact >= 7
     },
     reason: (ctx) => `Proposta enviada há ${ctx.daysSinceContact}d sem resposta — faça o acompanhamento`,

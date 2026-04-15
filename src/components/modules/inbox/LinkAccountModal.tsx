@@ -17,8 +17,8 @@ import { Search, Plus, Building2, CheckCircle2, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const PIPELINE_LABEL: Record<string, string> = {
-  lead: "Lead", in_service: "Em serviço", quote_sent: "Proposta enviada",
-  negotiating: "Negociando", closed: "Fechado", recurring: "Recorrente",
+  lead: "Lead", em_contato: "Em contato", proposta: "Proposta",
+  sucesso: "Sucesso", cliente: "Cliente ativo", recorrente: "Recorrente",
 }
 
 type Props = {
