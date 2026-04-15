@@ -21,11 +21,11 @@ export type AccountStatus = "active" | "inactive" | "prospect"
 
 export type PipelineStage =
   | "lead"
-  | "in_service"
-  | "quote_sent"
-  | "negotiating"
-  | "closed"
-  | "recurring"
+  | "em_contato"
+  | "proposta"
+  | "sucesso"
+  | "cliente"
+  | "recorrente"
 
 export type CommercialStatus = "active" | "at_risk" | "lost"
 

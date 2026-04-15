@@ -9,31 +9,21 @@ import { UserPlus, ArrowRight } from "lucide-react"
 import { formatCurrency } from "@/lib/utils"
 
 const STAGE_LABEL: Record<string, string> = {
-  lead:        "Lead",
-  in_service:  "Em serviço",
-  em_contato:  "Em contato",
-  quote_sent:  "Proposta",
-  proposta:    "Proposta",
-  negotiating: "Negociando",
-  sucesso:     "Sucesso",
-  closed:      "Fechado",
-  cliente:     "Cliente",
-  recurring:   "Recorrente",
-  recorrente:  "Recorrente",
+  lead:       "Lead",
+  em_contato: "Em contato",
+  proposta:   "Proposta",
+  sucesso:    "Sucesso",
+  cliente:    "Cliente ativo",
+  recorrente: "Recorrente",
 }
 
 const STAGE_COLOR: Record<string, string> = {
-  lead:        "bg-slate-100 text-slate-600",
-  in_service:  "bg-blue-100 text-blue-700",
-  em_contato:  "bg-blue-100 text-blue-700",
-  quote_sent:  "bg-purple-100 text-purple-700",
-  proposta:    "bg-purple-100 text-purple-700",
-  negotiating: "bg-amber-100 text-amber-700",
-  sucesso:     "bg-emerald-100 text-emerald-700",
-  closed:      "bg-green-100 text-green-700",
-  cliente:     "bg-green-100 text-green-700",
-  recurring:   "bg-emerald-100 text-emerald-700",
-  recorrente:  "bg-emerald-100 text-emerald-700",
+  lead:       "bg-slate-100 text-slate-600",
+  em_contato: "bg-blue-100 text-blue-700",
+  proposta:   "bg-purple-100 text-purple-700",
+  sucesso:    "bg-amber-100 text-amber-700",
+  cliente:    "bg-green-100 text-green-700",
+  recorrente: "bg-emerald-100 text-emerald-700",
 }
 
 function timeAgo(iso: string) {

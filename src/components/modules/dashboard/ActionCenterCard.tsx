@@ -57,8 +57,8 @@ export function ActionCenterCard() {
 
     if (daysSince > 30 && acc.status !== "inactive") {
       reactivate.push({ account: acc, reason: `Sem contato há ${daysSince}d`, templateType: "reactivation", ltv })
-    } else if (score === "at_risk" || (acc.pipeline_stage === "negotiating" && daysSince > 7)) {
-      followUp.push({ account: acc, reason: acc.pipeline_stage === "negotiating" ? "Negociação parada" : "Em risco", templateType: "follow_up", ltv })
+    } else if (score === "at_risk" || (acc.pipeline_stage === "proposta" && daysSince > 7)) {
+      followUp.push({ account: acc, reason: acc.pipeline_stage === "proposta" ? "Proposta parada" : "Em risco", templateType: "follow_up", ltv })
     } else if (score === "upsell") {
       upsell.push({ account: acc, reason: "Alto potencial de crescimento", templateType: "upsell", ltv })
     }

@@ -71,11 +71,11 @@ export function AccountForm({
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="lead">Lead</SelectItem>
-                    <SelectItem value="in_service">Em serviço</SelectItem>
-                    <SelectItem value="quote_sent">Proposta enviada</SelectItem>
-                    <SelectItem value="negotiating">Negociando</SelectItem>
-                    <SelectItem value="closed">Fechado</SelectItem>
-                    <SelectItem value="recurring">Recorrente</SelectItem>
+                    <SelectItem value="em_contato">Em contato</SelectItem>
+                    <SelectItem value="proposta">Proposta</SelectItem>
+                    <SelectItem value="sucesso">Sucesso</SelectItem>
+                    <SelectItem value="cliente">Cliente ativo</SelectItem>
+                    <SelectItem value="recorrente">Recorrente</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

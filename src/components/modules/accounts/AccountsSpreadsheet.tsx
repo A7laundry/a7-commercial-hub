@@ -15,8 +15,8 @@ import {
 } from "lucide-react"
 
 const PIPELINE_LABEL: Record<string, string> = {
-  lead: "Lead", in_service: "Em serviço", quote_sent: "Proposta",
-  negotiating: "Negociando", closed: "Fechado", recurring: "Recorrente",
+  lead: "Lead", em_contato: "Em contato", proposta: "Proposta",
+  sucesso: "Sucesso", cliente: "Cliente ativo", recorrente: "Recorrente",
 }
 
 const COMMERCIAL_COLOR: Record<string, string> = {
@@ -157,13 +157,13 @@ export function AccountsSpreadsheet({ tenantId }: Props) {
             value={params.filters.pipeline_stage}
             onChange={(v) => setFilter("pipeline_stage", v as PipelineStage | "all")}
             options={[
-              { value: "all", label: "Todos" },
-              { value: "lead", label: "Lead" },
-              { value: "in_service", label: "Em serviço" },
-              { value: "quote_sent", label: "Proposta" },
-              { value: "negotiating", label: "Negociando" },
-              { value: "closed", label: "Fechado" },
-              { value: "recurring", label: "Recorrente" },
+              { value: "all",        label: "Todos" },
+              { value: "lead",       label: "Lead" },
+              { value: "em_contato", label: "Em contato" },
+              { value: "proposta",   label: "Proposta" },
+              { value: "sucesso",    label: "Sucesso" },
+              { value: "cliente",    label: "Cliente ativo" },
+              { value: "recorrente", label: "Recorrente" },
             ]}
           />
           <FilterSelect

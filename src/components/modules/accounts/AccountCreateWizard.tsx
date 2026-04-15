@@ -65,12 +65,12 @@ const SELECT_CLASS =
   "w-full text-sm border rounded-md px-2 py-2 bg-background h-9 focus:outline-none focus:ring-1 focus:ring-primary"
 
 const PIPELINE_OPTIONS: { value: PipelineStage; label: string }[] = [
-  { value: "lead", label: "Lead" },
-  { value: "in_service", label: "Em serviço" },
-  { value: "quote_sent", label: "Proposta" },
-  { value: "negotiating", label: "Negociando" },
-  { value: "closed", label: "Fechado" },
-  { value: "recurring", label: "Recorrente" },
+  { value: "lead",       label: "Lead" },
+  { value: "em_contato", label: "Em contato" },
+  { value: "proposta",   label: "Proposta" },
+  { value: "sucesso",    label: "Sucesso" },
+  { value: "cliente",    label: "Cliente ativo" },
+  { value: "recorrente", label: "Recorrente" },
 ]
 
 // ── Step indicator ─────────────────────────────────────────────────────────────

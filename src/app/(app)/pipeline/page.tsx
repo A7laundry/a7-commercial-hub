@@ -11,12 +11,12 @@ import { RefreshCw, Zap, ArrowRight } from "lucide-react"
 import { formatCurrency } from "@/lib/utils"
 
 const PIPELINE_STAGE_LABEL: Record<string, string> = {
-  lead:        "Lead",
-  in_service:  "Em serviço",
-  quote_sent:  "Proposta enviada",
-  negotiating: "Negociando",
-  closed:      "Fechado",
-  recurring:   "Recorrente",
+  lead:       "Lead",
+  em_contato: "Em contato",
+  proposta:   "Proposta",
+  sucesso:    "Sucesso",
+  cliente:    "Cliente ativo",
+  recorrente: "Recorrente",
 }
 
 export default function PipelinePage() {
@@ -106,7 +106,7 @@ export default function PipelinePage() {
         {/* Stage stats cards */}
         {pipelineStats && (
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3 px-6 pb-4 mt-3 -mx-6">
-            {(["lead", "in_service", "quote_sent", "recurring"] as const).map((stage) => {
+            {(["lead", "em_contato", "proposta", "recorrente"] as const).map((stage) => {
               const s = pipelineStats.byStage[stage]
               if (!s) return null
               return (
