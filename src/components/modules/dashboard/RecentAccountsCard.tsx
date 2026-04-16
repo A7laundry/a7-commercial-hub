@@ -3,11 +3,12 @@
 import Link from "next/link"
 import { useQuery } from "@tanstack/react-query"
 import { createClient } from "@/lib/supabase/client"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { UserPlus, ArrowRight } from "lucide-react"
 import { formatCurrency } from "@/lib/utils"
+import { UserAvatar } from "@/components/shared/UserAvatar"
 
+// Static label/color maps — outside component
 const STAGE_LABEL: Record<string, string> = {
   lead:       "Lead",
   em_contato: "Em contato",
@@ -18,12 +19,12 @@ const STAGE_LABEL: Record<string, string> = {
 }
 
 const STAGE_COLOR: Record<string, string> = {
-  lead:       "bg-slate-100 text-slate-600",
-  em_contato: "bg-blue-100 text-blue-700",
-  proposta:   "bg-purple-100 text-purple-700",
-  sucesso:    "bg-amber-100 text-amber-700",
-  cliente:    "bg-green-100 text-green-700",
-  recorrente: "bg-emerald-100 text-emerald-700",
+  lead:       "bg-slate-100 text-slate-600 ring-1 ring-slate-200",
+  em_contato: "bg-blue-100 text-blue-700 ring-1 ring-blue-200",
+  proposta:   "bg-purple-100 text-purple-700 ring-1 ring-purple-200",
+  sucesso:    "bg-amber-100 text-amber-700 ring-1 ring-amber-200",
+  cliente:    "bg-green-100 text-green-700 ring-1 ring-green-200",
+  recorrente: "bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200",
 }
 
 function timeAgo(iso: string) {
@@ -59,76 +60,81 @@ export function RecentAccountsCard({ tenantId }: { tenantId: string }) {
   const { data: accounts = [], isPending } = useRecentAccounts(tenantId)
 
   return (
-    <Card className="shadow-[0_24px_40px_rgba(25,28,29,0.03)] border-transparent h-full">
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <UserPlus className="w-4 h-4 text-[#022448]" />
-            <CardTitle
-              className="text-sm font-extrabold text-[#022448]"
-              style={{ fontFamily: "Manrope, sans-serif" }}
-            >
-              Últimos clientes cadastrados
-            </CardTitle>
+    <div className="bg-white rounded-xl border border-transparent shadow-[0_2px_16px_rgba(2,36,72,0.07)] overflow-hidden h-full flex flex-col">
+      {/* Card header */}
+      <div className="flex items-center justify-between px-4 py-3 border-b bg-[#f8f9fa]">
+        <div className="flex items-center gap-2">
+          <div className="p-1.5 rounded-lg bg-[#022448]/8">
+            <UserPlus className="w-3.5 h-3.5 text-[#022448]" />
           </div>
-          <Link
-            href="/accounts"
-            className="text-[10px] font-semibold text-muted-foreground hover:text-primary flex items-center gap-1 transition-colors"
-          >
-            Ver todos <ArrowRight className="w-3 h-3" />
-          </Link>
+          <h3 className="text-sm font-extrabold font-headline text-[#022448]">
+            Últimos clientes cadastrados
+          </h3>
         </div>
-      </CardHeader>
+        <Link
+          href="/accounts"
+          className="text-[10px] font-semibold text-muted-foreground hover:text-[#F5A623] flex items-center gap-1 transition-colors"
+        >
+          Ver todos <ArrowRight className="w-3 h-3" />
+        </Link>
+      </div>
 
-      <CardContent className="pt-0">
+      {/* Card body */}
+      <div className="px-4 py-3 flex-1">
         {isPending ? (
           <div className="space-y-3">
             {[...Array(5)].map((_, i) => (
               <div key={i} className="flex items-center justify-between gap-3">
-                <div className="space-y-1.5 flex-1">
-                  <Skeleton className="h-3 w-36" />
-                  <Skeleton className="h-2.5 w-20" />
+                <div className="flex items-center gap-2 flex-1">
+                  <Skeleton className="w-7 h-7 rounded-full shrink-0" />
+                  <div className="space-y-1.5 flex-1">
+                    <Skeleton className="h-3 w-36" />
+                    <Skeleton className="h-2.5 w-20" />
+                  </div>
                 </div>
                 <Skeleton className="h-5 w-16 rounded-full" />
               </div>
             ))}
           </div>
         ) : accounts.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-8 text-center gap-2 text-muted-foreground">
-            <UserPlus className="w-8 h-8 opacity-20" />
-            <p className="text-sm">Nenhum cliente cadastrado ainda.</p>
+          <div className="flex flex-col items-center justify-center py-8 text-center gap-2">
+            <div className="w-10 h-10 rounded-full bg-[#022448]/8 flex items-center justify-center">
+              <UserPlus className="w-5 h-5 text-[#022448]/40" />
+            </div>
+            <p className="text-sm font-medium text-muted-foreground">Nenhum cliente cadastrado ainda.</p>
             <Link
               href="/accounts"
-              className="text-xs font-semibold text-primary hover:underline flex items-center gap-1"
+              className="text-xs font-semibold text-[#022448] hover:text-[#F5A623] flex items-center gap-1 transition-colors"
             >
               Cadastrar primeiro cliente <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
         ) : (
-          <div className="divide-y divide-border/50">
+          <div className="divide-y divide-[#022448]/6">
             {accounts.map((account) => (
               <Link
                 key={account.id}
                 href={`/accounts/${account.id}`}
-                className="flex items-center justify-between gap-3 py-2.5 hover:bg-muted/40 -mx-2 px-2 rounded-lg transition-colors group"
+                className="flex items-center justify-between gap-3 py-2.5 hover:bg-[#f8f9fa] -mx-2 px-2 rounded-lg transition-colors group"
               >
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold truncate group-hover:text-primary transition-colors">
-                    {account.name}
-                  </p>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">
-                    {timeAgo(account.created_at)}
-                    {account.estimated_value
-                      ? ` · ${formatCurrency(account.estimated_value, "BRL")}`
-                      : " · sem valor definido"}
-                  </p>
+                <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                  <UserAvatar displayName={account.name} size={28} className="shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-[#022448] truncate group-hover:text-[#F5A623] transition-colors">
+                      {account.name}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5" suppressHydrationWarning>
+                      {timeAgo(account.created_at)}
+                      {account.estimated_value
+                        ? ` · ${formatCurrency(account.estimated_value, "BRL")}`
+                        : " · sem valor"}
+                    </p>
+                  </div>
                 </div>
                 {account.pipeline_stage && (
-                  <span
-                    className={`shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-                      STAGE_COLOR[account.pipeline_stage] ?? "bg-slate-100 text-slate-600"
-                    }`}
-                  >
+                  <span className={`shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                    STAGE_COLOR[account.pipeline_stage] ?? "bg-slate-100 text-slate-600"
+                  }`}>
                     {STAGE_LABEL[account.pipeline_stage] ?? account.pipeline_stage}
                   </span>
                 )}
@@ -136,7 +142,7 @@ export function RecentAccountsCard({ tenantId }: { tenantId: string }) {
             ))}
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 }
