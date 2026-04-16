@@ -493,9 +493,9 @@ function DealCard({
       onDragStart={isTerminal ? undefined : onDragStart}
       onDragEnd={isTerminal ? undefined : onDragEnd}
       className={cn(
-        "bg-card border rounded-md p-2.5 shadow-sm transition-all select-none",
-        !isTerminal && "cursor-grab active:cursor-grabbing hover:shadow-md",
-        isTerminal && "cursor-default opacity-80",
+        "crm-card bg-white border rounded-xl p-3 shadow-[0_2px_8px_rgba(2,36,72,0.06)] select-none",
+        !isTerminal && "cursor-grab active:cursor-grabbing",
+        isTerminal && "cursor-default opacity-75",
         isDragging && "opacity-40 rotate-1"
       )}
     >

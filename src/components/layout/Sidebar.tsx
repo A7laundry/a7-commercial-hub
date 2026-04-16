@@ -122,17 +122,17 @@ function NavContent({
         <div key={gi}>
           {/* Separator between groups (skip before first) */}
           {gi > 0 && (
-            <div className="mx-3 my-2 border-t border-sidebar-border/60" />
+            <div className="mx-3 my-2 border-t border-white/8" />
           )}
 
           {/* Group label */}
           {group.label && !collapsed && (
             <p
               className={cn(
-                "px-3 mb-1 text-[10px] font-semibold uppercase tracking-widest",
+                "px-3 mb-1 text-[9px] font-bold uppercase tracking-[0.12em]",
                 group.highlighted
-                  ? "text-primary"
-                  : "text-sidebar-foreground/40"
+                  ? "text-[#F5A623]"
+                  : "text-white/30"
               )}
             >
               {group.label}
@@ -151,14 +151,14 @@ function NavContent({
                   onClick={onNavigate}
                   title={collapsed ? label : undefined}
                   className={cn(
-                    "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
+                    "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150",
                     collapsed && "justify-center px-2",
                     active
-                      ? "bg-sidebar-primary text-sidebar-primary-foreground"
-                      : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                      ? "bg-[#F5A623] text-[#022448] font-semibold shadow-[0_2px_12px_rgba(245,166,35,0.25)]"
+                      : "text-white/70 hover:bg-white/8 hover:text-white"
                   )}
                 >
-                  <Icon className="w-4 h-4 shrink-0" />
+                  <Icon className={cn("w-4 h-4 shrink-0", active ? "text-[#022448]" : "text-white/60")} />
                   {!collapsed && (
                     <>
                       <span className="flex-1 truncate">{label}</span>
@@ -168,7 +168,7 @@ function NavContent({
                         </span>
                       )}
                       {inboxBadge && !alertBadge && (
-                        <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-blue-500 text-white leading-none">
+                        <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-blue-400 text-white leading-none">
                           {inboxBadge > 99 ? "99+" : inboxBadge}
                         </span>
                       )}
@@ -210,10 +210,14 @@ export function MobileSidebarTrigger() {
       >
         <Menu className="w-5 h-5" />
       </SheetTrigger>
-      <SheetContent side="left" className="w-[240px] p-0 bg-sidebar border-sidebar-border flex flex-col">
+      <SheetContent
+        side="left"
+        style={{ background: "linear-gradient(160deg, #0f1e33 0%, #0a2a4a 100%)" }}
+        className="w-[240px] p-0 border-white/8 flex flex-col"
+      >
         <SheetTitle className="sr-only">Menu de navegação</SheetTitle>
-        <div className="h-14 flex items-center px-4 border-b border-sidebar-border shrink-0">
-          <span className="text-base font-bold text-sidebar-primary-foreground tracking-tight font-heading">
+        <div className="h-14 flex items-center px-4 border-b border-white/8 shrink-0">
+          <span className="text-base font-extrabold text-white tracking-tight font-headline">
             A7X
           </span>
         </div>
@@ -224,19 +228,22 @@ export function MobileSidebarTrigger() {
           onNavigate={() => setOpen(false)}
           isAdmin={isSuperAdmin || currentUser.role === "owner" || currentUser.role === "admin"}
         />
-        <div className="px-3 py-3 border-t border-sidebar-border shrink-0">
+        <div className="px-3 py-3 border-t border-white/8 shrink-0">
           <div className="flex items-center gap-2.5 min-w-0">
-            <UserAvatar
-              avatarUrl={avatarUrl}
-              displayName={displayName}
-              email={currentUser.email}
-              size={32}
-            />
+            <div className="relative shrink-0">
+              <UserAvatar
+                avatarUrl={avatarUrl}
+                displayName={displayName}
+                email={currentUser.email}
+                size={32}
+              />
+              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-[#0a2a4a]" />
+            </div>
             <div className="flex flex-col min-w-0 flex-1">
-              <span className="text-xs font-medium text-sidebar-foreground truncate leading-tight">
+              <span className="text-xs font-semibold text-white truncate leading-tight">
                 {displayName ?? currentUser.email}
               </span>
-              <span className="text-[10px] text-sidebar-foreground/50 truncate leading-tight mt-0.5">
+              <span className="text-[10px] text-white/40 truncate leading-tight mt-0.5">
                 {roleLabel}
               </span>
             </div>
@@ -263,22 +270,28 @@ export function Sidebar() {
 
   return (
     <aside
+      style={{ background: "linear-gradient(160deg, #0f1e33 0%, #0a2a4a 100%)" }}
       className={cn(
-        "hidden lg:flex h-screen bg-sidebar border-r border-sidebar-border flex-col fixed left-0 top-0 z-30 transition-all duration-300",
+        "hidden lg:flex h-screen border-r border-white/8 flex-col fixed left-0 top-0 z-30 transition-all duration-300",
         collapsed ? "w-[68px]" : "w-60"
       )}
     >
       {/* Brand */}
-      <div className="h-14 flex items-center justify-between px-4 border-b border-sidebar-border shrink-0">
+      <div className="h-14 flex items-center justify-between px-4 border-b border-white/8 shrink-0">
         {!collapsed && (
-          <span className="text-base font-bold text-sidebar-primary-foreground tracking-tight font-heading truncate">
-            A7X
-          </span>
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-base font-extrabold text-white tracking-tight font-headline truncate">
+              A7X
+            </span>
+            <span className="text-[10px] font-semibold text-[#F5A623]/80 uppercase tracking-widest hidden xl:block">
+              CRM
+            </span>
+          </div>
         )}
         <button
           onClick={toggle}
           className={cn(
-            "flex items-center justify-center w-7 h-7 rounded-md text-sidebar-foreground hover:bg-sidebar-accent transition-colors shrink-0",
+            "flex items-center justify-center w-7 h-7 rounded-md text-white/50 hover:bg-white/8 hover:text-white transition-colors shrink-0",
             collapsed && "mx-auto"
           )}
           aria-label={collapsed ? "Expandir menu" : "Recolher menu"}
@@ -297,31 +310,37 @@ export function Sidebar() {
         isAdmin={isSuperAdmin || currentUser.role === "owner" || currentUser.role === "admin"}
       />
 
-      {/* Footer: user info */}
+      {/* Footer: user info + presence dot */}
       <div className={cn(
-        "border-t border-sidebar-border shrink-0",
+        "border-t border-white/8 shrink-0",
         collapsed ? "px-2 py-3 flex justify-center" : "px-3 py-3"
       )}>
         {collapsed ? (
-          <UserAvatar
-            avatarUrl={avatarUrl}
-            displayName={displayName}
-            email={currentUser.email}
-            size={32}
-          />
-        ) : (
-          <div className="flex items-center gap-2.5 min-w-0">
+          <div className="relative">
             <UserAvatar
               avatarUrl={avatarUrl}
               displayName={displayName}
               email={currentUser.email}
               size={32}
             />
+            <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-[#0a2a4a]" />
+          </div>
+        ) : (
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="relative shrink-0">
+              <UserAvatar
+                avatarUrl={avatarUrl}
+                displayName={displayName}
+                email={currentUser.email}
+                size={32}
+              />
+              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-[#0a2a4a]" />
+            </div>
             <div className="flex flex-col min-w-0 flex-1">
-              <span className="text-xs font-medium text-sidebar-foreground truncate leading-tight">
+              <span className="text-xs font-semibold text-white truncate leading-tight">
                 {displayName ?? currentUser.email}
               </span>
-              <span className="text-[10px] text-sidebar-foreground/50 truncate leading-tight mt-0.5">
+              <span className="text-[10px] text-white/40 truncate leading-tight mt-0.5">
                 {roleLabel}
               </span>
             </div>

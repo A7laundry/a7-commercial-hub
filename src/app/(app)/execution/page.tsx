@@ -34,9 +34,9 @@ const ACTION_LABEL: Record<string, { label: string; color: string }> = {
 }
 
 const URGENCY_CONFIG = {
-  urgent: { label: "Urgente",         icon: AlertTriangle, color: "text-red-600",    border: "border-red-200",  bg: "bg-red-50" },
-  high:   { label: "Alta Prioridade", icon: Zap,           color: "text-amber-600",  border: "border-amber-200",bg: "bg-amber-50" },
-  normal: { label: "Normal",          icon: ArrowRight,    color: "text-blue-600",   border: "border-blue-200", bg: "bg-blue-50" },
+  urgent: { label: "Urgente",         icon: AlertTriangle, color: "text-red-600",   border: "border-red-200",   bg: "bg-red-50",   leftBar: "bg-red-500",   scoreRing: "bg-red-50 text-red-700 ring-1 ring-red-200" },
+  high:   { label: "Alta Prioridade", icon: Zap,           color: "text-amber-600", border: "border-amber-200", bg: "bg-amber-50", leftBar: "bg-amber-400", scoreRing: "bg-amber-50 text-amber-700 ring-1 ring-amber-200" },
+  normal: { label: "Normal",          icon: ArrowRight,    color: "text-blue-600",  border: "border-blue-200",  bg: "bg-blue-50",  leftBar: "bg-blue-400",  scoreRing: "bg-blue-50 text-blue-700 ring-1 ring-blue-200" },
 }
 
 type ComposerState = {
@@ -293,7 +293,7 @@ function ExecutionQueue() {
                 <div className="flex items-center gap-2">
                   <Icon className={cn("w-4 h-4", cfg.color)} />
                   <span className={cn("text-sm font-bold", cfg.color)}>{cfg.label}</span>
-                  <span className="text-xs text-muted-foreground font-normal">({group.length})</span>
+                  <span className="text-xs text-muted-foreground font-normal ml-0.5">({group.length})</span>
                 </div>
                 {isCollapsed
                   ? <ChevronDown className="w-4 h-4 text-muted-foreground" />
@@ -319,19 +319,21 @@ function ExecutionQueue() {
                       >
                       <div
                         className={cn(
-                          "border rounded-xl overflow-hidden transition-all",
+                          "crm-card bg-white border rounded-xl overflow-hidden shadow-[0_2px_12px_rgba(2,36,72,0.05)]",
                           isComposing && cn(cfg.border, cfg.bg)
                         )}
                       >
+                        {/* Urgency left bar */}
+                        <div className="flex">
+                          <div className={cn("w-1 shrink-0 rounded-l-xl", cfg.leftBar)} />
+
                         {/* Main row */}
-                        <div className="flex items-start gap-3 px-4 py-3">
+                        <div className="flex items-start gap-3 px-4 py-3 flex-1">
                           {/* Score badge */}
                           <div className="shrink-0 mt-0.5">
                             <div className={cn(
                               "w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold",
-                              item.urgency === "urgent" ? "bg-red-100 text-red-700"
-                                : item.urgency === "high" ? "bg-amber-100 text-amber-700"
-                                : "bg-blue-100 text-blue-700"
+                              cfg.scoreRing
                             )}>
                               {item.priorityScore}
                             </div>
@@ -416,7 +418,7 @@ function ExecutionQueue() {
                                   ? "bg-muted text-muted-foreground"
                                   : isIgnored
                                   ? "bg-red-100 text-red-700 hover:bg-red-200"
-                                  : "bg-primary/10 text-primary hover:bg-primary/20"
+                                  : "bg-[#F0FDF4] text-[#16A34A] hover:bg-[#DCFCE7] border border-[#BBF7D0]"
                               )}
                             >
                               {isIgnored ? <Phone className="w-3 h-3" /> : <MessageSquare className="w-3 h-3" />}
@@ -433,7 +435,7 @@ function ExecutionQueue() {
                               type="button"
                               onClick={() => handleMarkDone(item)}
                               disabled={doneId === item.id}
-                              className="flex items-center gap-0.5 text-[10px] font-medium px-2 py-1.5 rounded-md text-emerald-700 hover:bg-emerald-50 transition-colors disabled:opacity-50"
+                              className="flex items-center gap-0.5 text-[10px] font-semibold px-2 py-1.5 rounded-md bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 transition-colors disabled:opacity-50"
                               title="Marcar como feito"
                             >
                               <Check className="w-3.5 h-3.5" />
@@ -450,6 +452,7 @@ function ExecutionQueue() {
                             </button>
                           </div>
                         </div>
+                        </div>{/* close flex (left bar + main row) */}
 
                         {/* Inline WhatsApp Composer */}
                         {isComposing && (() => {
@@ -468,11 +471,11 @@ function ExecutionQueue() {
                           }
 
                           return (
-                          <div className="border-t px-4 py-3 space-y-3 bg-background">
+                          <div className="border-t border-[#BBF7D0] px-4 py-3 space-y-3 bg-[#F0FDF4]">
                             <div className="flex items-center justify-between">
-                              <p className="text-xs font-semibold flex items-center gap-1.5">
-                                <Send className="w-3 h-3" />
-                                {isIgnored ? "Registrar contato via ligação" : "Enviar via WhatsApp"}
+                              <p className="text-xs font-semibold text-[#16A34A] flex items-center gap-1.5">
+                                <MessageSquare className="w-3 h-3" />
+                                {isIgnored ? "Registrar contato via ligação" : "Mensagem WhatsApp"}
                               </p>
                               <button type="button" onClick={() => setComposer(null)}>
                                 <X className="w-3.5 h-3.5 text-muted-foreground hover:text-foreground" />
@@ -551,15 +554,15 @@ function ExecutionQueue() {
                               <Button variant="outline" size="sm" onClick={() => setComposer(null)}>
                                 Cancelar
                               </Button>
-                              <Button
-                                size="sm"
+                              <button
+                                type="button"
                                 onClick={() => handleSend(item)}
                                 disabled={sending || !composer?.phone.trim()}
-                                className="gap-1.5"
+                                className="btn-wpp flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
                               >
                                 <Send className="w-3 h-3" />
-                                {sending ? "Enviando..." : "Enviar"}
-                              </Button>
+                                {sending ? "Enviando..." : "Enviar via WhatsApp"}
+                              </button>
                             </div>
                           </div>
                           )

@@ -13,6 +13,7 @@ import {
 import type { Account, PipelineStage } from "@/types"
 import { cn } from "@/lib/utils"
 import { DollarSign, Clock, AlertTriangle } from "lucide-react"
+import { UserAvatar } from "@/components/shared/UserAvatar"
 
 type Props = {
   board: PipelineBoard
@@ -149,27 +150,33 @@ function AccountCard({
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
       className={cn(
-        "bg-card border rounded-md p-2.5 cursor-grab active:cursor-grabbing shadow-sm",
-        "hover:shadow-md transition-all select-none",
-        score === "at_risk" && "border-red-200",
+        "crm-card bg-white border rounded-xl p-3 cursor-grab active:cursor-grabbing shadow-[0_2px_8px_rgba(2,36,72,0.06)] select-none",
+        score === "at_risk" ? "border-red-200" : "border-transparent",
         isDragging && "opacity-40 rotate-1"
       )}
     >
-      {/* Name + score */}
-      <div className="flex items-start justify-between gap-1 mb-1.5">
-        <Link
-          href={`/accounts/${account.id}`}
-          className="text-xs font-medium leading-tight hover:text-primary transition-colors line-clamp-2"
-          onClick={(e) => e.stopPropagation()}
-        >
-          {account.name}
-        </Link>
-        <span className={cn(
-          "text-[10px] px-1.5 py-0.5 rounded-full shrink-0 font-medium",
-          scoreCfg.bg, scoreCfg.color
-        )}>
-          {scoreCfg.label}
-        </span>
+      {/* Avatar + Name + score */}
+      <div className="flex items-start gap-2 mb-2">
+        <UserAvatar
+          displayName={account.name}
+          size={28}
+          className="shrink-0 mt-0.5"
+        />
+        <div className="flex-1 min-w-0">
+          <Link
+            href={`/accounts/${account.id}`}
+            className="text-xs font-semibold leading-tight hover:text-primary transition-colors line-clamp-2 block"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {account.name}
+          </Link>
+          <span className={cn(
+            "text-[10px] px-1.5 py-0.5 rounded-full font-medium mt-0.5 inline-block",
+            scoreCfg.bg, scoreCfg.color
+          )}>
+            {scoreCfg.label}
+          </span>
+        </div>
       </div>
 
       {/* Metrics row */}

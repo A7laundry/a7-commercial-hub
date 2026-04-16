@@ -13,21 +13,25 @@ type UserAvatarProps = {
 }
 
 // ── Color palette — deterministic by char code ────────────────────────────────
+// Rich premium palette: background + text pairs (hex, safe for inline styles)
 
-const AVATAR_COLORS = [
-  "bg-blue-500 text-white",
-  "bg-emerald-500 text-white",
-  "bg-violet-500 text-white",
-  "bg-amber-500 text-white",
-  "bg-rose-500 text-white",
+const AVATAR_PALETTE: { bg: string; text: string }[] = [
+  { bg: "#1E3A5F", text: "#FFFFFF" }, // navy
+  { bg: "#0A7251", text: "#FFFFFF" }, // forest green
+  { bg: "#6D28D9", text: "#FFFFFF" }, // violet
+  { bg: "#B45309", text: "#FFFFFF" }, // amber dark
+  { bg: "#9F1239", text: "#FFFFFF" }, // crimson
+  { bg: "#0369A1", text: "#FFFFFF" }, // ocean blue
+  { bg: "#065F46", text: "#FFFFFF" }, // deep emerald
+  { bg: "#7C2D12", text: "#FFFFFF" }, // rust
 ]
 
-function getAvatarColor(seed: string): string {
-  if (!seed) return AVATAR_COLORS[0]
+function getAvatarColor(seed: string): { bg: string; text: string } {
+  if (!seed) return AVATAR_PALETTE[0]
   const code = seed
     .split("")
     .reduce((acc, char) => acc + char.charCodeAt(0), 0)
-  return AVATAR_COLORS[code % AVATAR_COLORS.length]
+  return AVATAR_PALETTE[code % AVATAR_PALETTE.length]
 }
 
 // ── Initials derivation ───────────────────────────────────────────────────────
@@ -58,10 +62,10 @@ export function UserAvatar({
   size = 32,
   className,
 }: UserAvatarProps) {
-  const colorClass = getAvatarColor(displayName ?? email ?? "")
+  const { bg, text } = getAvatarColor(displayName ?? email ?? "")
   const initials = getInitials(displayName, email)
 
-  const style = { width: size, height: size, fontSize: Math.max(10, Math.round(size * 0.38)) }
+  const baseStyle = { width: size, height: size, fontSize: Math.max(10, Math.round(size * 0.38)) }
 
   if (avatarUrl) {
     return (
@@ -69,7 +73,7 @@ export function UserAvatar({
       <img
         src={avatarUrl}
         alt={displayName ?? email ?? "Avatar"}
-        style={style}
+        style={baseStyle}
         className={cn("rounded-full object-cover shrink-0", className)}
         referrerPolicy="no-referrer"
       />
@@ -78,11 +82,10 @@ export function UserAvatar({
 
   return (
     <span
-      style={style}
+      style={{ ...baseStyle, backgroundColor: bg, color: text }}
       aria-label={displayName ?? email ?? "Avatar"}
       className={cn(
-        "inline-flex items-center justify-center rounded-full font-semibold leading-none select-none shrink-0",
-        colorClass,
+        "inline-flex items-center justify-center rounded-full font-bold leading-none select-none shrink-0",
         className
       )}
     >

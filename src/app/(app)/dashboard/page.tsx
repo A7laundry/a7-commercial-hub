@@ -295,7 +295,7 @@ function DealsKpiCard({
 }) {
   return (
     <Link href="/deals">
-      <Card className="hover:shadow-md transition-shadow cursor-pointer h-full border-transparent bg-[#022448] shadow-[0_24px_40px_rgba(25,28,29,0.03)]">
+      <Card className="crm-card cursor-pointer h-full border-transparent bg-[#022448] shadow-[0_4px_20px_rgba(2,36,72,0.20)]">
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle
             className="text-[10px] font-bold text-slate-300 uppercase tracking-widest"
@@ -446,7 +446,7 @@ function KpiCard({
   return (
     <Link href={href}>
       <Card
-        className={`hover:shadow-md transition-shadow cursor-pointer h-full ${borderClass} shadow-[0_24px_40px_rgba(25,28,29,0.03)]`}
+        className={`crm-card cursor-pointer h-full ${borderClass} shadow-[0_4px_20px_rgba(2,36,72,0.06)]`}
       >
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle
