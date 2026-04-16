@@ -1,26 +1,27 @@
 import { ArrowRight, Zap, CheckCircle2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
+import { cn } from "@/lib/utils"
 import type { Recommendation } from "@/lib/account-summary"
 
+// Static priority config — outside component
 const PRIORITY_CONFIG = {
   urgent: {
-    badge: "bg-red-100 text-red-700 border border-red-200",
+    badge: "bg-red-100 text-red-700 ring-1 ring-red-200",
     label: "Urgente",
     dot: "bg-red-500",
-    cardBorder: "border-red-100",
-    cardBg: "bg-red-50/40",
-    btnVariant: "default" as const,
-    btnClass: "bg-red-600 hover:bg-red-700 text-white",
+    rowBorder: "border-red-100",
+    rowBg: "bg-red-50/60",
+    accentBar: "bg-red-500",
+    btnClass: "bg-red-600 hover:bg-red-700 text-white border-transparent",
   },
   recommended: {
-    badge: "bg-amber-100 text-amber-700 border border-amber-200",
+    badge: "bg-amber-100 text-amber-700 ring-1 ring-amber-200",
     label: "Recomendado",
     dot: "bg-amber-400",
-    cardBorder: "border-amber-100",
-    cardBg: "bg-amber-50/40",
-    btnVariant: "outline" as const,
+    rowBorder: "border-amber-100",
+    rowBg: "bg-amber-50/60",
+    accentBar: "bg-amber-400",
     btnClass: "border-amber-300 text-amber-800 hover:bg-amber-50",
   },
 } as const
@@ -32,38 +33,43 @@ type RecommendationsBlockProps = {
 export function RecommendationsBlock({ recommendations }: RecommendationsBlockProps) {
   if (recommendations.length === 0) {
     return (
-      <Card className="border-green-200 bg-green-50/30">
-        <CardContent className="flex items-center gap-3 py-5">
-          <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0" />
+      <div className="crm-card bg-white rounded-xl border border-transparent shadow-[0_2px_16px_rgba(2,36,72,0.06)] overflow-hidden">
+        <div className="h-1 w-full bg-emerald-500" />
+        <div className="flex items-center gap-3 p-5">
+          <div className="p-2 rounded-lg bg-green-100 shrink-0">
+            <CheckCircle2 className="h-5 w-5 text-green-600" />
+          </div>
           <div>
-            <p className="text-sm font-semibold text-green-800">Nenhuma ação necessária</p>
-            <p className="text-xs text-green-600 mt-0.5">
+            <p className="text-sm font-bold text-[#022448]">Nenhuma ação necessária</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
               Esta conta não possui pendências ou itens para revisar.
             </p>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     )
   }
 
-  const urgentRecs = recommendations.filter((r) => r.priority === "urgent")
+  const urgentRecs     = recommendations.filter((r) => r.priority === "urgent")
   const recommendedRecs = recommendations.filter((r) => r.priority === "recommended")
 
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-base">
-          <Zap className="h-4 w-4 text-amber-500" />
-          Ações recomendadas
-          <span className="ml-auto text-xs font-medium px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
-            {recommendations.length}
-          </span>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="pt-0 space-y-3">
+    <div className="bg-white rounded-xl border border-transparent shadow-[0_2px_16px_rgba(2,36,72,0.07)] overflow-hidden">
+      {/* Card header */}
+      <div className="flex items-center gap-2 px-5 py-4 border-b bg-[#f8f9fa]">
+        <div className="p-1.5 rounded-lg bg-amber-100">
+          <Zap className="h-4 w-4 text-amber-600" />
+        </div>
+        <h3 className="text-sm font-extrabold font-headline text-[#022448]">Ações recomendadas</h3>
+        <span className="ml-auto text-[10px] font-bold px-2 py-0.5 rounded-full bg-white ring-1 ring-[#022448]/15 text-[#022448]">
+          {recommendations.length}
+        </span>
+      </div>
+
+      <div className="p-4 space-y-4">
         {urgentRecs.length > 0 && (
           <div className="space-y-2">
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
               Urgente
             </p>
             {urgentRecs.map((rec) => (
@@ -73,12 +79,12 @@ export function RecommendationsBlock({ recommendations }: RecommendationsBlockPr
         )}
 
         {urgentRecs.length > 0 && recommendedRecs.length > 0 && (
-          <div className="border-t my-1" />
+          <div className="border-t border-[#022448]/8" />
         )}
 
         {recommendedRecs.length > 0 && (
           <div className="space-y-2">
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
               Recomendado
             </p>
             {recommendedRecs.map((rec) => (
@@ -86,8 +92,8 @@ export function RecommendationsBlock({ recommendations }: RecommendationsBlockPr
             ))}
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 }
 
@@ -95,21 +101,25 @@ function RecommendationRow({ rec }: { rec: Recommendation }) {
   const cfg = PRIORITY_CONFIG[rec.priority]
 
   return (
-    <div
-      className={`flex items-start justify-between gap-4 rounded-lg border p-3 ${cfg.cardBorder} ${cfg.cardBg}`}
-    >
-      <div className="flex items-start gap-3 min-w-0 flex-1">
-        <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${cfg.dot}`} />
+    <div className={cn(
+      "flex items-start justify-between gap-4 rounded-xl border p-3.5 overflow-hidden relative",
+      cfg.rowBorder, cfg.rowBg
+    )}>
+      {/* left accent bar */}
+      <div className={cn("absolute left-0 top-0 bottom-0 w-0.5", cfg.accentBar)} />
+
+      <div className="flex items-start gap-3 min-w-0 flex-1 pl-2">
+        <span className={cn("mt-2 h-2 w-2 shrink-0 rounded-full", cfg.dot)} />
         <div className="min-w-0">
-          <p className="text-sm font-semibold leading-tight">{rec.title}</p>
+          <p className="text-sm font-bold text-[#022448] leading-tight">{rec.title}</p>
           <p className="text-xs text-muted-foreground mt-0.5 leading-snug">{rec.description}</p>
         </div>
       </div>
+
       <Link href={rec.href} className="shrink-0">
         <Button
           size="sm"
-          variant={cfg.btnVariant}
-          className={`h-7 text-xs px-3 whitespace-nowrap ${cfg.btnClass}`}
+          className={cn("h-7 text-xs px-3 whitespace-nowrap font-bold", cfg.btnClass)}
         >
           {rec.cta}
           <ArrowRight className="ml-1 h-3 w-3" />

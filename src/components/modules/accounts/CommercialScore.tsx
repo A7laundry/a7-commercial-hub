@@ -13,6 +13,15 @@ const SCORE_ICON = {
   upsell:  TrendingUp,
 }
 
+// Urgency bar color per score (static, outside component)
+const SCORE_BAR: Record<string, string> = {
+  at_risk: "bg-red-500",
+  hot:     "bg-amber-400",
+  upsell:  "bg-emerald-500",
+  warm:    "bg-yellow-400",
+  cold:    "bg-blue-300",
+}
+
 type Props = {
   account: Account
   contracts: Contract[]
@@ -26,7 +35,14 @@ export function CommercialScore({ account, contracts, size = "md" }: Props) {
 
   if (size === "sm") {
     return (
-      <span className={cn("inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full", cfg.bg, cfg.color)}>
+      <span className={cn(
+        "inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full ring-1",
+        cfg.bg, cfg.color,
+        score === "at_risk" ? "ring-red-200" :
+        score === "hot"     ? "ring-amber-200" :
+        score === "upsell"  ? "ring-emerald-200" :
+        score === "warm"    ? "ring-yellow-200" : "ring-blue-200"
+      )}>
         <span className={cn("w-1.5 h-1.5 rounded-full", cfg.dot)} />
         {cfg.label}
       </span>
@@ -34,13 +50,20 @@ export function CommercialScore({ account, contracts, size = "md" }: Props) {
   }
 
   return (
-    <div className={cn("flex items-center gap-3 rounded-lg px-4 py-3 border", cfg.bg)}>
-      <div className={cn("p-2 rounded-md bg-white/60")}>
-        <Icon className={cn("w-5 h-5", cfg.color)} />
-      </div>
-      <div>
-        <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Score Comercial</p>
-        <p className={cn("text-base font-bold", cfg.color)}>{cfg.label}</p>
+    <div className={cn(
+      "crm-card flex items-center gap-3 rounded-xl border border-transparent shadow-[0_2px_16px_rgba(2,36,72,0.07)] overflow-hidden",
+      cfg.bg
+    )}>
+      {/* left accent bar */}
+      <div className={cn("w-1 self-stretch shrink-0", SCORE_BAR[score])} />
+      <div className="flex items-center gap-3 py-3 pr-4">
+        <div className="p-2 rounded-lg bg-white/60 shadow-sm">
+          <Icon className={cn("w-5 h-5", cfg.color)} />
+        </div>
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Score Comercial</p>
+          <p className={cn("text-base font-extrabold", cfg.color)}>{cfg.label}</p>
+        </div>
       </div>
     </div>
   )

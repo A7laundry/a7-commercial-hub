@@ -23,6 +23,7 @@ import { useAccountDeals } from "@/hooks/deals/useAccountDeals"
 import { WhatsAppTimeline } from "@/components/modules/accounts/WhatsAppTimeline"
 import { QuickActions } from "@/components/modules/accounts/QuickActions"
 import { AccountTimeline } from "@/components/modules/accounts/AccountTimeline"
+import { UserAvatar } from "@/components/shared/UserAvatar"
 import { Button } from "@/components/ui/button"
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
@@ -32,7 +33,6 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
 import { formatDateBR } from "@/lib/format"
 import {
@@ -101,11 +101,12 @@ export default function AccountDetailPage({
 
   if (isLoading) {
     return (
-      <div className="space-y-4 max-w-3xl">
+      <div className="space-y-4 max-w-4xl">
         <Skeleton className="h-8 w-64" />
-        <Skeleton className="h-28 w-full" />
-        <Skeleton className="h-20 w-full" />
-        <Skeleton className="h-32 w-full" />
+        <Skeleton className="h-36 w-full rounded-xl" />
+        <Skeleton className="h-24 w-full rounded-xl" />
+        <Skeleton className="h-28 w-full rounded-xl" />
+        <Skeleton className="h-32 w-full rounded-xl" />
       </div>
     )
   }
@@ -135,71 +136,107 @@ export default function AccountDetailPage({
     : null
 
   return (
-    <div className="max-w-3xl space-y-5 pb-12">
-      {/* Back */}
+    <div className="max-w-4xl space-y-5 pb-12">
+      {/* ── NAV BAR ─────────────────────────────────────────────────────── */}
       <div className="flex items-center justify-between">
-        <Button variant="ghost" size="sm" onClick={() => router.push("/accounts")} className="text-muted-foreground -ml-2">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => router.push("/accounts")}
+          className="text-muted-foreground -ml-2 hover:text-[#022448] hover:bg-[#022448]/5"
+        >
           <ArrowLeft className="w-4 h-4 mr-1" /> Contas
         </Button>
         <div className="flex gap-2">
           <Link href={`/accounts/${id}/summary`}>
-            <Button variant="outline" size="sm"><BarChart2 className="w-4 h-4 mr-1" />Resumo</Button>
+            <Button variant="outline" size="sm" className="border-[#022448]/20 hover:border-[#022448]/40 hover:bg-[#022448]/5">
+              <BarChart2 className="w-4 h-4 mr-1 text-[#022448]" />Resumo
+            </Button>
           </Link>
-          <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
-            <Pencil className="w-4 h-4 mr-1" />Editar
+          <Button variant="outline" size="sm" onClick={() => setEditing(true)} className="border-[#022448]/20 hover:border-[#022448]/40 hover:bg-[#022448]/5">
+            <Pencil className="w-4 h-4 mr-1 text-[#022448]" />Editar
           </Button>
-          <Button variant="outline" size="sm" className="text-destructive hover:text-destructive" onClick={() => setConfirming(true)}>
+          <Button variant="outline" size="sm" className="text-destructive hover:text-destructive border-red-200 hover:border-red-300 hover:bg-red-50" onClick={() => setConfirming(true)}>
             <Trash2 className="w-4 h-4 mr-1" />Excluir
           </Button>
         </div>
       </div>
 
       {/* ── 1. HEADER COMERCIAL ─────────────────────────────────────────── */}
-      <div className={cn("rounded-xl border p-5", cfg.bg)}>
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-xl font-bold leading-tight">{account.name}</h1>
-            {account.contact_name && (
-              <p className="text-sm text-muted-foreground mt-0.5">{account.contact_name}</p>
-            )}
-            <div className="flex items-center gap-2 mt-2 flex-wrap">
-              <span className={cn("inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full border", cfg.bg, cfg.color)}>
-                <ScoreIcon className="w-3.5 h-3.5" />
-                {cfg.label}
-              </span>
-              <span className="text-xs px-2 py-0.5 rounded-full bg-white/60 border text-muted-foreground font-medium">
-                {PIPELINE_LABEL[account.pipeline_stage] ?? account.pipeline_stage}
-              </span>
-              <span className={cn(
-                "text-xs px-2 py-0.5 rounded-full border font-medium",
-                account.status === "active" ? "bg-green-50 text-green-700 border-green-200" :
-                account.status === "prospect" ? "bg-blue-50 text-blue-700 border-blue-200" :
-                "bg-gray-50 text-gray-600 border-gray-200"
-              )}>
-                {STATUS_LABEL[account.status]}
-              </span>
+      <div className={cn("rounded-xl border-0 shadow-[0_2px_20px_rgba(2,36,72,0.10)] overflow-hidden", cfg.bg)}>
+        {/* urgency top bar */}
+        <div className={cn(
+          "h-1 w-full",
+          score === "at_risk" ? "bg-red-500" :
+          score === "hot"     ? "bg-amber-400" :
+          score === "upsell"  ? "bg-emerald-500" :
+          score === "warm"    ? "bg-yellow-400" : "bg-blue-300"
+        )} />
+        <div className="p-5">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex items-start gap-4">
+              <UserAvatar displayName={account.name} size={52} className="shrink-0 mt-0.5 ring-2 ring-white shadow-md" />
+              <div>
+                <h1 className="text-xl font-extrabold font-headline text-[#022448] leading-tight">{account.name}</h1>
+                {account.contact_name && (
+                  <p className="text-sm text-muted-foreground mt-0.5 flex items-center gap-1.5">
+                    <User className="w-3 h-3" />
+                    {account.contact_name}
+                  </p>
+                )}
+                <div className="flex items-center gap-2 mt-2.5 flex-wrap">
+                  <span className={cn(
+                    "inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full ring-1",
+                    cfg.bg, cfg.color,
+                    score === "at_risk" ? "ring-red-200" :
+                    score === "hot"     ? "ring-amber-200" :
+                    score === "upsell"  ? "ring-emerald-200" :
+                    score === "warm"    ? "ring-yellow-200" : "ring-blue-200"
+                  )}>
+                    <ScoreIcon className="w-3.5 h-3.5" />
+                    {cfg.label}
+                  </span>
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-white/70 ring-1 ring-[#022448]/15 text-[#022448] font-semibold">
+                    {PIPELINE_LABEL[account.pipeline_stage] ?? account.pipeline_stage}
+                  </span>
+                  <span className={cn(
+                    "text-xs px-2 py-0.5 rounded-full ring-1 font-semibold",
+                    account.status === "active"   ? "bg-green-50 text-green-700 ring-green-200" :
+                    account.status === "prospect" ? "bg-blue-50 text-blue-700 ring-blue-200" :
+                    "bg-gray-50 text-gray-600 ring-gray-200"
+                  )}>
+                    {STATUS_LABEL[account.status]}
+                  </span>
+                </div>
+              </div>
             </div>
-          </div>
-          <div className={cn("p-3 rounded-xl bg-white/50 border shrink-0")}>
-            <ScoreIcon className={cn("w-8 h-8", cfg.color)} />
+            <div className="p-3 rounded-xl bg-white/60 ring-1 ring-white/80 shadow-sm shrink-0">
+              <ScoreIcon className={cn("w-8 h-8", cfg.color)} />
+            </div>
           </div>
         </div>
       </div>
 
       {/* ── 2. AÇÃO AGORA ───────────────────────────────────────────────── */}
-      <div className={cn("rounded-xl border p-4", nbaStyle.border, nbaStyle.bg)}>
+      <div className={cn(
+        "crm-card rounded-xl border p-4 shadow-[0_2px_16px_rgba(2,36,72,0.06)]",
+        nbaStyle.border, nbaStyle.bg
+      )}>
         <div className="flex items-start gap-3">
-          <div className={cn("p-2.5 rounded-lg shrink-0", nbaStyle.iconBg)}>
+          <div className={cn("p-2.5 rounded-lg shrink-0 shadow-sm", nbaStyle.iconBg)}>
             <NbaIcon className={cn("w-5 h-5", nbaStyle.iconColor)} />
           </div>
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
               <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Ação Agora</span>
-              <span className={cn("text-[10px] font-semibold px-2 py-0.5 rounded-full", nbaStyle.badge)}>
+              <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full ring-1", nbaStyle.badge,
+                nba.priority === "urgent" ? "ring-red-200" :
+                nba.priority === "high"   ? "ring-amber-200" : "ring-border"
+              )}>
                 {nbaStyle.label}
               </span>
             </div>
-            <p className="text-sm font-bold">{nba.label}</p>
+            <p className="text-sm font-bold text-[#022448]">{nba.label}</p>
             <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{nba.description}</p>
           </div>
         </div>
@@ -207,24 +244,31 @@ export default function AccountDetailPage({
 
       {/* ── 3. VALOR DO CLIENTE (LTV) ───────────────────────────────────── */}
       <div className="grid grid-cols-3 gap-3">
-        <div className="bg-card border rounded-xl p-4 col-span-1">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">LTV</p>
+        <div className="crm-card bg-white border border-transparent rounded-xl p-4 col-span-1 shadow-[0_2px_16px_rgba(2,36,72,0.07)]">
+          <div className="flex items-center gap-1.5 mb-1.5">
+            <DollarSign className="w-3 h-3 text-emerald-500" />
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">LTV</p>
+          </div>
           {ltv != null ? (
             <>
-              <p className="text-2xl font-bold text-green-700" suppressHydrationWarning>
+              <p className="text-2xl font-extrabold text-emerald-700" suppressHydrationWarning>
                 {ltv.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 })}
               </p>
-              <p className="text-[10px] text-muted-foreground mt-1" suppressHydrationWarning>
+              <p className="text-[10px] text-muted-foreground mt-1 leading-snug" suppressHydrationWarning>
                 R${account.estimated_value?.toLocaleString("pt-BR")} × {freqPerMonth}×/mês × {avgLifetime}m
               </p>
             </>
           ) : (
-            <p className="text-sm text-muted-foreground">—</p>
+            <p className="text-2xl font-extrabold text-muted-foreground">—</p>
           )}
         </div>
-        <div className="bg-card border rounded-xl p-4">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Ticket</p>
-          <p className="text-2xl font-bold" suppressHydrationWarning>
+
+        <div className="crm-card bg-white border border-transparent rounded-xl p-4 shadow-[0_2px_16px_rgba(2,36,72,0.07)]">
+          <div className="flex items-center gap-1.5 mb-1.5">
+            <TrendingUp className="w-3 h-3 text-[#022448]/50" />
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Ticket</p>
+          </div>
+          <p className="text-2xl font-extrabold text-[#022448]" suppressHydrationWarning>
             {account.estimated_value != null
               ? account.estimated_value.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 })
               : "—"}
@@ -233,13 +277,17 @@ export default function AccountDetailPage({
             <p className="text-[10px] text-muted-foreground mt-1">{account.frequency}</p>
           )}
         </div>
-        <div className="bg-card border rounded-xl p-4">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Último contato</p>
+
+        <div className="crm-card bg-white border border-transparent rounded-xl p-4 shadow-[0_2px_16px_rgba(2,36,72,0.07)]">
+          <div className="flex items-center gap-1.5 mb-1.5">
+            <Clock className="w-3 h-3 text-[#022448]/50" />
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Último contato</p>
+          </div>
           <p className={cn(
-            "text-2xl font-bold",
+            "text-2xl font-extrabold",
             daysSinceContact === null ? "text-muted-foreground" :
-            daysSinceContact > 30 ? "text-red-600" :
-            daysSinceContact > 14 ? "text-amber-600" : "text-foreground"
+            daysSinceContact > 30    ? "text-red-600" :
+            daysSinceContact > 14   ? "text-amber-600" : "text-[#022448]"
           )} suppressHydrationWarning>
             {daysSinceContact === null ? "—" : daysSinceContact === 0 ? "hoje" : `${daysSinceContact}d`}
           </p>
@@ -260,7 +308,7 @@ export default function AccountDetailPage({
             <span className={cn(
               "font-semibold",
               account.commercial_status === "at_risk" ? "text-red-600" :
-              account.commercial_status === "lost" ? "text-gray-500" : "text-green-700"
+              account.commercial_status === "lost" ? "text-gray-500" : "text-emerald-700"
             )}>
               {COMMERCIAL_LABEL[account.commercial_status] ?? account.commercial_status}
             </span>
@@ -292,23 +340,24 @@ export default function AccountDetailPage({
               <Link
                 key={deal.id}
                 href={`/deals/${deal.id}`}
-                className="flex items-center justify-between rounded-lg border bg-card px-4 py-3 text-sm hover:bg-muted/40 transition-colors"
+                className="crm-card flex items-center justify-between rounded-xl border border-transparent bg-white px-4 py-3.5 text-sm shadow-[0_2px_16px_rgba(2,36,72,0.06)] hover:border-[#022448]/10 transition-colors"
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <span className={`w-2 h-2 rounded-full shrink-0 ${deal.stageColor}`} />
-                  <span className="font-medium truncate">{deal.title}</span>
+                  <span className="font-semibold text-[#022448] truncate">{deal.title}</span>
                 </div>
                 <div className="flex items-center gap-4 shrink-0 ml-3">
                   {deal.value != null && (
-                    <span className="text-muted-foreground text-xs">
+                    <span className="text-muted-foreground text-xs font-medium">
                       {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }).format(deal.value)}
                     </span>
                   )}
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                    deal.stage === "won" ? "bg-green-100 text-green-700" :
-                    deal.stage === "lost" ? "bg-red-100 text-red-700" :
-                    "bg-muted text-muted-foreground"
-                  }`}>
+                  <span className={cn(
+                    "text-[10px] px-2 py-0.5 rounded-full font-bold ring-1",
+                    deal.stage === "won"  ? "bg-green-50 text-green-700 ring-green-200" :
+                    deal.stage === "lost" ? "bg-red-50 text-red-700 ring-red-200" :
+                    "bg-slate-50 text-slate-600 ring-slate-200"
+                  )}>
                     {deal.stageLabel}
                   </span>
                 </div>
@@ -322,24 +371,36 @@ export default function AccountDetailPage({
       {/* ── 6. QUICK ACTIONS + TIMELINE ─────────────────────────────────── */}
       <section>
         <SectionTitle>Ações Rápidas</SectionTitle>
-        <QuickActions account={account} />
+        <div className="bg-white rounded-xl border border-transparent shadow-[0_2px_16px_rgba(2,36,72,0.06)] p-4">
+          <QuickActions account={account} />
+        </div>
       </section>
 
       <section>
         <SectionTitle>Histórico de atividades</SectionTitle>
-        <AccountTimeline tenantId={tenant.id} accountId={id} />
+        <div className="bg-white rounded-xl border border-transparent shadow-[0_2px_16px_rgba(2,36,72,0.06)] p-4">
+          <AccountTimeline tenantId={tenant.id} accountId={id} />
+        </div>
       </section>
 
       <section>
         <SectionTitle>Timeline WhatsApp</SectionTitle>
-        <WhatsAppTimeline tenantId={tenant.id} accountId={id} />
+        <div className="bg-white rounded-xl border border-transparent shadow-[0_2px_16px_rgba(2,36,72,0.06)] overflow-hidden">
+          <div className="flex items-center gap-2 px-4 py-3 border-b bg-[#f8f9fa]">
+            <span className="w-2 h-2 rounded-full bg-[#25D366]" />
+            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">WhatsApp</span>
+          </div>
+          <div className="p-4">
+            <WhatsAppTimeline tenantId={tenant.id} accountId={id} />
+          </div>
+        </div>
       </section>
 
       {/* ── 8. CONTRATOS ────────────────────────────────────────────────── */}
       <section>
         <SectionTitle>Contratos ({contracts.length})</SectionTitle>
         {contractsLoading ? (
-          <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-32 w-full rounded-xl" />
         ) : contracts.length === 0 ? (
           <p className="text-sm text-muted-foreground">Nenhum contrato vinculado.</p>
         ) : (
@@ -420,7 +481,7 @@ export default function AccountDetailPage({
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3 pt-1">
+    <h2 className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3 pt-1">
       {children}
     </h2>
   )
@@ -436,12 +497,12 @@ function InfoTile({
   children: React.ReactNode
 }) {
   return (
-    <div className="bg-muted/40 border rounded-xl p-3">
-      <div className="flex items-center gap-1.5 mb-1">
-        <Icon className="w-3 h-3 text-muted-foreground" />
-        <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">{label}</p>
+    <div className="bg-white border border-transparent rounded-xl p-3.5 shadow-[0_1px_8px_rgba(2,36,72,0.05)]">
+      <div className="flex items-center gap-1.5 mb-1.5">
+        <Icon className="w-3 h-3 text-[#022448]/40" />
+        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{label}</p>
       </div>
-      <div className="text-sm font-medium">{children}</div>
+      <div className="text-sm font-semibold text-[#022448]">{children}</div>
     </div>
   )
 }
