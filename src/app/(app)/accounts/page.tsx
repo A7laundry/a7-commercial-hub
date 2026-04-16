@@ -103,14 +103,11 @@ export default function AccountsPage() {
       />
 
       {/* KPI Stats Strip */}
-      <div className="grid grid-cols-4 gap-4 px-6 py-4 bg-background border-b">
+      <div className="grid grid-cols-4 gap-3 px-6 py-4 bg-[#f8f9fa] border-b">
         {isLoading ? (
           <>
             {[0, 1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className="bg-card rounded-xl p-4 shadow-[0_24px_40px_rgba(25,28,29,0.03)] border border-transparent"
-              >
+              <div key={i} className="bg-white rounded-xl p-4 shadow-[0_2px_12px_rgba(2,36,72,0.05)] border border-transparent">
                 <div className="animate-pulse w-20 h-3 bg-slate-200 rounded mb-3" />
                 <div className="animate-pulse w-16 h-6 bg-slate-200 rounded" />
               </div>
@@ -118,22 +115,17 @@ export default function AccountsPage() {
           </>
         ) : (
           <>
-            <div className="bg-card rounded-xl p-4 shadow-[0_24px_40px_rgba(25,28,29,0.03)] border border-transparent">
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Clientes</p>
-              <p className="text-2xl font-extrabold font-headline text-[#022448] mt-1">{totalClientes}</p>
-            </div>
-            <div className="bg-card rounded-xl p-4 shadow-[0_24px_40px_rgba(25,28,29,0.03)] border border-transparent">
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Ativos</p>
-              <p className="text-2xl font-extrabold font-headline text-emerald-600 mt-1">{totalAtivos}</p>
-            </div>
-            <div className="bg-card rounded-xl p-4 shadow-[0_24px_40px_rgba(25,28,29,0.03)] border border-transparent">
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Em Risco</p>
-              <p className="text-2xl font-extrabold font-headline text-amber-500 mt-1">{totalEmRisco}</p>
-            </div>
-            <div className="bg-card rounded-xl p-4 shadow-[0_24px_40px_rgba(25,28,29,0.03)] border border-transparent">
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Inativos</p>
-              <p className="text-2xl font-extrabold font-headline text-slate-400 mt-1">{totalInativos}</p>
-            </div>
+            {[
+              { label: "Total Clientes", value: totalClientes,  color: "text-[#022448]" },
+              { label: "Ativos",         value: totalAtivos,    color: "text-emerald-600" },
+              { label: "Em Risco",       value: totalEmRisco,   color: "text-amber-500" },
+              { label: "Inativos",       value: totalInativos,  color: "text-slate-400" },
+            ].map(({ label, value, color }) => (
+              <div key={label} className="crm-card bg-white rounded-xl p-4 shadow-[0_2px_12px_rgba(2,36,72,0.05)] border border-transparent">
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{label}</p>
+                <p className={`text-2xl font-extrabold font-headline mt-1 ${color}`}>{value}</p>
+              </div>
+            ))}
           </>
         )}
       </div>

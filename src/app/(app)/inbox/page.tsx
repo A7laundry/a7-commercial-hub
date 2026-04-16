@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Skeleton } from "@/components/ui/skeleton"
+import { UserAvatar } from "@/components/shared/UserAvatar"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -367,12 +368,12 @@ export default function InboxPage() {
       <div className="flex h-[calc(100vh-3.5rem)] overflow-hidden">
 
         {/* ── LEFT: conversation list ────────────────────────────────────── */}
-        <div className="w-72 border-r flex flex-col shrink-0">
+        <div className="w-72 border-r flex flex-col shrink-0 bg-[#f8f9fa]">
 
           {/* Header */}
-          <div className="p-3 border-b space-y-2">
+          <div className="p-3 border-b space-y-2 bg-white">
             <div className="flex items-center justify-between">
-              <h1 className="text-base font-semibold">Inbox</h1>
+              <h1 className="text-base font-extrabold font-headline text-[#022448]">Inbox</h1>
               <div className="flex items-center gap-1.5">
                 {unmappedCount > 0 && (
                   <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700">
@@ -397,8 +398,8 @@ export default function InboxPage() {
                   className={cn(
                     "text-[10px] font-semibold px-2 py-0.5 rounded-full border transition-colors",
                     filter === tab.id
-                      ? "bg-primary text-primary-foreground border-primary"
-                      : "border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"
+                      ? "bg-[#022448] text-white border-[#022448]"
+                      : "border-border text-muted-foreground hover:border-[#022448]/40 hover:text-[#022448]"
                   )}
                 >
                   {tab.label}
@@ -452,43 +453,57 @@ export default function InboxPage() {
                     type="button"
                     onClick={() => selectConversation(conv)}
                     className={cn(
-                      "w-full text-left px-3 py-2.5 border-b hover:bg-muted/50 transition-colors",
-                      isSelected && "bg-primary/5 border-l-2 border-l-primary",
-                      isUnmapped && !isSelected && "border-l-2 border-l-amber-400"
+                      "w-full text-left px-3 py-2.5 border-b hover:bg-white transition-colors",
+                      isSelected && "bg-white border-l-[3px] border-l-[#F5A623] shadow-[inset_0_0_0_1px_rgba(245,166,35,0.15)]",
+                      isUnmapped && !isSelected && "border-l-[3px] border-l-amber-300"
                     )}
                   >
-                    {/* Row 1: Name + time */}
-                    <div className="flex items-center justify-between mb-0.5">
-                      <span className={cn(
-                        "text-sm font-medium truncate max-w-[130px]",
-                        isUnmapped && "text-muted-foreground italic"
-                      )}>
-                        {conv.accountName ?? conv.phone}
-                      </span>
-                      <span suppressHydrationWarning className="text-[10px] text-muted-foreground shrink-0">
-                        {time}
-                      </span>
-                    </div>
+                    <div className="flex items-start gap-2.5">
+                      {/* Avatar */}
+                      <div className="relative shrink-0 mt-0.5">
+                        <UserAvatar
+                          displayName={conv.accountName ?? conv.phone}
+                          size={32}
+                        />
+                        <span className={cn(
+                          "absolute bottom-0 right-0 w-2 h-2 rounded-full border border-white",
+                          STATUS_CONFIG[conv.status]?.dot ?? "bg-gray-400"
+                        )} />
+                      </div>
 
-                    {/* Row 2: Preview + badges */}
-                    <div className="flex items-center gap-1.5">
-                      <StatusDot status={conv.status} />
-                      <p className="text-xs text-muted-foreground truncate flex-1">
-                        {conv.lastMessageDirection === "outbound" && (
-                          <span className="text-primary font-medium">Você: </span>
-                        )}
-                        {conv.lastMessagePreview ?? ""}
-                      </p>
-                      {assigneeInitial && (
-                        <span className="shrink-0 w-4 h-4 rounded-full bg-muted border text-[9px] font-bold flex items-center justify-center text-foreground/70">
-                          {assigneeInitial}
-                        </span>
-                      )}
-                      {conv.unreadCount > 0 && (
-                        <span className="shrink-0 bg-primary text-primary-foreground text-[10px] font-bold px-1.5 py-0.5 rounded-full">
-                          {conv.unreadCount}
-                        </span>
-                      )}
+                      <div className="flex-1 min-w-0">
+                        {/* Row 1: Name + time */}
+                        <div className="flex items-center justify-between mb-0.5">
+                          <span className={cn(
+                            "text-xs font-semibold truncate max-w-[110px]",
+                            isSelected ? "text-[#022448]" : "text-foreground",
+                            isUnmapped && "text-muted-foreground italic"
+                          )}>
+                            {conv.accountName ?? conv.phone}
+                          </span>
+                          <span suppressHydrationWarning className="text-[10px] text-muted-foreground shrink-0 ml-1">
+                            {time}
+                          </span>
+                        </div>
+
+                        {/* Row 2: Preview + unread */}
+                        <div className="flex items-center gap-1.5">
+                          <p className={cn(
+                            "text-[11px] truncate flex-1",
+                            conv.unreadCount > 0 ? "text-foreground font-medium" : "text-muted-foreground"
+                          )}>
+                            {conv.lastMessageDirection === "outbound" && (
+                              <span className="text-[#16A34A] font-semibold">Você: </span>
+                            )}
+                            {conv.lastMessagePreview ?? ""}
+                          </p>
+                          {conv.unreadCount > 0 && (
+                            <span className="shrink-0 bg-[#022448] text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                              {conv.unreadCount > 9 ? "9+" : conv.unreadCount}
+                            </span>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </button>
                 )
@@ -625,7 +640,7 @@ export default function InboxPage() {
               )}
 
               {/* Thread */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-2">
+              <div className="flex-1 overflow-y-auto p-4 space-y-2 bg-[#f0f2f5]">
                 {threadLoading ? (
                   <div className="space-y-2">
                     {[1, 2, 3].map((i) => (
@@ -648,11 +663,13 @@ export default function InboxPage() {
                         className={cn("flex flex-col gap-0.5", isOutbound ? "items-end" : "items-start")}
                       >
                         <div className={cn(
-                          "max-w-[70%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed",
+                          "max-w-[70%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed shadow-sm",
                           isOutbound
-                            ? "bg-primary text-primary-foreground rounded-br-sm"
-                            : "bg-muted text-foreground rounded-bl-sm"
-                        )}>
+                            ? "text-white rounded-br-sm"
+                            : "bg-white border border-border text-foreground rounded-bl-sm"
+                        )}
+                        style={isOutbound ? { background: "linear-gradient(135deg, #25D366, #16A34A)" } : undefined}
+                        >
                           {msg.message_text}
                         </div>
                         <span suppressHydrationWarning className="text-[10px] text-muted-foreground px-1">
@@ -668,13 +685,13 @@ export default function InboxPage() {
               </div>
 
               {/* Input */}
-              <div className="border-t p-3 flex gap-2 shrink-0">
+              <div className="border-t border-[#BBF7D0] p-3 flex gap-2 shrink-0 bg-[#F0FDF4]">
                 <Textarea
                   value={reply}
                   onChange={(e) => setReply(e.target.value)}
                   placeholder="Digite sua mensagem..."
                   rows={2}
-                  className="flex-1 resize-none text-sm"
+                  className="flex-1 resize-none text-sm bg-white border-[#BBF7D0] focus-visible:ring-green-300"
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) {
                       e.preventDefault()
@@ -682,14 +699,14 @@ export default function InboxPage() {
                     }
                   }}
                 />
-                <Button
-                  size="sm"
+                <button
+                  type="button"
                   onClick={handleSend}
                   disabled={sending || !reply.trim()}
-                  className="self-end h-9 px-3"
+                  className="btn-wpp self-end h-9 px-3 rounded-md flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Send className="w-4 h-4" />
-                </Button>
+                </button>
               </div>
             </>
           )}
