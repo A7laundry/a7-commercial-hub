@@ -5,7 +5,7 @@ import { Plus, LayoutGrid, TableProperties } from "lucide-react"
 import { useTenant } from "@/hooks/useTenant"
 import { useAccounts } from "@/hooks/accounts/useAccounts"
 import { useQueryClient } from "@tanstack/react-query"
-import { createAccountFull } from "./actions"
+import { createAccountFull, activateAccount } from "./actions"
 import { AccountCardGrid } from "@/components/modules/accounts/AccountCardGrid"
 import { AccountsSpreadsheet } from "@/components/modules/accounts/AccountsSpreadsheet"
 import { AccountCreateWizard } from "@/components/modules/accounts/AccountCreateWizard"
@@ -143,7 +143,15 @@ export default function AccountsPage() {
       <div className={cn("flex-1 overflow-hidden", viewMode === "cards" ? "overflow-auto" : "")}>
         {viewMode === "cards" ? (
           <div className="pb-6">
-            <AccountCardGrid accounts={accounts} isLoading={isLoading} />
+            <AccountCardGrid
+            accounts={accounts}
+            isLoading={isLoading}
+            onActivate={async (id) => {
+              await activateAccount(id)
+              qc.invalidateQueries({ queryKey: ["accounts", tenant.id] })
+              qc.invalidateQueries({ queryKey: ["pipeline", tenant.id] })
+            }}
+          />
           </div>
         ) : (
           <AccountsSpreadsheet tenantId={tenant.id} />

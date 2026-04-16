@@ -56,6 +56,8 @@ export type Account = {
   // Daily performance fields
   loss_reason?: 'only_quote' | 'no_response' | 'out_of_area' | 'info_only' | 'price' | 'other' | null
   unit?: string | null
+  // Pipeline visibility
+  in_pipeline?: boolean
   // Joined phone mappings (optional, present when queried with join)
   phone_mappings?: { phone: string }[]
 }

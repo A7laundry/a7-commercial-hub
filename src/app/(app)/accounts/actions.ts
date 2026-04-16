@@ -71,6 +71,7 @@ export async function createAccountFull(
         pipeline_stage: data.pipeline_stage || "lead",
         commercial_status: "active",
         status: "active",
+        in_pipeline: true,
         estimated_value: isNaN(estimatedValue as number) ? null : estimatedValue,
         frequency: data.frequency || null,
         notes: data.notes || null,
@@ -184,6 +185,26 @@ export async function markAccountLost(
   if (error) return { error: error.message }
 
   revalidatePath(`/accounts/${id}`)
+  revalidatePath("/accounts")
+  revalidatePath("/pipeline")
+  return { error: null }
+}
+
+/**
+ * Activate a dormant account: sets in_pipeline=true and pipeline_stage='lead'.
+ * Called from the Clientes list when the operator wants to bring a client into the active pipeline.
+ */
+export async function activateAccount(id: string): Promise<{ error: string | null }> {
+  const supabase = await createClient()
+  const tenantId = await getTenantId(supabase)
+
+  const { error } = await supabase
+    .from("accounts")
+    .update({ in_pipeline: true, pipeline_stage: "lead", commercial_status: "active" })
+    .eq("id", id)
+    .eq("tenant_id", tenantId)
+
+  if (error) return { error: error.message }
   revalidatePath("/accounts")
   revalidatePath("/pipeline")
   return { error: null }

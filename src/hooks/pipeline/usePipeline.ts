@@ -41,6 +41,7 @@ export function usePipeline(tenantId: string) {
         .from("accounts")
         .select("*")
         .eq("tenant_id", tenantId)
+        .eq("in_pipeline", true)
         .order("created_at", { ascending: false })
         .limit(10000)
 

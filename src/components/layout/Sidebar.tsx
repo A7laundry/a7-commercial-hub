@@ -17,7 +17,6 @@ import {
   Megaphone,
   MessageSquare,
   FileBarChart2,
-  Target,
   ChevronLeft,
   ListChecks,
   Menu,
@@ -66,10 +65,9 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: "Comercial",
     items: [
-      { href: "/accounts",  label: "Clientes",      icon: Building2 },
-      { href: "/pipeline",  label: "Carteira",      icon: Kanban },
-      { href: "/deals",     label: "Oportunidades", icon: Target },
-      { href: "/campaigns", label: "Campanhas",     icon: Megaphone },
+      { href: "/accounts",  label: "Clientes",  icon: Building2 },
+      { href: "/pipeline",  label: "Pipeline",  icon: Kanban },
+      { href: "/campaigns", label: "Campanhas", icon: Megaphone },
     ],
   },
   {
