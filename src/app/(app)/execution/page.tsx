@@ -8,7 +8,6 @@ import { useTenant } from "@/hooks/useTenant"
 import { useExecutionQueue, type ExecutionItem } from "@/hooks/dashboard/useExecutionQueue"
 import { snoozeAccount, markActionDone } from "./actions"
 import { PageHeader } from "@/components/shared/PageHeader"
-import { Progress } from "@/components/ui/progress"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -34,9 +33,43 @@ const ACTION_LABEL: Record<string, { label: string; color: string }> = {
 }
 
 const URGENCY_CONFIG = {
-  urgent: { label: "Urgente",         icon: AlertTriangle, color: "text-red-600",   border: "border-red-200",   bg: "bg-red-50",   leftBar: "bg-red-500",   scoreRing: "bg-red-50 text-red-700 ring-1 ring-red-200" },
-  high:   { label: "Alta Prioridade", icon: Zap,           color: "text-amber-600", border: "border-amber-200", bg: "bg-amber-50", leftBar: "bg-amber-400", scoreRing: "bg-amber-50 text-amber-700 ring-1 ring-amber-200" },
-  normal: { label: "Normal",          icon: ArrowRight,    color: "text-blue-600",  border: "border-blue-200",  bg: "bg-blue-50",  leftBar: "bg-blue-400",  scoreRing: "bg-blue-50 text-blue-700 ring-1 ring-blue-200" },
+  urgent: {
+    label: "Urgente",
+    icon: AlertTriangle,
+    color: "text-red-600",
+    border: "border-red-200",
+    bg: "bg-red-50",
+    // Stitch card visual
+    cardBorder: "border-l-4 border-red-400",
+    cardBg: "bg-gradient-to-br from-[#FFFBFB] to-white",
+    avatarBg: "bg-red-100 text-red-700",
+    scoreRing: "bg-red-50 text-red-700 ring-1 ring-red-200",
+    pillBg: "bg-red-500 text-white",
+  },
+  high: {
+    label: "Alta Prioridade",
+    icon: Zap,
+    color: "text-amber-600",
+    border: "border-amber-200",
+    bg: "bg-amber-50",
+    cardBorder: "border-l-4 border-amber-400",
+    cardBg: "bg-[#FFFBEB]",
+    avatarBg: "bg-amber-200 text-amber-700",
+    scoreRing: "bg-amber-50 text-amber-700 ring-1 ring-amber-200",
+    pillBg: "bg-amber-500 text-white",
+  },
+  normal: {
+    label: "Normal",
+    icon: ArrowRight,
+    color: "text-blue-600",
+    border: "border-blue-200",
+    bg: "bg-blue-50",
+    cardBorder: "border-l-4 border-blue-400",
+    cardBg: "bg-[#EFF6FF]",
+    avatarBg: "bg-blue-200 text-blue-700",
+    scoreRing: "bg-blue-50 text-blue-700 ring-1 ring-blue-200",
+    pillBg: "bg-blue-500 text-white",
+  },
 }
 
 type ComposerState = {
@@ -93,6 +126,39 @@ function PatternBadge({ item }: { item: ExecutionItem }) {
   return render ? <>{render()}</> : null
 }
 
+function getInitials(name: string) {
+  return name.split(" ").slice(0, 2).map((w) => w[0] ?? "").join("").toUpperCase()
+}
+
+// Progress ring SVG
+const RING_R = 18
+const RING_C = 2 * Math.PI * RING_R
+
+function ProgressRing({ pct, completed, total }: { pct: number; completed: number; total: number }) {
+  const offset = RING_C - (RING_C * pct) / 100
+  return (
+    <div className="flex items-center gap-3 p-3 bg-white border border-border rounded-xl shadow-[0_2px_8px_rgba(2,36,72,0.04)]">
+      <svg width="48" height="48" className="shrink-0 -rotate-90">
+        <circle cx="24" cy="24" r={RING_R} fill="none" stroke="#e2e8f0" strokeWidth="4" />
+        <circle
+          cx="24" cy="24" r={RING_R}
+          fill="none" stroke="#022448" strokeWidth="4"
+          strokeLinecap="round"
+          strokeDasharray={RING_C}
+          strokeDashoffset={offset}
+          className="transition-all duration-700"
+        />
+      </svg>
+      <div>
+        <p className="text-lg font-extrabold font-headline text-[#022448] leading-none">{pct}%</p>
+        <p className="text-[10px] text-muted-foreground mt-0.5">
+          {completed} de {total} concluídas hoje
+        </p>
+      </div>
+    </div>
+  )
+}
+
 function ExecutionQueue() {
   const { tenant } = useTenant()
   const qc = useQueryClient()
@@ -108,6 +174,7 @@ function ExecutionQueue() {
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set())
   const [displayCount, setDisplayCount] = useState(20)
   const [completedToday, setCompletedToday] = useState(0)
+  const [filterUrgency, setFilterUrgency] = useState<"urgent" | "high" | "normal" | null>(null)
   const [, startTransition] = useTransition()
 
   // Reset counter when switching between filtered and full view
@@ -213,8 +280,12 @@ function ExecutionQueue() {
     )
   }
 
+  const urgentCount  = grouped.urgent.length
+  const highCount    = grouped.high.length
+  const normalCount  = grouped.normal.length
+
   return (
-    <div className="max-w-3xl mx-auto">
+    <div className="max-w-3xl mx-auto pb-24">
       <PageHeader
         title="Minha Fila"
         description={
@@ -241,29 +312,46 @@ function ExecutionQueue() {
         </div>
       )}
 
+      {/* Stats strip: progress ring + alert chips */}
       {totalToday > 0 && (
-        <div className="flex items-center gap-3 mb-4 p-3 bg-muted/50 border rounded-lg">
-          <div className="flex-1 min-w-0">
-            <Progress value={progressPct} className="h-2" />
-          </div>
-          <span className="text-xs text-muted-foreground whitespace-nowrap shrink-0">
-            {completedToday}/{totalToday} hoje
-          </span>
+        <div className="flex items-center gap-3 mb-4 flex-wrap">
+          <ProgressRing pct={progressPct} completed={completedToday} total={totalToday} />
+          {overdueCount > 0 && (
+            <div className="flex items-center gap-2 px-3 py-2 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700 font-medium">
+              ⚠️ {overdueCount} atrasada{overdueCount !== 1 ? "s" : ""}
+            </div>
+          )}
+          {waitingCount > 0 && (
+            <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-700 font-medium">
+              💬 {waitingCount} aguardando
+            </div>
+          )}
         </div>
       )}
 
-      {(overdueCount > 0 || waitingCount > 0) && (
-        <div className="flex gap-3 mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-          {overdueCount > 0 && (
-            <span className="text-sm text-red-700 font-medium">
-              ⚠️ {overdueCount} ação{overdueCount !== 1 ? "ões" : ""} atrasada{overdueCount !== 1 ? "s" : ""}
-            </span>
-          )}
-          {waitingCount > 0 && (
-            <span className="text-sm text-amber-700 font-medium">
-              💬 {waitingCount} cliente{waitingCount !== 1 ? "s" : ""} aguardando resposta
-            </span>
-          )}
+      {/* Filter tab pills */}
+      {(urgentCount + highCount + normalCount) > 0 && (
+        <div className="flex items-center gap-1 mb-5 bg-slate-100 rounded-full p-1 w-fit">
+          {([
+            { key: null,       label: `Todas (${urgentCount + highCount + normalCount})` },
+            { key: "urgent",   label: `Urgente (${urgentCount})`,       hide: urgentCount === 0 },
+            { key: "high",     label: `Alta (${highCount})`,            hide: highCount === 0 },
+            { key: "normal",   label: `Normal (${normalCount})`,        hide: normalCount === 0 },
+          ] as const).filter((t) => !("hide" in t && t.hide)).map((tab) => (
+            <button
+              key={String(tab.key)}
+              type="button"
+              onClick={() => setFilterUrgency(tab.key)}
+              className={cn(
+                "px-3 py-1 rounded-full text-xs font-semibold transition-all duration-150",
+                filterUrgency === tab.key
+                  ? "bg-[#022448] text-white shadow-sm"
+                  : "text-slate-600 hover:text-slate-800"
+              )}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
       )}
 
@@ -277,6 +365,7 @@ function ExecutionQueue() {
 
       <div className="space-y-6">
         {(["urgent", "high", "normal"] as const).map((urgency) => {
+          if (filterUrgency !== null && filterUrgency !== urgency) return null
           const group = grouped[urgency]
           if (group.length === 0) return null
           const cfg = URGENCY_CONFIG[urgency]
@@ -293,7 +382,12 @@ function ExecutionQueue() {
                 <div className="flex items-center gap-2">
                   <Icon className={cn("w-4 h-4", cfg.color)} />
                   <span className={cn("text-sm font-bold", cfg.color)}>{cfg.label}</span>
-                  <span className="text-xs text-muted-foreground font-normal ml-0.5">({group.length})</span>
+                  <span className={cn(
+                    "text-[10px] font-bold px-2 py-0.5 rounded-full",
+                    cfg.pillBg
+                  )}>
+                    {group.length}
+                  </span>
                 </div>
                 {isCollapsed
                   ? <ChevronDown className="w-4 h-4 text-muted-foreground" />
@@ -309,6 +403,7 @@ function ExecutionQueue() {
                     const isComposing = composer?.itemId === item.id
                     const isIgnored = item.ruleId === "ignored_change_approach"
                     const lastActionDays = item.lastActionAt ? (daysSince(item.lastActionAt) ?? 0) : null
+                    const initials = getInitials(item.accountName)
 
                     return (
                       <motion.div
@@ -319,23 +414,21 @@ function ExecutionQueue() {
                       >
                       <div
                         className={cn(
-                          "crm-card bg-white border rounded-xl overflow-hidden shadow-[0_2px_12px_rgba(2,36,72,0.05)]",
-                          isComposing && cn(cfg.border, cfg.bg)
+                          "group crm-card rounded-xl overflow-hidden shadow-[0_2px_12px_rgba(2,36,72,0.06)] border border-transparent",
+                          cfg.cardBg,
+                          cfg.cardBorder,
+                          isComposing && "ring-1 ring-[#022448]/10"
                         )}
                       >
-                        {/* Urgency left bar */}
-                        <div className="flex">
-                          <div className={cn("w-1 shrink-0 rounded-l-xl", cfg.leftBar)} />
-
                         {/* Main row */}
-                        <div className="flex items-start gap-3 px-4 py-3 flex-1">
-                          {/* Score badge */}
+                        <div className="flex items-start gap-3 px-4 py-3">
+                          {/* Urgency-colored avatar initials */}
                           <div className="shrink-0 mt-0.5">
                             <div className={cn(
-                              "w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold",
-                              cfg.scoreRing
+                              "w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold select-none",
+                              cfg.avatarBg
                             )}>
-                              {item.priorityScore}
+                              {initials}
                             </div>
                           </div>
 
@@ -344,7 +437,7 @@ function ExecutionQueue() {
                             <div className="flex items-center gap-2 flex-wrap">
                               <Link
                                 href={item.href}
-                                className="text-sm font-semibold hover:text-primary transition-colors truncate"
+                                className="text-sm font-semibold text-[#022448] hover:text-primary transition-colors truncate"
                               >
                                 {item.accountName}
                               </Link>
@@ -362,7 +455,7 @@ function ExecutionQueue() {
                               )}
                             </div>
                             <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{item.reason}</p>
-                            {/* Escalation explanation — why the strategy changed */}
+                            {/* Escalation explanation */}
                             {item.escalationReason && item.escalationLevel >= 1 && (
                               <div className={cn(
                                 "flex items-center gap-1 mt-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded w-fit",
@@ -407,52 +500,50 @@ function ExecutionQueue() {
                             </div>
                           </div>
 
-                          {/* Actions */}
-                          <div className="flex items-center gap-1.5 shrink-0">
+                          {/* Actions — visible on hover (desktop) + always visible on mobile */}
+                          <div className="flex items-center gap-1 shrink-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-150">
                             <button
                               type="button"
                               onClick={() => isComposing ? setComposer(null) : openComposer(item)}
+                              title={isComposing ? "Fechar" : isIgnored ? "Ligar" : "WhatsApp"}
                               className={cn(
-                                "flex items-center gap-1 text-[10px] font-medium px-2 py-1.5 rounded-md transition-colors",
+                                "w-8 h-8 rounded-full flex items-center justify-center transition-colors",
                                 isComposing
-                                  ? "bg-muted text-muted-foreground"
+                                  ? "bg-muted text-muted-foreground hover:bg-muted/80"
                                   : isIgnored
                                   ? "bg-red-100 text-red-700 hover:bg-red-200"
                                   : "bg-[#F0FDF4] text-[#16A34A] hover:bg-[#DCFCE7] border border-[#BBF7D0]"
                               )}
                             >
-                              {isIgnored ? <Phone className="w-3 h-3" /> : <MessageSquare className="w-3 h-3" />}
-                              {isComposing ? "Fechar" : isIgnored ? "Ligar" : "WhatsApp"}
+                              {isIgnored ? <Phone className="w-3.5 h-3.5" /> : <MessageSquare className="w-3.5 h-3.5" />}
                             </button>
                             <Link
                               href={item.href}
-                              className="flex items-center gap-1 text-[10px] font-medium px-2 py-1.5 rounded-md text-muted-foreground hover:bg-muted transition-colors"
+                              title="Ver conta"
+                              className="w-8 h-8 rounded-full flex items-center justify-center bg-white border border-border text-muted-foreground hover:bg-muted transition-colors"
                             >
-                              <Building2 className="w-3 h-3" />
-                              Ver
+                              <Building2 className="w-3.5 h-3.5" />
                             </Link>
                             <button
                               type="button"
                               onClick={() => handleMarkDone(item)}
                               disabled={doneId === item.id}
-                              className="flex items-center gap-0.5 text-[10px] font-semibold px-2 py-1.5 rounded-md bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 transition-colors disabled:opacity-50"
                               title="Marcar como feito"
+                              className="w-8 h-8 rounded-full flex items-center justify-center bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 transition-colors disabled:opacity-50"
                             >
                               <Check className="w-3.5 h-3.5" />
-                              Feito
                             </button>
                             <button
                               type="button"
                               onClick={() => handleSnooze(item)}
                               disabled={snoozingId === item.id}
-                              className="text-[10px] font-medium px-2 py-1.5 rounded-md text-muted-foreground hover:bg-muted transition-colors disabled:opacity-50"
                               title="Adiar por 3 dias"
+                              className="w-8 h-8 rounded-full flex items-center justify-center bg-white border border-border text-muted-foreground hover:bg-muted transition-colors disabled:opacity-50"
                             >
                               <BellOff className="w-3.5 h-3.5" />
                             </button>
                           </div>
                         </div>
-                        </div>{/* close flex (left bar + main row) */}
 
                         {/* Inline WhatsApp Composer */}
                         {isComposing && (() => {
@@ -597,7 +688,7 @@ function ExecutionQueue() {
         </div>
       )}
 
-      <div className="mt-6 pt-4 border-t">
+      <div className="mt-4 pt-4 border-t">
         <p className="text-[11px] text-muted-foreground">
           {allVisibleItems.length > 0 && !hasMore
             ? `${allVisibleItems.length} ação${allVisibleItems.length !== 1 ? "ões" : ""} no total · `
@@ -605,6 +696,23 @@ function ExecutionQueue() {
           Itens adiados ficam ocultos por 3 dias e retornam automaticamente à fila.
         </p>
       </div>
+
+      {/* Footer bar — session summary */}
+      {totalToday > 0 && (
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-4 px-5 py-3 bg-[#022448] text-white rounded-full shadow-xl shadow-[#022448]/30">
+          <span className="text-sm font-semibold whitespace-nowrap">
+            {completedToday} de {totalToday} concluídas
+          </span>
+          <div className="w-px h-4 bg-white/20" />
+          <button
+            type="button"
+            onClick={() => refetch()}
+            className="text-xs font-bold px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 transition-colors whitespace-nowrap"
+          >
+            Encerrar Turno
+          </button>
+        </div>
+      )}
     </div>
   )
 }
