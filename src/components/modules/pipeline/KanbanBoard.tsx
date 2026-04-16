@@ -203,7 +203,7 @@ function AccountCard({
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
       className={cn(
-        "crm-card group bg-white border rounded-xl p-3 cursor-grab active:cursor-grabbing shadow-[0_2px_8px_rgba(2,36,72,0.06)] select-none",
+        "crm-card bg-white border rounded-xl p-3 cursor-grab active:cursor-grabbing shadow-[0_2px_8px_rgba(2,36,72,0.06)] select-none",
         score === "at_risk" ? "border-red-200" : "border-transparent",
         isDragging && "opacity-40 rotate-1"
       )}
@@ -226,12 +226,12 @@ function AccountCard({
             {scoreCfg.label}
           </span>
         </div>
-        {/* Edit button — visible on hover */}
+        {/* Edit button — always visible */}
         <button
           type="button"
           onMouseDown={(e) => e.stopPropagation()}
           onClick={(e) => { e.stopPropagation(); onEdit() }}
-          className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0 w-6 h-6 flex items-center justify-center rounded-md hover:bg-[#022448]/10 text-[#022448]/50 hover:text-[#022448]"
+          className="shrink-0 w-6 h-6 flex items-center justify-center rounded-md text-[#022448]/40 hover:bg-[#022448]/10 hover:text-[#022448] transition-colors"
           title="Editar cliente"
         >
           <Pencil className="w-3 h-3" />
