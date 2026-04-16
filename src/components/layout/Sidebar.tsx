@@ -151,14 +151,16 @@ function NavContent({
                   onClick={onNavigate}
                   title={collapsed ? label : undefined}
                   className={cn(
-                    "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150",
-                    collapsed && "justify-center px-2",
+                    "flex items-center gap-3 px-3 py-2 text-sm font-medium transition-all duration-150",
+                    collapsed ? "justify-center px-2 rounded-lg" : "rounded-lg",
                     active
-                      ? "bg-[#F5A623] text-[#022448] font-semibold shadow-[0_2px_12px_rgba(245,166,35,0.25)]"
-                      : "text-white/70 hover:bg-white/8 hover:text-white"
+                      ? collapsed
+                        ? "bg-amber-500/15 text-amber-400"
+                        : "border-l-4 border-amber-500 bg-white/5 text-amber-400 font-bold rounded-l-none pl-[0.625rem]"
+                      : "text-slate-300 hover:bg-white/10 hover:text-white"
                   )}
                 >
-                  <Icon className={cn("w-4 h-4 shrink-0", active ? "text-[#022448]" : "text-white/60")} />
+                  <Icon className={cn("w-4 h-4 shrink-0", active ? "text-amber-400" : "text-slate-400")} />
                   {!collapsed && (
                     <>
                       <span className="flex-1 truncate">{label}</span>
@@ -212,14 +214,38 @@ export function MobileSidebarTrigger() {
       </SheetTrigger>
       <SheetContent
         side="left"
-        style={{ background: "linear-gradient(160deg, #0f1e33 0%, #0a2a4a 100%)" }}
+        style={{ background: "linear-gradient(to bottom, #022448, #0a3060)" }}
         className="w-[240px] p-0 border-white/8 flex flex-col"
       >
         <SheetTitle className="sr-only">Menu de navegação</SheetTitle>
         <div className="h-14 flex items-center px-4 border-b border-white/8 shrink-0">
-          <span className="text-base font-extrabold text-white tracking-tight font-headline">
-            A7X
-          </span>
+          <span className="text-base font-extrabold text-white tracking-tight font-headline">A7X</span>
+          <span className="text-[10px] font-semibold text-[#F5A623]/80 uppercase tracking-widest ml-2">CRM</span>
+        </div>
+        {/* Profile card */}
+        <div className="px-6 py-5 flex flex-col items-center border-b border-white/8 shrink-0">
+          <div className="relative mb-2">
+            <div className="p-0.5 rounded-full border-2 border-amber-500">
+              <UserAvatar avatarUrl={avatarUrl} displayName={displayName} email={currentUser.email} size={64} />
+            </div>
+            <span className="absolute bottom-1 right-1 w-3 h-3 rounded-full bg-emerald-400 border-2 border-[#0a3060]" />
+          </div>
+          <p className="font-headline font-bold text-white text-sm text-center truncate w-full">
+            {displayName ?? currentUser.email}
+          </p>
+          <p className="text-slate-300 text-xs mt-0.5">{roleLabel}</p>
+        </div>
+        {/* Nova Lead button */}
+        <div className="px-4 py-3 shrink-0">
+          <Link
+            href="/accounts"
+            onClick={() => setOpen(false)}
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-headline font-bold text-sm text-white shadow-lg active:scale-95 transition-transform"
+            style={{ background: "linear-gradient(to right, #F5A623, #D48C1D)" }}
+          >
+            <span className="text-lg leading-none">+</span>
+            Nova Lead
+          </Link>
         </div>
         <NavContent
           pathname={pathname}
@@ -228,27 +254,6 @@ export function MobileSidebarTrigger() {
           onNavigate={() => setOpen(false)}
           isAdmin={isSuperAdmin || currentUser.role === "owner" || currentUser.role === "admin"}
         />
-        <div className="px-3 py-3 border-t border-white/8 shrink-0">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="relative shrink-0">
-              <UserAvatar
-                avatarUrl={avatarUrl}
-                displayName={displayName}
-                email={currentUser.email}
-                size={32}
-              />
-              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-[#0a2a4a]" />
-            </div>
-            <div className="flex flex-col min-w-0 flex-1">
-              <span className="text-xs font-semibold text-white truncate leading-tight">
-                {displayName ?? currentUser.email}
-              </span>
-              <span className="text-[10px] text-white/40 truncate leading-tight mt-0.5">
-                {roleLabel}
-              </span>
-            </div>
-          </div>
-        </div>
       </SheetContent>
     </Sheet>
   )
@@ -270,7 +275,7 @@ export function Sidebar() {
 
   return (
     <aside
-      style={{ background: "linear-gradient(160deg, #0f1e33 0%, #0a2a4a 100%)" }}
+      style={{ background: "linear-gradient(to bottom, #022448, #0a3060)" }}
       className={cn(
         "hidden lg:flex h-screen border-r border-white/8 flex-col fixed left-0 top-0 z-30 transition-all duration-300",
         collapsed ? "w-[68px]" : "w-60"
@@ -302,6 +307,42 @@ export function Sidebar() {
         </button>
       </div>
 
+      {/* ── User profile card (Stitch design) — expanded only ── */}
+      {!collapsed && (
+        <div className="px-6 py-6 flex flex-col items-center border-b border-white/8 shrink-0">
+          <div className="relative mb-3">
+            <div className="p-0.5 rounded-full border-2 border-amber-500">
+              <UserAvatar
+                avatarUrl={avatarUrl}
+                displayName={displayName}
+                email={currentUser.email}
+                size={72}
+              />
+            </div>
+            {/* Online presence dot */}
+            <span className="absolute bottom-1 right-1 w-3 h-3 rounded-full bg-emerald-400 border-2 border-[#0a3060]" />
+          </div>
+          <p className="font-headline font-bold text-white text-base leading-tight text-center truncate w-full">
+            {displayName ?? currentUser.email}
+          </p>
+          <p className="text-slate-300 text-xs font-medium mt-0.5">{roleLabel}</p>
+        </div>
+      )}
+
+      {/* ── Nova Lead button ── */}
+      {!collapsed && (
+        <div className="px-4 py-4 shrink-0">
+          <Link
+            href="/accounts"
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-headline font-bold text-sm text-white shadow-lg shadow-amber-900/20 active:scale-95 transition-transform"
+            style={{ background: "linear-gradient(to right, #F5A623, #D48C1D)" }}
+          >
+            <span className="text-lg leading-none">+</span>
+            Nova Lead
+          </Link>
+        </div>
+      )}
+
       <NavContent
         collapsed={collapsed}
         pathname={pathname}
@@ -310,12 +351,9 @@ export function Sidebar() {
         isAdmin={isSuperAdmin || currentUser.role === "owner" || currentUser.role === "admin"}
       />
 
-      {/* Footer: user info + presence dot */}
-      <div className={cn(
-        "border-t border-white/8 shrink-0",
-        collapsed ? "px-2 py-3 flex justify-center" : "px-3 py-3"
-      )}>
-        {collapsed ? (
+      {/* Footer: collapsed = small avatar only */}
+      {collapsed && (
+        <div className="px-2 py-3 border-t border-white/8 flex justify-center shrink-0">
           <div className="relative">
             <UserAvatar
               avatarUrl={avatarUrl}
@@ -323,30 +361,10 @@ export function Sidebar() {
               email={currentUser.email}
               size={32}
             />
-            <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-[#0a2a4a]" />
+            <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-[#0a3060]" />
           </div>
-        ) : (
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="relative shrink-0">
-              <UserAvatar
-                avatarUrl={avatarUrl}
-                displayName={displayName}
-                email={currentUser.email}
-                size={32}
-              />
-              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-[#0a2a4a]" />
-            </div>
-            <div className="flex flex-col min-w-0 flex-1">
-              <span className="text-xs font-semibold text-white truncate leading-tight">
-                {displayName ?? currentUser.email}
-              </span>
-              <span className="text-[10px] text-white/40 truncate leading-tight mt-0.5">
-                {roleLabel}
-              </span>
-            </div>
-          </div>
-        )}
-      </div>
+        </div>
+      )}
     </aside>
   )
 }
