@@ -14,13 +14,9 @@ import {
   FolderOpen,
   Bell,
   Kanban,
-  Upload,
-  Globe,
   Megaphone,
   MessageSquare,
-  BarChart3,
   FileBarChart2,
-  BookOpen,
   Target,
   ChevronLeft,
   ListChecks,
@@ -60,7 +56,7 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
-    label: "Hoje",
+    label: "Ação Diária",
     highlighted: true,
     items: [
       { href: "/execution", label: "Minha Fila", icon: ListChecks },
@@ -68,21 +64,16 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
-    label: "Clientes",
+    label: "Comercial",
     items: [
-      { href: "/accounts",  label: "Contas",     icon: Building2 },
-      { href: "/campaigns", label: "Campanhas",  icon: Megaphone },
+      { href: "/accounts",  label: "Clientes",      icon: Building2 },
+      { href: "/pipeline",  label: "Carteira",      icon: Kanban },
+      { href: "/deals",     label: "Oportunidades", icon: Target },
+      { href: "/campaigns", label: "Campanhas",     icon: Megaphone },
     ],
   },
   {
-    label: "Negócios",
-    items: [
-      { href: "/deals",    label: "Oportunidades", icon: Target },
-      { href: "/pipeline", label: "Carteira",      icon: Kanban },
-    ],
-  },
-  {
-    label: "Contratos",
+    label: "Gestão",
     items: [
       { href: "/contracts", label: "Contratos",  icon: FileText },
       { href: "/documents", label: "Documentos", icon: FolderOpen },
@@ -90,19 +81,9 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
-    label: "Analytics",
     items: [
-      { href: "/relatorios",      label: "Relatórios", icon: FileBarChart2 },
-      { href: "/dashboard/daily", label: "Desempenho", icon: BarChart3 },
-    ],
-  },
-  {
-    label: "Sistema",
-    items: [
-      { href: "/portal-clients",                     label: "Portal B2B",  icon: Globe },
-      { href: "/import",                             label: "Importar",    icon: Upload },
-      { href: "/guide",                              label: "Guia",        icon: BookOpen },
-      { href: "/settings",                             label: "Configurações", icon: Settings2 },
+      { href: "/relatorios", label: "Relatórios",    icon: FileBarChart2 },
+      { href: "/settings",   label: "Configurações", icon: Settings2 },
     ],
   },
 ]

@@ -1,9 +1,7 @@
 "use client"
 
-import { useState } from "react"
 import { useTenant } from "@/hooks/useTenant"
 import { useDashboardData } from "@/hooks/dashboard/useDashboardData"
-import { useDashboardPeriod, type PeriodType } from "@/hooks/dashboard/useDashboardPeriod"
 import { useDeals } from "@/hooks/deals/useDeals"
 import { useExecutionQueue } from "@/hooks/dashboard/useExecutionQueue"
 import { useOnboardingState, type OnboardingState } from "@/hooks/useOnboardingState"
@@ -11,7 +9,6 @@ import { useInsights } from "@/hooks/dashboard/useInsights"
 import { InsightsCard } from "@/components/modules/dashboard/InsightsCard"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
-import { UrgentActionsCard } from "@/components/modules/dashboard/UrgentActionsCard"
 import { ExpiringContractsCard } from "@/components/modules/dashboard/ExpiringContractsCard"
 import { ExpiringDocsCard } from "@/components/modules/dashboard/ExpiringDocsCard"
 import { RecentAlertsCard } from "@/components/modules/dashboard/RecentAlertsCard"
@@ -19,8 +16,6 @@ import { AccountsAtRiskCard } from "@/components/modules/dashboard/AccountsAtRis
 import { RecentAccountsCard } from "@/components/modules/dashboard/RecentAccountsCard"
 import { PendingReportBanner } from "@/components/modules/dashboard/PendingReportBanner"
 import { OperatorUsageCard } from "@/components/modules/dashboard/OperatorUsageCard"
-import { OperatorPerformanceCard } from "@/components/modules/dashboard/OperatorPerformanceCard"
-import { ConversionGaugeCard } from "@/components/modules/dashboard/ConversionGaugeCard"
 import {
   Building2,
   FileText,
@@ -28,13 +23,7 @@ import {
   Bell,
   FileX,
   Target,
-  TrendingUp,
   Wallet,
-  Trophy,
-  Handshake,
-  UserPlus,
-  AlertTriangle,
-  BarChart3,
   Sparkles,
   CheckCircle2,
   Circle,
@@ -42,6 +31,7 @@ import {
   ListChecks,
   Zap,
   FilePlus,
+  UserPlus,
 } from "lucide-react"
 import { formatCurrency } from "@/lib/utils"
 import Link from "next/link"
@@ -52,8 +42,6 @@ export default function DashboardPage() {
   const { tenant } = useTenant()
   const { data, isPending: isLoading } = useDashboardData(tenant.id)
   const { data: dealsData, isPending: dealsLoading } = useDeals(tenant.id)
-  const [period, setPeriod] = useState<PeriodType>("month")
-  const { data: periodData, isPending: periodLoading } = useDashboardPeriod(tenant.id, period)
   const { data: queueItems = [] } = useExecutionQueue(tenant.id)
   const onboarding = useOnboardingState(tenant.id)
   const { data: insights = [], isPending: insightsLoading } = useInsights(tenant.id)
@@ -72,7 +60,7 @@ export default function DashboardPage() {
         <OperatorUsageCard />
       </div>
 
-      {/* ── Entry point: O que fazer agora? (com clientes) ─────────────── */}
+      {/* ── Entry point: O que fazer agora? ──────────────────────────── */}
       {hasActivity && queueItems.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: -8 }}
@@ -146,12 +134,12 @@ export default function DashboardPage() {
         </motion.div>
       )}
 
-      {/* ── Onboarding (sem clientes) ─────────────────────────────────────── */}
+      {/* ── Onboarding (sem clientes) ─────────────────────────────────── */}
       {!onboarding.isLoading && !onboarding.allDone && (
         <OnboardingChecklist onboarding={onboarding} />
       )}
 
-      {/* KPI Row — 7 cards including deals pipeline */}
+      {/* ── KPI Row ──────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-4 mb-6">
         {[
           {
@@ -161,7 +149,6 @@ export default function DashboardPage() {
             icon: Building2,
             href: "/accounts",
             highlight: undefined as "warning" | "critical" | undefined,
-            sparkline: false,
           },
           {
             title: "Contratos ativos",
@@ -172,7 +159,6 @@ export default function DashboardPage() {
             icon: FileText,
             href: "/contracts",
             highlight: undefined as "warning" | "critical" | undefined,
-            sparkline: true,
           },
           {
             title: "Vencendo em breve",
@@ -183,7 +169,6 @@ export default function DashboardPage() {
             highlight: (
               !isLoading && (data?.expiringContracts ?? 0) > 0 ? "warning" : undefined
             ) as "warning" | "critical" | undefined,
-            sparkline: false,
           },
           {
             title: "Alertas abertos",
@@ -194,7 +179,6 @@ export default function DashboardPage() {
             highlight: (
               !isLoading && (data?.openAlerts ?? 0) > 0 ? "critical" : undefined
             ) as "warning" | "critical" | undefined,
-            sparkline: false,
           },
           {
             title: "Docs vencidos",
@@ -205,7 +189,6 @@ export default function DashboardPage() {
             highlight: (
               !isLoading && (data?.expiredDocuments ?? 0) > 0 ? "critical" : undefined
             ) as "warning" | "critical" | undefined,
-            sparkline: false,
           },
           {
             title: "Valor da carteira",
@@ -214,7 +197,6 @@ export default function DashboardPage() {
             icon: Wallet,
             href: "/accounts",
             highlight: undefined as "warning" | "critical" | undefined,
-            sparkline: true,
           },
         ].map((kpi, i) => (
           <motion.div
@@ -240,258 +222,36 @@ export default function DashboardPage() {
         </motion.div>
       </div>
 
-      {/* Operational Intelligence — full width */}
+      {/* ── Inteligência comercial ────────────────────────────────────── */}
       <div className="mb-6">
         <InsightsCard insights={insights} isLoading={insightsLoading} />
       </div>
 
-      {/* Period Activity — area chart */}
-      <div className="mb-6">
-        <Card className="shadow-[0_24px_40px_rgba(25,28,29,0.03)] border-transparent">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between gap-3 flex-wrap">
-              <div>
-                <div className="flex items-center gap-2">
-                  <BarChart3 className="w-4 h-4 text-[#022448]" />
-                  <CardTitle
-                    className="text-xl font-extrabold text-[#022448]"
-                    style={{ fontFamily: "Manrope, sans-serif" }}
-                  >
-                    Atividade{periodData ? ` — ${periodData.periodLabel}` : " — Últimos 6 meses"}
-                  </CardTitle>
-                </div>
-                {/* Legend */}
-                <div className="flex gap-4 mt-2">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-[#022448] inline-block" />
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                      Deals Ganhos
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-[#F5A623] inline-block" />
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                      Receita (R$)
-                    </span>
-                  </div>
-                </div>
-              </div>
-              {/* Segmented period selector */}
-              <div className="flex items-center rounded-xl border bg-[#edeeef] p-1.5 gap-0.5">
-                {(["week", "month", "quarter"] as PeriodType[]).map((p) => {
-                  const labels: Record<PeriodType, string> = {
-                    week: "Semana",
-                    month: "Mês",
-                    quarter: "Trimestre",
-                  }
-                  return (
-                    <button
-                      key={p}
-                      type="button"
-                      onClick={() => setPeriod(p)}
-                      className={`px-5 py-2 text-xs font-bold rounded-lg transition-all ${
-                        period === p
-                          ? "bg-white shadow-sm text-[#022448]"
-                          : "text-slate-500 hover:text-[#022448]"
-                      }`}
-                    >
-                      {labels[p]}
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {/* Inline SVG area chart */}
-            <div className="h-[240px] w-full relative">
-              <svg
-                className="w-full h-full overflow-visible"
-                viewBox="0 0 1000 240"
-                aria-label="Gráfico de atividade: Deals Ganhos e Receita"
-                role="img"
-              >
-                {/* Grid lines */}
-                <line
-                  x1="0"
-                  y1="200"
-                  x2="1000"
-                  y2="200"
-                  stroke="rgba(2,36,72,0.05)"
-                  strokeWidth="1"
-                />
-                <line
-                  x1="0"
-                  y1="140"
-                  x2="1000"
-                  y2="140"
-                  stroke="rgba(2,36,72,0.05)"
-                  strokeWidth="1"
-                />
-                <line
-                  x1="0"
-                  y1="80"
-                  x2="1000"
-                  y2="80"
-                  stroke="rgba(2,36,72,0.05)"
-                  strokeWidth="1"
-                />
-                {/* Area fill for Deals Ganhos */}
-                <path
-                  d="M0 180 Q 100 190, 200 160 T 400 140 T 600 120 T 800 100 T 1000 80 V 240 H 0 Z"
-                  fill="rgba(2,36,72,0.05)"
-                />
-                {/* Line — Deals Ganhos (navy) */}
-                <path
-                  d="M0 180 Q 100 190, 200 160 T 400 140 T 600 120 T 800 100 T 1000 80"
-                  fill="none"
-                  stroke="#022448"
-                  strokeWidth="2.5"
-                />
-                {/* Line — Receita (amber, dashed) */}
-                <path
-                  d="M0 210 Q 150 200, 300 150 T 500 100 T 750 60 T 1000 30"
-                  fill="none"
-                  stroke="#F5A623"
-                  strokeWidth="2.5"
-                  strokeDasharray="8 4"
-                />
-              </svg>
-              {/* Month labels */}
-              <div
-                className="flex justify-between px-2 mt-2 uppercase tracking-widest"
-                style={{
-                  fontFamily: "Inter, sans-serif",
-                  fontSize: "10px",
-                  fontWeight: 700,
-                  color: "#94a3b8",
-                }}
-              >
-                <span>Jan</span>
-                <span>Fev</span>
-                <span>Mar</span>
-                <span>Abr</span>
-                <span>Mai</span>
-                <span>Jun</span>
-              </div>
-            </div>
-
-            {/* Period stat blocks — kept for data accuracy below the chart */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mt-6 pt-6 border-t border-border/50">
-              <PeriodStatBlock
-                label="Deals criados"
-                icon={Handshake}
-                isLoading={periodLoading}
-                primary={periodData?.dealsCreated ?? 0}
-                secondary={periodData ? formatCurrency(periodData.dealsCreatedValue, "BRL") : "—"}
-                secondaryLabel="em valor"
-              />
-              <PeriodStatBlock
-                label="Deals ganhos"
-                icon={Trophy}
-                isLoading={periodLoading}
-                primary={periodData?.dealsWon ?? 0}
-                secondary={periodData ? formatCurrency(periodData.dealsWonValue, "BRL") : "—"}
-                secondaryLabel="receita fechada"
-                highlight="positive"
-              />
-              <PeriodStatBlock
-                label="Taxa de conversão"
-                icon={TrendingUp}
-                isLoading={periodLoading}
-                primary={`${periodData?.conversionRate ?? 0}%`}
-                secondary={periodData ? `${periodData.dealsWon}G / ${periodData.dealsLost}P` : "—"}
-                secondaryLabel="ganhos vs perdidos"
-                highlight={
-                  periodData && periodData.conversionRate >= 50
-                    ? "positive"
-                    : periodData && periodData.conversionRate > 0
-                    ? "warning"
-                    : undefined
-                }
-              />
-              <PeriodStatBlock
-                label="Novas contas"
-                icon={UserPlus}
-                isLoading={periodLoading}
-                primary={periodData?.newAccounts ?? 0}
-                secondary="cadastradas"
-                secondaryLabel="no período"
-              />
-              <PeriodStatBlock
-                label="Alertas gerados"
-                icon={AlertTriangle}
-                isLoading={periodLoading}
-                primary={periodData?.alertsGenerated ?? 0}
-                secondary="disparados"
-                secondaryLabel="pelo sistema"
-                highlight={
-                  periodData && periodData.alertsGenerated > 0 ? "warning" : undefined
-                }
-              />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Operator Performance + Conversion Gauge — 3/5 + 2/5 */}
-      <div className="grid grid-cols-5 gap-6 mb-6">
-        <div className="col-span-5 md:col-span-3">
-          <OperatorPerformanceCard />
-        </div>
-        <div className="col-span-5 md:col-span-2">
-          <ConversionGaugeCard
-            conversionRate={periodData?.conversionRate ?? 0}
-            isLoading={periodLoading}
-          />
-        </div>
-      </div>
-
-      {/* Urgent Actions — full width */}
+      {/* ── Atenção operacional ───────────────────────────────────────── */}
       {isLoading ? (
-        <Skeleton className="h-24 w-full mb-6" />
+        <>
+          <Skeleton className="h-52 w-full mb-4" />
+          <Skeleton className="h-52 w-full mb-4" />
+        </>
       ) : (
-        <div className="mb-6">
-          <UrgentActionsCard actions={data?.urgentActions ?? []} />
-        </div>
-      )}
-
-      {/* Mid row: Expiring Contracts + Expiring Docs */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        {isLoading ? (
-          <>
-            <Skeleton className="h-52 w-full" />
-            <Skeleton className="h-52 w-full" />
-          </>
-        ) : (
-          <>
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <ExpiringContractsCard contracts={data?.expiringContractsList ?? []} />
             <ExpiringDocsCard documents={data?.expiringDocsList ?? []} />
-          </>
-        )}
-      </div>
-
-      {/* Bottom row: Recent Alerts + Accounts at Risk */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        {isLoading ? (
-          <>
-            <Skeleton className="h-52 w-full" />
-            <Skeleton className="h-52 w-full" />
-          </>
-        ) : (
-          <>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <RecentAlertsCard alerts={data?.recentAlerts ?? []} />
             <AccountsAtRiskCard accounts={data?.accountsAtRisk ?? []} />
-          </>
-        )}
-      </div>
+          </div>
+        </>
+      )}
 
-      {/* Recent accounts — últimos 10 cadastrados */}
+      {/* ── Últimos clientes cadastrados ─────────────────────────────── */}
       <div className="pb-24">
         <RecentAccountsCard tenantId={tenant.id} />
       </div>
 
-      {/* ── Floating HUD glassmorphic ──────────────────────────────────── */}
+      {/* ── Floating HUD ─────────────────────────────────────────────── */}
       <div
         className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 rounded-2xl border border-white/20 p-2 shadow-2xl"
         style={{
@@ -568,55 +328,6 @@ function DealsKpiCard({
         </CardContent>
       </Card>
     </Link>
-  )
-}
-
-// ── Period Stat Block ──────────────────────────────────────────────────────────
-
-function PeriodStatBlock({
-  label,
-  icon: Icon,
-  isLoading,
-  primary,
-  secondary,
-  secondaryLabel,
-  highlight,
-}: {
-  label: string
-  icon: React.ElementType
-  isLoading: boolean
-  primary: string | number
-  secondary: string
-  secondaryLabel: string
-  highlight?: "positive" | "warning"
-}) {
-  const primaryClass =
-    highlight === "positive"
-      ? "text-green-600"
-      : highlight === "warning"
-      ? "text-amber-600"
-      : "text-foreground"
-
-  return (
-    <div className="flex flex-col gap-1">
-      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-        <Icon className="w-3.5 h-3.5 shrink-0" />
-        <span>{label}</span>
-      </div>
-      {isLoading ? (
-        <>
-          <Skeleton className="h-7 w-16" />
-          <Skeleton className="h-3 w-20" />
-        </>
-      ) : (
-        <>
-          <div className={`text-2xl font-bold leading-none ${primaryClass}`}>{primary}</div>
-          <p className="text-[11px] text-muted-foreground leading-tight">
-            <span className="font-medium">{secondary}</span> {secondaryLabel}
-          </p>
-        </>
-      )}
-    </div>
   )
 }
 
@@ -700,14 +411,7 @@ type KpiCardProps = {
   href: string
   highlight?: "warning" | "critical"
   isLoading?: boolean
-  sparkline?: boolean
 }
-
-/** Sparkline path data — decorative bezier curves */
-const SPARKLINE_PATHS = [
-  "M0 35 Q 25 32, 50 34 T 100 28 T 150 25 T 200 20",
-  "M0 38 Q 40 35, 80 30 T 160 15 T 200 10",
-]
 
 function KpiCard({
   title,
@@ -717,7 +421,6 @@ function KpiCard({
   href,
   highlight,
   isLoading,
-  sparkline,
 }: KpiCardProps) {
   const borderClass =
     highlight === "critical"
@@ -740,9 +443,6 @@ function KpiCard({
       ? "text-amber-600"
       : "text-[#022448]"
 
-  // Pick a sparkline path based on title hash (stable)
-  const sparkPath = SPARKLINE_PATHS[title.length % SPARKLINE_PATHS.length]
-
   return (
     <Link href={href}>
       <Card
@@ -757,36 +457,22 @@ function KpiCard({
           </CardTitle>
           <Icon className={`w-4 h-4 ${iconClass}`} />
         </CardHeader>
-        <CardContent className="flex flex-col justify-between">
+        <CardContent>
           {isLoading ? (
             <>
               <Skeleton className="h-8 w-16 mb-1" />
               <Skeleton className="h-3 w-24" />
             </>
           ) : (
-            <>
-              <div>
-                <div
-                  className={`text-3xl font-extrabold leading-none ${valueClass}`}
-                  style={{ fontFamily: "Manrope, sans-serif" }}
-                >
-                  {value ?? 0}
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">{sub}</p>
+            <div>
+              <div
+                className={`text-3xl font-extrabold leading-none ${valueClass}`}
+                style={{ fontFamily: "Manrope, sans-serif" }}
+              >
+                {value ?? 0}
               </div>
-              {sparkline && (
-                <div className="h-10 w-full mt-2" aria-hidden="true">
-                  <svg className="w-full h-full overflow-visible" viewBox="0 0 200 40">
-                    <path
-                      d={sparkPath}
-                      fill="none"
-                      stroke="#022448"
-                      strokeWidth="1.5"
-                    />
-                  </svg>
-                </div>
-              )}
-            </>
+              <p className="text-xs text-muted-foreground mt-1">{sub}</p>
+            </div>
           )}
         </CardContent>
       </Card>

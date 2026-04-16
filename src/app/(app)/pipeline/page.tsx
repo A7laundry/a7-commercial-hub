@@ -56,11 +56,11 @@ export default function PipelinePage() {
       <div className="px-6 py-4 border-b border-border bg-background shrink-0">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-extrabold font-headline text-[#022448]">Pipeline (Carteira)</h1>
+            <h1 className="text-xl font-extrabold font-headline text-[#022448]">Carteira</h1>
 
             {!pipelineStats && (
               <p className="text-xs text-muted-foreground mt-0.5">
-                Gestão de carteira · Acompanhe o relacionamento com seus clientes
+                Acompanhe o relacionamento e o estágio de cada cliente
               </p>
             )}
             {pipelineStats && (
