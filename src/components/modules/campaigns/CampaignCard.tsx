@@ -29,8 +29,10 @@ import {
   ChevronUp,
   Copy,
   Check,
+  Loader2,
 } from "lucide-react"
 
+// Static label/config maps — outside component
 const TYPE_LABELS: Record<string, string> = {
   reactivation: "Reativação",
   follow_up:    "Follow-up",
@@ -43,11 +45,19 @@ const TYPE_LABELS: Record<string, string> = {
   recurrence:   "Recorrência",
 }
 
-const STATUS_CONFIG = {
-  draft:     { label: "Rascunho", color: "bg-slate-100 text-slate-600" },
-  active:    { label: "Enviada",  color: "bg-green-100 text-green-700" },
-  completed: { label: "Concluída",color: "bg-blue-100 text-blue-700" },
-  cancelled: { label: "Cancelada",color: "bg-red-100 text-red-700" },
+const STATUS_CONFIG: Record<string, { label: string; color: string; dot: string; accentBar: string }> = {
+  draft:     { label: "Rascunho", color: "bg-slate-100 text-slate-600 ring-1 ring-slate-200",  dot: "bg-slate-400",  accentBar: "bg-slate-300" },
+  active:    { label: "Enviada",  color: "bg-green-100 text-green-700 ring-1 ring-green-200",  dot: "bg-green-500",  accentBar: "bg-green-500" },
+  completed: { label: "Concluída",color: "bg-blue-100 text-blue-700 ring-1 ring-blue-200",     dot: "bg-blue-500",   accentBar: "bg-blue-500"  },
+  cancelled: { label: "Cancelada",color: "bg-red-100 text-red-700 ring-1 ring-red-200",        dot: "bg-red-500",    accentBar: "bg-red-400"   },
+}
+
+// Recipient status icons — static map outside render
+const RECIPIENT_STATUS_ICONS: Record<string, React.ReactNode> = {
+  sent:     <CheckCircle className="w-3 h-3 text-green-600" />,
+  pending:  <Clock className="w-3 h-3 text-amber-500" />,
+  failed:   <CheckCircle className="w-3 h-3 text-red-500" />,
+  no_phone: <PhoneOff className="w-3 h-3 text-muted-foreground" />,
 }
 
 type Props = {
@@ -99,24 +109,28 @@ export function CampaignCard({ campaign, onToast }: Props) {
     setTimeout(() => setCopiedId(null), 2000)
   }
 
-  const statusCfg = STATUS_CONFIG[campaign.status]
+  const statusCfg = STATUS_CONFIG[campaign.status] ?? STATUS_CONFIG.draft
   const createdAt = formatDateBR(campaign.created_at)
 
-  const sentCount = recipients.filter((r) => r.status === "sent").length
+  const sentCount    = recipients.filter((r) => r.status === "sent").length
   const pendingCount = recipients.filter((r) => r.status === "pending").length
   const noPhoneCount = recipients.filter((r) => r.status === "no_phone").length
 
   return (
-    <div className="bg-card border rounded-lg overflow-hidden">
+    <div className="crm-card bg-white border border-transparent rounded-xl shadow-[0_2px_16px_rgba(2,36,72,0.07)] overflow-hidden">
+      {/* top accent bar by status */}
+      <div className={cn("h-1 w-full", statusCfg.accentBar)} />
+
       {/* Header */}
-      <div className="px-4 py-3 flex items-start gap-3">
+      <div className="px-4 py-3.5 flex items-start gap-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-sm font-semibold">{campaign.name}</span>
-            <span className={cn("text-[10px] font-medium px-1.5 py-0.5 rounded-full", statusCfg.color)}>
+            <span className="text-sm font-bold text-[#022448]">{campaign.name}</span>
+            <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full inline-flex items-center gap-1", statusCfg.color)}>
+              <span className={cn("w-1.5 h-1.5 rounded-full", statusCfg.dot)} />
               {statusCfg.label}
             </span>
-            <span className="text-[10px] text-muted-foreground border rounded-full px-1.5 py-0.5">
+            <span className="text-[10px] font-semibold text-[#022448]/60 bg-[#022448]/8 ring-1 ring-[#022448]/10 rounded-full px-2 py-0.5">
               {TYPE_LABELS[campaign.type] ?? campaign.type}
             </span>
           </div>
@@ -126,7 +140,7 @@ export function CampaignCard({ campaign, onToast }: Props) {
               {campaign.recipient_count} destinatários
             </span>
             {campaign.sent_count > 0 && (
-              <span className="flex items-center gap-1 text-green-600">
+              <span className="flex items-center gap-1 text-green-600 font-semibold">
                 <CheckCircle className="w-3 h-3" />
                 {campaign.sent_count} enviadas
               </span>
@@ -138,20 +152,19 @@ export function CampaignCard({ campaign, onToast }: Props) {
         <div className="flex items-center gap-1 shrink-0">
           {campaign.status === "draft" && (
             <>
-              <Button
-                variant="default"
-                size="sm"
-                className="gap-1.5 h-7 text-xs"
+              <button
+                type="button"
                 onClick={() => setConfirming(true)}
                 disabled={isPending}
+                className="btn-wpp flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold disabled:opacity-50"
               >
-                <Send className="w-3 h-3" />
+                {isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : <Send className="w-3 h-3" />}
                 Executar
-              </Button>
+              </button>
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+                className="h-7 w-7 p-0 text-destructive hover:text-destructive hover:bg-red-50"
                 onClick={() => setDeleting(true)}
                 disabled={isPending}
               >
@@ -162,7 +175,7 @@ export function CampaignCard({ campaign, onToast }: Props) {
           <Button
             variant="ghost"
             size="sm"
-            className="h-7 w-7 p-0"
+            className="h-7 w-7 p-0 hover:bg-[#022448]/8"
             onClick={() => setExpanded((v) => !v)}
           >
             {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -170,26 +183,26 @@ export function CampaignCard({ campaign, onToast }: Props) {
         </div>
       </div>
 
-      {/* Expanded */}
+      {/* Expanded body */}
       {expanded && (
-        <div className="border-t px-4 py-3 space-y-4 bg-muted/20">
+        <div className="border-t px-4 py-4 space-y-4 bg-[#f8f9fa]">
           {/* Message preview */}
           <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Mensagem</p>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Mensagem</p>
               <button
                 type="button"
                 onClick={copyMessage}
                 className={cn(
-                  "flex items-center gap-1 text-xs transition-colors",
-                  copiedId === "msg" ? "text-green-600" : "text-muted-foreground hover:text-foreground"
+                  "flex items-center gap-1 text-xs font-semibold transition-colors",
+                  copiedId === "msg" ? "text-green-600 crm-check-pop" : "text-muted-foreground hover:text-[#022448]"
                 )}
               >
                 {copiedId === "msg" ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
                 {copiedId === "msg" ? "Copiado" : "Copiar"}
               </button>
             </div>
-            <p className="text-sm bg-card border rounded-md px-3 py-2 leading-relaxed whitespace-pre-wrap">
+            <p className="text-sm bg-white border border-[#022448]/8 rounded-xl px-4 py-3 leading-relaxed whitespace-pre-wrap shadow-sm">
               {campaign.message_template}
             </p>
           </div>
@@ -197,7 +210,7 @@ export function CampaignCard({ campaign, onToast }: Props) {
           {/* Recipients */}
           {recipients.length > 0 && (
             <div>
-              <div className="flex items-center gap-4 mb-2 text-xs">
+              <div className="flex items-center gap-4 mb-2 text-xs font-semibold">
                 <span className="flex items-center gap-1 text-green-600">
                   <CheckCircle className="w-3 h-3" />{sentCount} enviados
                 </span>
@@ -210,21 +223,15 @@ export function CampaignCard({ campaign, onToast }: Props) {
                   </span>
                 )}
               </div>
-              <div className="space-y-1 max-h-64 overflow-y-auto">
+              <div className="space-y-1 max-h-64 overflow-y-auto rounded-xl border border-[#022448]/8 bg-white p-2">
                 {recipients.map((r) => {
                   const acc = r.accounts as { name: string; contact_name: string | null } | null
-                  const statusIcons: Record<string, React.ReactNode> = {
-                    sent:     <CheckCircle className="w-3 h-3 text-green-600" />,
-                    pending:  <Clock className="w-3 h-3 text-amber-500" />,
-                    failed:   <CheckCircle className="w-3 h-3 text-red-500" />,
-                    no_phone: <PhoneOff className="w-3 h-3 text-muted-foreground" />,
-                  }
-                  const statusIcon = statusIcons[r.status]
+                  const statusIcon = RECIPIENT_STATUS_ICONS[r.status]
 
                   return (
-                    <div key={r.id} className="flex items-center gap-2 text-xs py-1 px-2 rounded hover:bg-muted/40">
+                    <div key={r.id} className="flex items-center gap-2 text-xs py-1.5 px-2 rounded-lg hover:bg-[#f8f9fa] transition-colors">
                       {statusIcon}
-                      <span className="flex-1 truncate font-medium">{acc?.name ?? "—"}</span>
+                      <span className="flex-1 truncate font-semibold text-[#022448]">{acc?.name ?? "—"}</span>
                       <span className="text-muted-foreground">{r.phone ?? "sem telefone"}</span>
                     </div>
                   )
