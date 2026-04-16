@@ -63,7 +63,7 @@ export function AccountForm({
           </TabsList>
 
           {/* ── Aba Comercial ── */}
-          <TabsContent value="comercial" className="space-y-4 pt-2">
+          <TabsContent value="comercial" keepMounted className="space-y-4 pt-2">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Estágio no pipeline</Label>
@@ -139,7 +139,7 @@ export function AccountForm({
           </TabsContent>
 
           {/* ── Aba Cadastro ── */}
-          <TabsContent value="cadastro" className="space-y-4 pt-2">
+          <TabsContent value="cadastro" keepMounted className="space-y-4 pt-2">
             <div className="space-y-2">
               <Label htmlFor="name">Nome *</Label>
               <Input

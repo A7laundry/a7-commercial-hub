@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Plus, LayoutGrid, TableProperties } from "lucide-react"
 import { useTenant } from "@/hooks/useTenant"
 import { useAccounts } from "@/hooks/accounts/useAccounts"
@@ -15,15 +15,23 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog"
 import { cn } from "@/lib/utils"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 
 type ViewMode = "cards" | "spreadsheet"
 
 export default function AccountsPage() {
   const { tenant } = useTenant()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const qc = useQueryClient()
   const [creating, setCreating] = useState(false)
+
+  // Auto-open dialog when navigating with ?action=new (e.g. from "Nova Lead" in sidebar)
+  useEffect(() => {
+    if (searchParams.get("action") === "new") {
+      setCreating(true)
+    }
+  }, [searchParams])
   const [viewMode, setViewMode] = useState<ViewMode>("cards")
   const [search, setSearch] = useState("")
 
@@ -35,7 +43,8 @@ export default function AccountsPage() {
     qc.invalidateQueries({ queryKey: ["pipeline", tenant.id] })
     qc.invalidateQueries({ queryKey: ["dashboard", tenant.id] })
     qc.invalidateQueries({ queryKey: ["dashboard:recent-accounts", tenant.id] })
-    router.refresh()
+    setCreating(false)
+    router.push("/pipeline")
   }
 
   const totalClientes = accounts.length

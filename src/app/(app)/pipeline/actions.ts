@@ -52,6 +52,7 @@ export async function updateCommercialData(accountId: string, formData: FormData
       next_action: (formData.get("next_action") as string) || null,
       estimated_value: estimatedValue ? Number(estimatedValue) : null,
       frequency: (formData.get("frequency") as string) || null,
+      notes: (formData.get("notes") as string) || null,
     })
     .eq("id", accountId)
     .eq("tenant_id", tenantId)

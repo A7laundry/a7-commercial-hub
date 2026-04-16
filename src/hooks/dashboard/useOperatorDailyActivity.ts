@@ -29,8 +29,9 @@ function deriveStatus(total: number): OperatorActivityStatus {
 export function useOperatorDailyActivity(tenantId: string, date?: string) {
   const supabase = createClient()
 
+  // Use local date (sv locale gives YYYY-MM-DD) to avoid UTC vs Brazil (UTC-3) mismatch
   const resolvedDate =
-    date ?? new Date().toISOString().slice(0, 10)
+    date ?? new Date().toLocaleDateString("sv")
 
   const query = useQuery<OperatorActivity[]>({
     enabled: !!tenantId,

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useTransition } from "react"
 import { useTenant } from "@/hooks/useTenant"
+import { useQueryClient } from "@tanstack/react-query"
 import { createClient } from "@/lib/supabase/client"
 import { updateUserProfile } from "./actions"
 import { PageHeader } from "@/components/shared/PageHeader"
@@ -73,6 +74,7 @@ function InitialsAvatar({
 export default function ProfilePage() {
   const { currentUser, tenant } = useTenant()
   const supabase = createClient()
+  const qc = useQueryClient()
 
   const [user, setUser] = useState<SupabaseUser | null>(null)
   const [loading, setLoading] = useState(true)
@@ -163,7 +165,8 @@ export default function ProfilePage() {
       .from("avatars")
       .getPublicUrl(storagePath)
 
-    return publicUrl
+    // Append cache-buster so the browser fetches the new image instead of serving the old cached one
+    return `${publicUrl}?t=${Date.now()}`
   }
 
   function handleSaveProfile() {
@@ -198,6 +201,8 @@ export default function ProfilePage() {
         toast.error("Erro ao salvar: " + error)
       } else {
         toast.success("Perfil atualizado")
+        // Invalidate sidebar cache so avatar/name update immediately
+        qc.invalidateQueries({ queryKey: ["user_profile", user.id] })
       }
     })
   }

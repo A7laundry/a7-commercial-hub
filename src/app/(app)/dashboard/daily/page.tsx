@@ -37,14 +37,15 @@ import { formatCurrency } from "@/lib/utils"
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
+// Use local date (sv locale gives YYYY-MM-DD) to avoid UTC vs Brazil (UTC-3) mismatch
 function todayIso(): string {
-  return new Date().toISOString().slice(0, 10)
+  return new Date().toLocaleDateString("sv")
 }
 
 function addDays(iso: string, delta: number): string {
-  const d = new Date(iso)
+  const d = new Date(`${iso}T00:00:00`)
   d.setDate(d.getDate() + delta)
-  return d.toISOString().slice(0, 10)
+  return d.toLocaleDateString("sv")
 }
 
 function formatDisplayDate(iso: string): string {

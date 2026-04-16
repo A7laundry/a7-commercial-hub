@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { cn } from "@/lib/utils"
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -62,12 +63,14 @@ export function UserAvatar({
   size = 32,
   className,
 }: UserAvatarProps) {
+  const [imgError, setImgError] = useState(false)
+
   const { bg, text } = getAvatarColor(displayName ?? email ?? "")
   const initials = getInitials(displayName, email)
 
   const baseStyle = { width: size, height: size, fontSize: Math.max(10, Math.round(size * 0.38)) }
 
-  if (avatarUrl) {
+  if (avatarUrl && !imgError) {
     return (
       // eslint-disable-next-line @next/next/no-img-element
       <img
@@ -76,6 +79,7 @@ export function UserAvatar({
         style={baseStyle}
         className={cn("rounded-full object-cover shrink-0", className)}
         referrerPolicy="no-referrer"
+        onError={() => setImgError(true)}
       />
     )
   }

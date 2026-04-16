@@ -238,7 +238,7 @@ export function MobileSidebarTrigger() {
         {/* Nova Lead button */}
         <div className="px-4 py-3 shrink-0">
           <Link
-            href="/accounts"
+            href="/accounts?action=new"
             onClick={() => setOpen(false)}
             className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-headline font-bold text-sm text-white shadow-lg active:scale-95 transition-transform"
             style={{ background: "linear-gradient(to right, #F5A623, #D48C1D)" }}
@@ -333,7 +333,7 @@ export function Sidebar() {
       {!collapsed && (
         <div className="px-4 py-4 shrink-0">
           <Link
-            href="/accounts"
+            href="/accounts?action=new"
             className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-headline font-bold text-sm text-white shadow-lg shadow-amber-900/20 active:scale-95 transition-transform"
             style={{ background: "linear-gradient(to right, #F5A623, #D48C1D)" }}
           >

@@ -16,6 +16,7 @@ import { AccountsAtRiskCard } from "@/components/modules/dashboard/AccountsAtRis
 import { RecentAccountsCard } from "@/components/modules/dashboard/RecentAccountsCard"
 import { PendingReportBanner } from "@/components/modules/dashboard/PendingReportBanner"
 import { OperatorUsageCard } from "@/components/modules/dashboard/OperatorUsageCard"
+import { TodayLaunchesWidget } from "@/components/modules/dashboard/TodayLaunchesWidget"
 import {
   Building2,
   FileText,
@@ -54,6 +55,11 @@ export default function DashboardPage() {
     <div className="bg-[#f8f9fa] min-h-screen -m-6 p-8">
       {/* ── Pending report banner ─────────────────────────────────────── */}
       <PendingReportBanner />
+
+      {/* ── Today launches widget ────────────────────────────────────── */}
+      <div className="mb-4">
+        <TodayLaunchesWidget tenantId={tenant.id} />
+      </div>
 
       {/* ── Operator daily activity ──────────────────────────────────── */}
       <div className="mb-6">
