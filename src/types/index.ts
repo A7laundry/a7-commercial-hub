@@ -58,6 +58,8 @@ export type Account = {
   unit?: string | null
   // Pipeline visibility
   in_pipeline?: boolean
+  // Client identifier
+  client_code?: string | null
   // Joined phone mappings (optional, present when queried with join)
   phone_mappings?: { phone: string }[]
 }

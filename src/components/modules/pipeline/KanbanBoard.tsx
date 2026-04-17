@@ -216,13 +216,20 @@ function AccountCard({
       <div className="flex items-start gap-2 mb-2">
         <UserAvatar displayName={account.name} size={28} className="shrink-0 mt-0.5" />
         <div className="flex-1 min-w-0">
-          <Link
-            href={`/accounts/${account.id}`}
-            className="text-xs font-semibold leading-tight hover:text-primary transition-colors line-clamp-2 block"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {account.name}
-          </Link>
+          <div className="flex items-start justify-between gap-1">
+            <Link
+              href={`/accounts/${account.id}`}
+              className="text-xs font-semibold leading-tight hover:text-primary transition-colors line-clamp-2 block"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {account.name}
+            </Link>
+            {account.client_code && (
+              <span className="text-[9px] font-mono text-slate-400 shrink-0 leading-tight mt-px">
+                {account.client_code}
+              </span>
+            )}
+          </div>
           <span className={cn(
             "text-[10px] px-1.5 py-0.5 rounded-full font-medium mt-0.5 inline-block",
             scoreCfg.bg, scoreCfg.color
