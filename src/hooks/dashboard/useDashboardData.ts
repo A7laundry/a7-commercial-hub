@@ -100,7 +100,7 @@ export function useDashboardData(tenantId: string) {
   return useQuery<DashboardData>({
     queryKey: ["dashboard", tenantId],
     queryFn: async () => {
-      const [accountsRes, contractsRes, documentsRes, alertsRes, openAlertsCountRes] = await Promise.all([
+      const [accountsRes, contractsRes, documentsRes, alertsRes, openAlertsCountRes, totalAccountsRes] = await Promise.all([
         supabase
           .from("accounts")
           .select("id, name, status, estimated_value")
@@ -134,6 +134,12 @@ export function useDashboardData(tenantId: string) {
           .select("*", { count: "exact", head: true })
           .eq("tenant_id", tenantId)
           .eq("status", "open"),
+
+        // True total account count — no in_pipeline filter, no row data transferred
+        supabase
+          .from("accounts")
+          .select("*", { count: "exact", head: true })
+          .eq("tenant_id", tenantId),
       ])
 
       const accounts = accountsRes.data ?? []
@@ -141,6 +147,7 @@ export function useDashboardData(tenantId: string) {
       const rawDocuments = documentsRes.data ?? []
       const rawAlerts = alertsRes.data ?? []
       const trueOpenAlertsCount = openAlertsCountRes.count ?? 0
+      const trueTotalAccounts = totalAccountsRes.count ?? accounts.length
 
       // ── Process contracts ─────────────────────────────────────────────────
 
@@ -344,7 +351,7 @@ export function useDashboardData(tenantId: string) {
         .slice(0, 8)
 
       return {
-        totalAccounts: accounts.length,
+        totalAccounts: trueTotalAccounts,
         activeAccounts,
         activeContracts,
         expiringContracts,

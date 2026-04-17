@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { Plus, LayoutGrid, TableProperties } from "lucide-react"
 import { useTenant } from "@/hooks/useTenant"
 import { useAccounts } from "@/hooks/accounts/useAccounts"
+import { useAccountsStats } from "@/hooks/accounts/useAccountsStats"
 import { useQueryClient } from "@tanstack/react-query"
 import { createAccountFull, activateAccount } from "./actions"
 import { AccountCardGrid } from "@/components/modules/accounts/AccountCardGrid"
@@ -36,6 +37,7 @@ export default function AccountsPage() {
   const [search, setSearch] = useState("")
 
   const { data: accounts = [], isPending: isLoading } = useAccounts(tenant.id, { search })
+  const { data: stats, isPending: statsLoading } = useAccountsStats(tenant.id)
 
   function handleSuccess(accountId: string) {
     qc.invalidateQueries({ queryKey: ["accounts", tenant.id] })
@@ -47,10 +49,10 @@ export default function AccountsPage() {
     router.push("/pipeline")
   }
 
-  const totalClientes = accounts.length
-  const totalAtivos = accounts.filter((a) => a.commercial_status === "active").length
-  const totalEmRisco = accounts.filter((a) => a.commercial_status === "at_risk").length
-  const totalInativos = accounts.filter((a) => a.status === "inactive").length
+  const totalClientes = stats?.total    ?? 0
+  const totalAtivos   = stats?.ativos   ?? 0
+  const totalEmRisco  = stats?.emRisco  ?? 0
+  const totalInativos = stats?.inativos ?? 0
 
   return (
     <div className={cn(
@@ -113,7 +115,7 @@ export default function AccountsPage() {
 
       {/* KPI Stats Strip */}
       <div className="grid grid-cols-4 gap-3 px-6 py-4 bg-[#f8f9fa] border-b">
-        {isLoading ? (
+        {statsLoading ? (
           <>
             {[0, 1, 2, 3].map((i) => (
               <div key={i} className="bg-white rounded-xl p-4 shadow-[0_2px_12px_rgba(2,36,72,0.05)] border border-transparent">
