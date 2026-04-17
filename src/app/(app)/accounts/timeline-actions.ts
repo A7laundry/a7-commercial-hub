@@ -42,13 +42,14 @@ export async function logAccountEvent(
 ): Promise<{ error: string | null }> {
   const supabase = await createClient()
   try {
-    const { tenantId } = await getContext(supabase)
+    const { tenantId, userId } = await getContext(supabase)
     const { error } = await supabase.from("account_timeline").insert({
       tenant_id: tenantId,
       account_id: accountId,
       event_type: eventType,
       summary,
       metadata: metadata ?? null,
+      created_by: userId,
     })
     return { error: error?.message ?? null }
   } catch (err) {
