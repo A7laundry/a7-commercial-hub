@@ -7,13 +7,14 @@ import { Sidebar, MobileSidebarTrigger } from "./Sidebar"
 import { CommandPalette } from "./CommandPalette"
 import { InternalChat } from "./InternalChat"
 import { cn } from "@/lib/utils"
-import { Search, User, Settings, LogOut } from "lucide-react"
+import { Search, User, Settings, LogOut, Bell } from "lucide-react"
 import { Toaster } from "sonner"
 import { useTenant } from "@/hooks/useTenant"
 import { useRealtimeEvents } from "@/hooks/useRealtimeEvents"
 import { OnboardingBanner } from "@/components/layout/OnboardingBanner"
 import { UserAvatar } from "@/components/shared/UserAvatar"
 import { useUserProfile } from "@/hooks/useUserProfile"
+import { useOpenAlertsCount } from "@/hooks/alerts/useOpenAlertsCount"
 import { createClient } from "@/lib/supabase/client"
 import {
   DropdownMenu,
@@ -117,6 +118,28 @@ function UserMenu() {
   )
 }
 
+// ── Alerts bell — header icon with open count badge ───────────────────────────
+
+function AlertBell() {
+  const { tenant } = useTenant()
+  const { data: count = 0 } = useOpenAlertsCount(tenant.id)
+
+  return (
+    <Link
+      href="/alerts"
+      className="relative flex items-center justify-center w-8 h-8 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+      aria-label={count > 0 ? `${count} alertas abertos` : "Alertas"}
+    >
+      <Bell className="w-4 h-4" />
+      {count > 0 && (
+        <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 flex items-center justify-center text-[9px] font-bold px-1 rounded-full bg-red-500 text-white leading-none">
+          {count > 99 ? "99+" : count}
+        </span>
+      )}
+    </Link>
+  )
+}
+
 // ── Realtime events — mounted once, provides tenant-wide live signals ──────────
 
 function RealtimeProvider() {
@@ -161,6 +184,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </button>
             {/* Push to right */}
             <div className="ml-auto flex items-center gap-2">
+              <AlertBell />
               <InternalChat />
               <UserMenu />
             </div>

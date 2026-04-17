@@ -10,11 +10,7 @@ import { UserAvatar } from "@/components/shared/UserAvatar"
 import {
   LayoutDashboard,
   Building2,
-  FileText,
-  FolderOpen,
-  Bell,
   Kanban,
-  Megaphone,
   MessageSquare,
   FileBarChart2,
   ChevronLeft,
@@ -22,6 +18,7 @@ import {
   Menu,
   Settings2,
   ShieldAlert,
+  Megaphone,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useSidebarCollapsed } from "./AppShell"
@@ -50,36 +47,19 @@ type NavGroup = {
 
 const NAV_GROUPS: NavGroup[] = [
   {
-    items: [
-      { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    ],
-  },
-  {
-    label: "Ação Diária",
+    label: "Operacional",
     highlighted: true,
     items: [
       { href: "/execution", label: "Minha Fila", icon: ListChecks },
-      { href: "/inbox",     label: "Inbox",      icon: MessageSquare },
-    ],
-  },
-  {
-    label: "Comercial",
-    items: [
-      { href: "/accounts",  label: "Clientes",  icon: Building2 },
-      { href: "/pipeline",  label: "Pipeline",  icon: Kanban },
-      { href: "/campaigns", label: "Campanhas", icon: Megaphone },
+      { href: "/pipeline",  label: "Pipeline",   icon: Kanban },
+      { href: "/accounts",  label: "Clientes",   icon: Building2 },
+      { href: "/inbox",     label: "Inbox",       icon: MessageSquare },
     ],
   },
   {
     label: "Gestão",
     items: [
-      { href: "/contracts", label: "Contratos",  icon: FileText },
-      { href: "/documents", label: "Documentos", icon: FolderOpen },
-      { href: "/alerts",    label: "Alertas",    icon: Bell },
-    ],
-  },
-  {
-    items: [
+      { href: "/dashboard",  label: "Dashboard",     icon: LayoutDashboard },
       { href: "/relatorios", label: "Relatórios",    icon: FileBarChart2 },
       { href: "/settings",   label: "Configurações", icon: Settings2 },
     ],
@@ -111,7 +91,13 @@ function NavContent({
   const groups: NavGroup[] = [
     ...NAV_GROUPS,
     ...(isAdmin
-      ? [{ label: "Admin", items: [{ href: "/admin", label: "Admin Panel", icon: ShieldAlert }] }]
+      ? [{
+          label: "Admin",
+          items: [
+            { href: "/campaigns", label: "Campanhas", icon: Megaphone },
+            { href: "/admin",     label: "Admin Panel", icon: ShieldAlert },
+          ],
+        }]
       : []),
   ]
 
