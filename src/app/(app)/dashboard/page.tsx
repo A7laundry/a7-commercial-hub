@@ -9,9 +9,6 @@ import { useExecutionQueue } from "@/hooks/dashboard/useExecutionQueue"
 import { useOnboardingState, type OnboardingState } from "@/hooks/useOnboardingState"
 import { useInsights } from "@/hooks/dashboard/useInsights"
 import { InsightsCard } from "@/components/modules/dashboard/InsightsCard"
-import { Skeleton } from "@/components/ui/skeleton"
-import { ExpiringContractsCard } from "@/components/modules/dashboard/ExpiringContractsCard"
-import { ExpiringDocsCard } from "@/components/modules/dashboard/ExpiringDocsCard"
 import { RecentAlertsCard } from "@/components/modules/dashboard/RecentAlertsCard"
 import { AccountsAtRiskCard } from "@/components/modules/dashboard/AccountsAtRiskCard"
 import { RecentAccountsCard } from "@/components/modules/dashboard/RecentAccountsCard"
@@ -35,7 +32,6 @@ import {
   ArrowRight,
   ListChecks,
   Zap,
-  FilePlus,
   UserPlus,
 } from "lucide-react"
 import Link from "next/link"
@@ -236,23 +232,10 @@ export default function DashboardPage() {
       </div>
 
       {/* ── Operacional ───────────────────────────────────────────────── */}
-      {isLoading ? (
-        <>
-          <Skeleton className="h-52 w-full mb-4" />
-          <Skeleton className="h-52 w-full mb-4" />
-        </>
-      ) : (
-        <>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <ExpiringContractsCard contracts={data?.expiringContractsList ?? []} />
-            <ExpiringDocsCard documents={data?.expiringDocsList ?? []} />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <RecentAlertsCard alerts={data?.recentAlerts ?? []} />
-            <AccountsAtRiskCard accounts={data?.accountsAtRisk ?? []} />
-          </div>
-        </>
-      )}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <RecentAlertsCard alerts={data?.recentAlerts ?? []} />
+        <AccountsAtRiskCard accounts={data?.accountsAtRisk ?? []} />
+      </div>
 
       {/* ── Últimos clientes cadastrados ─────────────────────────────── */}
       <div className="pb-24">
@@ -274,14 +257,6 @@ export default function DashboardPage() {
         >
           <UserPlus className="w-4 h-4" aria-hidden="true" />
           Novo Cliente
-        </Link>
-        <div className="w-px h-6 bg-slate-200 mx-1" aria-hidden="true" />
-        <Link
-          href="/contracts?action=new"
-          className="flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold text-[#022448] hover:bg-slate-100 transition-all"
-        >
-          <FilePlus className="w-4 h-4" aria-hidden="true" />
-          Gerar Contrato
         </Link>
       </div>
     </div>
