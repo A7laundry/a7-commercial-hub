@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation"
 import { useTenantContext } from "@/components/providers/TenantProvider"
 import { useOpenAlertsCount } from "@/hooks/alerts/useOpenAlertsCount"
 import { useInboxUnreadCount } from "@/hooks/inbox/useInboxUnreadCount"
-import { useExecutionQueue } from "@/hooks/dashboard/useExecutionQueue"
 import { useUserProfile } from "@/hooks/useUserProfile"
 import { UserAvatar } from "@/components/shared/UserAvatar"
 import {
@@ -200,10 +199,8 @@ export function MobileSidebarTrigger() {
   const { tenant, currentUser, isSuperAdmin } = useTenantContext()
   const { data: openAlertsCount = 0 } = useOpenAlertsCount(tenant.id)
   const { data: inboxUnreadCount = 0 } = useInboxUnreadCount(tenant.id)
-  const { data: executionItems = [] } = useExecutionQueue(tenant.id)
   const { data: profile } = useUserProfile(currentUser.user_id)
 
-  const executionUrgentCount = executionItems.filter((i) => i.urgency === "urgent").length
   const displayName = profile?.display_name ?? null
   const avatarUrl = profile?.avatar_url ?? null
   const roleLabel = ROLE_LABEL[currentUser.role] ?? currentUser.role
@@ -259,7 +256,6 @@ export function MobileSidebarTrigger() {
           pathname={pathname}
           openAlertsCount={openAlertsCount}
           inboxUnreadCount={inboxUnreadCount}
-          executionUrgentCount={executionUrgentCount}
           onNavigate={() => setOpen(false)}
           isAdmin={isSuperAdmin || currentUser.role === "owner" || currentUser.role === "admin"}
         />
@@ -276,10 +272,8 @@ export function Sidebar() {
   const { collapsed, toggle } = useSidebarCollapsed()
   const { data: openAlertsCount = 0 } = useOpenAlertsCount(tenant.id)
   const { data: inboxUnreadCount = 0 } = useInboxUnreadCount(tenant.id)
-  const { data: executionItems = [] } = useExecutionQueue(tenant.id)
   const { data: profile } = useUserProfile(currentUser.user_id)
 
-  const executionUrgentCount = executionItems.filter((i) => i.urgency === "urgent").length
   const displayName = profile?.display_name ?? null
   const avatarUrl = profile?.avatar_url ?? null
   const roleLabel = ROLE_LABEL[currentUser.role] ?? currentUser.role
@@ -359,7 +353,6 @@ export function Sidebar() {
         pathname={pathname}
         openAlertsCount={openAlertsCount}
         inboxUnreadCount={inboxUnreadCount}
-        executionUrgentCount={executionUrgentCount}
         isAdmin={isSuperAdmin || currentUser.role === "owner" || currentUser.role === "admin"}
       />
 
