@@ -2,6 +2,12 @@ import { useQuery } from "@tanstack/react-query"
 import { createClient } from "@/lib/supabase/client"
 import type { Account, PipelineStage } from "@/types"
 
+export type OperatorRef = {
+  name: string
+  avatarUrl: string | null
+  initials: string
+}
+
 export const PIPELINE_STAGES: PipelineStage[] = [
   "lead",
   "em_contato",
@@ -24,6 +30,7 @@ export const STAGE_CONFIG: Record<
 }
 
 export type PipelineBoard = Record<PipelineStage, Account[]>
+export type OperatorByAccount = Map<string, OperatorRef>
 
 export type PipelineStats = {
   totalAccounts: number
@@ -37,18 +44,70 @@ export function usePipeline(tenantId: string) {
   return useQuery({
     queryKey: ["pipeline", tenantId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("accounts")
-        .select("*")
-        .eq("tenant_id", tenantId)
-        .eq("in_pipeline", true)
-        .order("created_at", { ascending: false })
-        .limit(10000)
+      const [accountsRes, timelineRes] = await Promise.all([
+        supabase
+          .from("accounts")
+          .select("*")
+          .eq("tenant_id", tenantId)
+          .eq("in_pipeline", true)
+          .order("created_at", { ascending: false })
+          .limit(10000),
 
-      if (error) throw error
+        // Latest timeline event per account — used to identify which operator
+        // last touched each client. Ordered desc so first occurrence = most recent.
+        supabase
+          .from("account_timeline")
+          .select("account_id, created_by, created_at")
+          .eq("tenant_id", tenantId)
+          .not("created_by", "is", null)
+          .order("created_at", { ascending: false })
+          .limit(2000),
+      ])
 
-      const accounts = (data ?? []) as Account[]
+      if (accountsRes.error) throw accountsRes.error
 
+      const accounts = (accountsRes.data ?? []) as Account[]
+
+      // ── Build operator attribution map ─────────────────────────────────────
+      // Keep only first occurrence per account (= most recent event)
+      const latestActorByAccount = new Map<string, string>() // account_id → user_id
+      for (const evt of (timelineRes.data ?? [])) {
+        if (!latestActorByAccount.has(evt.account_id) && evt.created_by) {
+          latestActorByAccount.set(evt.account_id, evt.created_by)
+        }
+      }
+
+      const operatorByAccount: OperatorByAccount = new Map()
+
+      if (latestActorByAccount.size > 0) {
+        const userIds = [...new Set(latestActorByAccount.values())]
+        const { data: profiles } = await supabase
+          .from("user_profiles")
+          .select("user_id, display_name, avatar_url")
+          .in("user_id", userIds)
+
+        const profileMap = new Map<string, { display_name: string | null; avatar_url: string | null }>()
+        for (const p of (profiles ?? [])) {
+          profileMap.set(p.user_id, { display_name: p.display_name, avatar_url: p.avatar_url })
+        }
+
+        for (const [accountId, userId] of latestActorByAccount) {
+          const profile = profileMap.get(userId)
+          const name = profile?.display_name ?? "?"
+          const initials = name
+            .split(" ")
+            .slice(0, 2)
+            .map((w) => w[0]?.toUpperCase() ?? "")
+            .join("")
+          operatorByAccount.set(accountId, {
+            name,
+            avatarUrl: profile?.avatar_url ?? null,
+            initials,
+          })
+        }
+      }
+
+      // ── Board + stats ──────────────────────────────────────────────────────
       const board = PIPELINE_STAGES.reduce((acc, stage) => {
         acc[stage] = accounts.filter((a) => a.pipeline_stage === stage)
         return acc
@@ -67,7 +126,7 @@ export function usePipeline(tenantId: string) {
         }, {} as PipelineStats["byStage"]),
       }
 
-      return { board, stats }
+      return { board, stats, operatorByAccount }
     },
     staleTime: 30_000,
   })

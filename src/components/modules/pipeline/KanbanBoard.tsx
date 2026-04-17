@@ -4,7 +4,7 @@ import { useRef, useState, useTransition } from "react"
 import Link from "next/link"
 import { useQueryClient } from "@tanstack/react-query"
 import { movePipelineStage, updateCommercialData } from "@/app/(app)/pipeline/actions"
-import { PIPELINE_STAGES, STAGE_CONFIG, type PipelineBoard } from "@/hooks/pipeline/usePipeline"
+import { PIPELINE_STAGES, STAGE_CONFIG, type PipelineBoard, type OperatorByAccount } from "@/hooks/pipeline/usePipeline"
 import {
   computeCommercialScore,
   computeOpportunitySignals,
@@ -29,11 +29,12 @@ import {
 type Props = {
   board: PipelineBoard
   tenantId: string
+  operatorByAccount?: OperatorByAccount
 }
 
 // ── KanbanBoard ───────────────────────────────────────────────────────────────
 
-export function KanbanBoard({ board, tenantId }: Props) {
+export function KanbanBoard({ board, tenantId, operatorByAccount }: Props) {
   const qc = useQueryClient()
   const [optimisticBoard, setOptimisticBoard] = useState<PipelineBoard>(board)
   const [dragAccountId, setDragAccountId] = useState<string | null>(null)
@@ -151,6 +152,7 @@ export function KanbanBoard({ board, tenantId }: Props) {
                     onDragStart={() => handleDragStart(account, stage)}
                     onDragEnd={handleDragEnd}
                     onEdit={() => setEditingAccount(account)}
+                    operator={operatorByAccount?.get(account.id)}
                   />
                 ))}
                 {accounts.length === 0 && (
@@ -184,12 +186,14 @@ function AccountCard({
   onDragStart,
   onDragEnd,
   onEdit,
+  operator,
 }: {
   account: Account
   isDragging: boolean
   onDragStart: () => void
   onDragEnd: () => void
   onEdit: () => void
+  operator?: { name: string; avatarUrl: string | null; initials: string }
 }) {
   const score = computeCommercialScore(account, [])
   const scoreCfg = SCORE_CONFIG[score]
@@ -272,6 +276,29 @@ function AccountCard({
         <div className="mt-1.5 flex items-center gap-1 text-[10px] text-red-600 font-medium">
           <AlertTriangle className="w-3 h-3 shrink-0" />
           <span className="line-clamp-1">{criticalSignal.label}</span>
+        </div>
+      )}
+
+      {/* Operator badge */}
+      {operator && (
+        <div
+          className="mt-2 pt-2 border-t border-slate-100 flex items-center gap-1.5"
+          title={`Operador: ${operator.name}`}
+        >
+          {operator.avatarUrl ? (
+            <img
+              src={operator.avatarUrl}
+              alt={operator.name}
+              className="w-4 h-4 rounded-full object-cover shrink-0"
+            />
+          ) : (
+            <span className="w-4 h-4 rounded-full bg-[#022448]/10 text-[#022448] text-[8px] font-bold flex items-center justify-center shrink-0 leading-none">
+              {operator.initials}
+            </span>
+          )}
+          <span className="text-[10px] text-muted-foreground truncate leading-none">
+            {operator.name}
+          </span>
         </div>
       )}
     </div>

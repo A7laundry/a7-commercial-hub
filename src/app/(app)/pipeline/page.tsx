@@ -155,7 +155,11 @@ export default function PipelinePage() {
       {/* Board area */}
       <div className="flex-1 overflow-hidden px-6 py-4">
         {pipelineData?.board && (
-          <KanbanBoard board={pipelineData.board} tenantId={tenant.id} />
+          <KanbanBoard
+            board={pipelineData.board}
+            tenantId={tenant.id}
+            operatorByAccount={pipelineData.operatorByAccount}
+          />
         )}
       </div>
     </div>
