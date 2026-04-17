@@ -8,6 +8,7 @@ import {
   MessageSquare, Target, Trophy, Users,
   TrendingUp, Calendar, PhoneCall, CheckCircle2, BarChart3,
 } from "lucide-react"
+import { DeactivateMemberButton } from "./DeactivateMemberButton"
 
 const ROLE_LABEL: Record<string, string> = {
   owner:  "Proprietário",
@@ -233,6 +234,8 @@ export default async function TeamPage() {
     .map(([name, agg]) => ({ name, ...agg }))
     .sort((a, b) => b.contacts - a.contacts)
 
+  const isOwner = membership.role === "owner"
+
   // Summary totals
   const totalContacts30d  = stats.reduce((s, op) => s + op.contacts30d, 0) +
     unmatchedOutcomes.reduce((s, op) => s + op.contacts, 0)
@@ -324,6 +327,15 @@ export default async function TeamPage() {
                     )}
                   </div>
                 </div>
+
+                {/* Deactivate button — owner only, not for self or other owners */}
+                {isOwner && op.userId !== user.id && op.role !== "owner" && (
+                  <DeactivateMemberButton
+                    userId={op.userId}
+                    displayName={op.displayName}
+                    email={op.email}
+                  />
+                )}
               </div>
 
               {/* KPI grid — 2×3 */}
