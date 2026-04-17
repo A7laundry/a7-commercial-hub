@@ -39,12 +39,13 @@ export default async function TeamPage() {
   const service = createServiceClient()
 
   // Fetch all members
-  const { data: members = [] } = await supabase
+  const { data: membersData } = await supabase
     .from("tenant_users")
     .select("user_id, role, created_at")
     .eq("tenant_id", tenantId)
     .order("created_at")
 
+  const members = membersData ?? []
   const userIds = members.map((m) => m.user_id)
 
   // Fetch profiles, conversations, deals and auth emails in parallel
