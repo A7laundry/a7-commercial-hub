@@ -56,6 +56,7 @@ export function useLogOutcome(tenantId: string, date: string) {
       qc.invalidateQueries({ queryKey: ["daily_performance", tenantId, date] })
       qc.invalidateQueries({ queryKey: ["operator_daily_activity", tenantId, date] })
       qc.invalidateQueries({ queryKey: ["pipeline", tenantId] })
+      qc.invalidateQueries({ queryKey: ["dashboard", tenantId] })
     },
   })
 }

@@ -82,6 +82,7 @@ export function KanbanBoard({ board, tenantId, operatorByAccount }: Props) {
       const result = await movePipelineStage(dragAccountId, targetStage)
       if (!result?.error) {
         qc.invalidateQueries({ queryKey: ["pipeline", tenantId] })
+        qc.invalidateQueries({ queryKey: ["dashboard", tenantId] })
       }
     })
   }
@@ -108,6 +109,7 @@ export function KanbanBoard({ board, tenantId, operatorByAccount }: Props) {
     })
     setEditingAccount(null)
     qc.invalidateQueries({ queryKey: ["pipeline", tenantId] })
+    qc.invalidateQueries({ queryKey: ["dashboard", tenantId] })
   }
 
   return (
