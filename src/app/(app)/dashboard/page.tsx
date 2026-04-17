@@ -2,12 +2,13 @@
 
 import { useTenant } from "@/hooks/useTenant"
 import { useDashboardData } from "@/hooks/dashboard/useDashboardData"
+import { useDashboardMonth } from "@/hooks/dashboard/useDashboardMonth"
+import { usePipeline } from "@/hooks/pipeline/usePipeline"
 import { useDeals } from "@/hooks/deals/useDeals"
 import { useExecutionQueue } from "@/hooks/dashboard/useExecutionQueue"
 import { useOnboardingState, type OnboardingState } from "@/hooks/useOnboardingState"
 import { useInsights } from "@/hooks/dashboard/useInsights"
 import { InsightsCard } from "@/components/modules/dashboard/InsightsCard"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ExpiringContractsCard } from "@/components/modules/dashboard/ExpiringContractsCard"
 import { ExpiringDocsCard } from "@/components/modules/dashboard/ExpiringDocsCard"
@@ -18,13 +19,16 @@ import { PendingReportBanner } from "@/components/modules/dashboard/PendingRepor
 import { OperatorUsageCard } from "@/components/modules/dashboard/OperatorUsageCard"
 import { TodayLaunchesWidget } from "@/components/modules/dashboard/TodayLaunchesWidget"
 import {
-  Building2,
-  FileText,
-  Clock,
-  Bell,
-  FileX,
-  Target,
-  Wallet,
+  KpiRevenueMonth,
+  KpiClientsInPipeline,
+  KpiConversion,
+  KpiTicketMedio,
+} from "@/components/modules/dashboard/BusinessKpiRow"
+import { PipelineStageBar } from "@/components/modules/dashboard/PipelineStageBar"
+import { StagePieDistribution } from "@/components/modules/dashboard/StagePieDistribution"
+import { ActivityFeed } from "@/components/modules/dashboard/ActivityFeed"
+import { MonthGoalsCard } from "@/components/modules/dashboard/MonthGoalsCard"
+import {
   Sparkles,
   CheckCircle2,
   Circle,
@@ -34,7 +38,6 @@ import {
   FilePlus,
   UserPlus,
 } from "lucide-react"
-import { formatCurrency } from "@/lib/utils"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import { cn } from "@/lib/utils"
@@ -42,10 +45,15 @@ import { cn } from "@/lib/utils"
 export default function DashboardPage() {
   const { tenant } = useTenant()
   const { data, isPending: isLoading } = useDashboardData(tenant.id)
+  const { data: monthData, isPending: monthLoading } = useDashboardMonth(tenant.id)
+  const { data: pipelineData, isPending: pipelineLoading } = usePipeline(tenant.id)
   const { data: dealsData, isPending: dealsLoading } = useDeals(tenant.id)
   const { data: queueItems = [] } = useExecutionQueue(tenant.id)
   const onboarding = useOnboardingState(tenant.id)
   const { data: insights = [], isPending: insightsLoading } = useInsights(tenant.id)
+
+  void dealsData
+  void dealsLoading
 
   const hasActivity = !isLoading && (data?.totalAccounts ?? 0) > 0
   const urgentCount = queueItems.filter((i) => i.urgency === "urgent").length
@@ -66,7 +74,90 @@ export default function DashboardPage() {
         <OperatorUsageCard />
       </div>
 
-      {/* ── Entry point: O que fazer agora? ──────────────────────────── */}
+      {/* ── Onboarding (sem clientes) ─────────────────────────────────── */}
+      {!onboarding.isLoading && !onboarding.allDone && (
+        <OnboardingChecklist onboarding={onboarding} />
+      )}
+
+      {/* ══ NOVA SEÇÃO: Business KPIs ════════════════════════════════════ */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, delay: 0 }}
+        >
+          <KpiRevenueMonth
+            revenueMonth={monthData?.revenueMonth ?? 0}
+            isLoading={monthLoading}
+          />
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, delay: 0.07 }}
+        >
+          <KpiClientsInPipeline
+            totalAccounts={data?.totalAccounts ?? 0}
+            activeAccounts={data?.activeAccounts ?? 0}
+            isLoading={isLoading}
+          />
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, delay: 0.14 }}
+        >
+          <KpiConversion
+            conversionRate={monthData?.conversionRate ?? 0}
+            isLoading={monthLoading}
+          />
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, delay: 0.21 }}
+        >
+          <KpiTicketMedio
+            totalCarteiraValue={data?.totalCarteiraValue ?? 0}
+            totalAccounts={data?.totalAccounts ?? 0}
+            isLoading={isLoading}
+          />
+        </motion.div>
+      </div>
+
+      {/* ══ NOVA SEÇÃO: Visão de Pipeline ════════════════════════════════ */}
+      <div className="grid grid-cols-5 gap-4 mb-6">
+        <div className="col-span-5 lg:col-span-3 bg-white rounded-xl p-6 shadow-[0_24px_40px_rgba(25,28,29,0.03)]">
+          <PipelineStageBar stats={pipelineData?.stats} isLoading={pipelineLoading} />
+        </div>
+        <div className="col-span-5 lg:col-span-2 bg-white rounded-xl p-6 shadow-[0_24px_40px_rgba(25,28,29,0.03)]">
+          <StagePieDistribution stats={pipelineData?.stats} isLoading={pipelineLoading} />
+        </div>
+      </div>
+
+      {/* ══ NOVA SEÇÃO: Atividade + Metas ════════════════════════════════ */}
+      <div className="grid grid-cols-5 gap-4 mb-6">
+        <div className="col-span-5 lg:col-span-3 bg-white rounded-xl p-6 shadow-[0_24px_40px_rgba(25,28,29,0.03)]">
+          <ActivityFeed
+            activities={monthData?.recentActivity ?? []}
+            isLoading={monthLoading}
+          />
+        </div>
+        <div className="col-span-5 lg:col-span-2">
+          <MonthGoalsCard
+            goals={monthData?.goals}
+            salesMonth={monthData?.salesMonth ?? 0}
+            contactsMonth={monthData?.contactsMonth ?? 0}
+            revenueMonth={monthData?.revenueMonth ?? 0}
+            isLoading={monthLoading}
+          />
+        </div>
+      </div>
+
+      {/* ── Execution queue ───────────────────────────────────────────── */}
       {hasActivity && queueItems.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: -8 }}
@@ -112,7 +203,6 @@ export default function DashboardPage() {
             </Link>
           </div>
 
-          {/* Preview das top 3 ações urgentes */}
           {urgentCount > 0 && (
             <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-2">
               {queueItems
@@ -140,100 +230,12 @@ export default function DashboardPage() {
         </motion.div>
       )}
 
-      {/* ── Onboarding (sem clientes) ─────────────────────────────────── */}
-      {!onboarding.isLoading && !onboarding.allDone && (
-        <OnboardingChecklist onboarding={onboarding} />
-      )}
-
-      {/* ── KPI Row ──────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-4 mb-6">
-        {[
-          {
-            title: "Clientes",
-            value: isLoading ? null : (data?.totalAccounts ?? 0),
-            sub: isLoading ? null : `${data?.activeAccounts ?? 0} ativos`,
-            icon: Building2,
-            href: "/accounts",
-            highlight: undefined as "warning" | "critical" | undefined,
-          },
-          {
-            title: "Contratos ativos",
-            value: isLoading ? null : (data?.activeContracts ?? 0),
-            sub: isLoading
-              ? null
-              : `${(data?.expiringContracts ?? 0) + (data?.expiredContracts ?? 0)} com atenção`,
-            icon: FileText,
-            href: "/contracts",
-            highlight: undefined as "warning" | "critical" | undefined,
-          },
-          {
-            title: "Vencendo em breve",
-            value: isLoading ? null : (data?.expiringContracts ?? 0),
-            sub: "próximos 30 dias",
-            icon: Clock,
-            href: "/contracts?status=expiring",
-            highlight: (
-              !isLoading && (data?.expiringContracts ?? 0) > 0 ? "warning" : undefined
-            ) as "warning" | "critical" | undefined,
-          },
-          {
-            title: "Alertas abertos",
-            value: isLoading ? null : (data?.openAlerts ?? 0),
-            sub: "requerem ação",
-            icon: Bell,
-            href: "/alerts",
-            highlight: (
-              !isLoading && (data?.openAlerts ?? 0) > 0 ? "critical" : undefined
-            ) as "warning" | "critical" | undefined,
-          },
-          {
-            title: "Docs vencidos",
-            value: isLoading ? null : (data?.expiredDocuments ?? 0),
-            sub: isLoading ? null : `${data?.expiringDocuments ?? 0} vencendo`,
-            icon: FileX,
-            href: "/documents",
-            highlight: (
-              !isLoading && (data?.expiredDocuments ?? 0) > 0 ? "critical" : undefined
-            ) as "warning" | "critical" | undefined,
-          },
-          {
-            title: "Valor da carteira",
-            value: isLoading ? null : formatCurrency(data?.totalCarteiraValue ?? 0, "BRL"),
-            sub: "estimado total",
-            icon: Wallet,
-            href: "/accounts",
-            highlight: undefined as "warning" | "critical" | undefined,
-          },
-        ].map((kpi, i) => (
-          <motion.div
-            key={kpi.title}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35, delay: i * 0.07 }}
-          >
-            <KpiCard {...kpi} isLoading={isLoading} />
-          </motion.div>
-        ))}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35, delay: 5 * 0.07 }}
-        >
-          <DealsKpiCard
-            isLoading={dealsLoading}
-            total={dealsData?.stats.total ?? 0}
-            totalValue={dealsData?.stats.totalValue ?? 0}
-            conversionRate={dealsData?.stats.conversionRate ?? 0}
-          />
-        </motion.div>
-      </div>
-
-      {/* ── Inteligência comercial ────────────────────────────────────── */}
+      {/* ── Insights ──────────────────────────────────────────────────── */}
       <div className="mb-6">
         <InsightsCard insights={insights} isLoading={insightsLoading} />
       </div>
 
-      {/* ── Atenção operacional ───────────────────────────────────────── */}
+      {/* ── Operacional ───────────────────────────────────────────────── */}
       {isLoading ? (
         <>
           <Skeleton className="h-52 w-full mb-4" />
@@ -286,57 +288,6 @@ export default function DashboardPage() {
   )
 }
 
-// ── Deals KPI card ─────────────────────────────────────────────────────────────
-
-function DealsKpiCard({
-  isLoading,
-  total,
-  totalValue,
-  conversionRate,
-}: {
-  isLoading: boolean
-  total: number
-  totalValue: number
-  conversionRate: number
-}) {
-  return (
-    <Link href="/deals">
-      <Card className="crm-card cursor-pointer h-full border-transparent bg-[#022448] shadow-[0_4px_20px_rgba(2,36,72,0.20)]">
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle
-            className="text-[10px] font-bold text-slate-300 uppercase tracking-widest"
-            style={{ fontFamily: "Inter, sans-serif" }}
-          >
-            Total Pipeline
-          </CardTitle>
-          <Target className="w-4 h-4 text-[#F5A623]" />
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <>
-              <Skeleton className="h-8 w-20 mb-1 bg-white/10" />
-              <Skeleton className="h-3 w-24 bg-white/10" />
-            </>
-          ) : (
-            <>
-              <div
-                className="text-2xl font-extrabold"
-                style={{ color: "#ffddb4", fontFamily: "Manrope, sans-serif" }}
-              >
-                {formatCurrency(totalValue, "BRL")}
-              </div>
-              <p className="text-[10px] text-slate-400 mt-1">
-                {total} negociação{total !== 1 ? "es" : ""}
-                {conversionRate > 0 && ` · ${conversionRate}% conv.`}
-              </p>
-            </>
-          )}
-        </CardContent>
-      </Card>
-    </Link>
-  )
-}
-
 // ── Onboarding Checklist ───────────────────────────────────────────────────────
 
 function OnboardingChecklist({ onboarding }: { onboarding: OnboardingState }) {
@@ -362,7 +313,6 @@ function OnboardingChecklist({ onboarding }: { onboarding: OnboardingState }) {
             </span>
           </div>
 
-          {/* Progress bar */}
           <div className="w-full bg-[#022448]/10 rounded-full h-1.5 mb-3">
             <div
               className="bg-[#022448] rounded-full h-1.5 transition-all duration-500"
@@ -404,84 +354,5 @@ function OnboardingChecklist({ onboarding }: { onboarding: OnboardingState }) {
         </div>
       </div>
     </div>
-  )
-}
-
-// ── Generic KPI Card ───────────────────────────────────────────────────────────
-
-type KpiCardProps = {
-  title: string
-  value: string | number | null
-  sub: string | null
-  icon: React.ElementType
-  href: string
-  highlight?: "warning" | "critical"
-  isLoading?: boolean
-}
-
-function KpiCard({
-  title,
-  value,
-  sub,
-  icon: Icon,
-  href,
-  highlight,
-  isLoading,
-}: KpiCardProps) {
-  const borderClass =
-    highlight === "critical"
-      ? "border-red-300"
-      : highlight === "warning"
-      ? "border-amber-300"
-      : "border-transparent"
-
-  const iconClass =
-    highlight === "critical"
-      ? "text-red-500"
-      : highlight === "warning"
-      ? "text-amber-500"
-      : "text-muted-foreground"
-
-  const valueClass =
-    highlight === "critical"
-      ? "text-red-600"
-      : highlight === "warning"
-      ? "text-amber-600"
-      : "text-[#022448]"
-
-  return (
-    <Link href={href}>
-      <Card
-        className={`crm-card cursor-pointer h-full ${borderClass} shadow-[0_4px_20px_rgba(2,36,72,0.06)]`}
-      >
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle
-            className="text-[10px] font-bold text-slate-500 uppercase tracking-widest"
-            style={{ fontFamily: "Inter, sans-serif" }}
-          >
-            {title}
-          </CardTitle>
-          <Icon className={`w-4 h-4 ${iconClass}`} />
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <>
-              <Skeleton className="h-8 w-16 mb-1" />
-              <Skeleton className="h-3 w-24" />
-            </>
-          ) : (
-            <div>
-              <div
-                className={`text-3xl font-extrabold leading-none ${valueClass}`}
-                style={{ fontFamily: "Manrope, sans-serif" }}
-              >
-                {value ?? 0}
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">{sub}</p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </Link>
   )
 }
