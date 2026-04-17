@@ -1,7 +1,7 @@
 "use client"
 
 import { Skeleton } from "@/components/ui/skeleton"
-import { formatCurrency } from "@/lib/utils"
+import { formatCurrencyBR } from "@/lib/format"
 import { TrendingUp, Users, BarChart2, Wallet } from "lucide-react"
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -65,7 +65,7 @@ export function KpiRevenueMonth({
   return (
     <KpiCard
       title="Receita do Mês"
-      value={formatCurrency(revenueMonth, "BRL")}
+      value={formatCurrencyBR(revenueMonth)}
       sub="este mês"
       icon={TrendingUp}
       isLoading={isLoading}
@@ -114,7 +114,7 @@ export function KpiTicketMedio({
   return (
     <KpiCard
       title="Ticket Médio"
-      value={formatCurrency(ticketMedio, "BRL")}
+      value={formatCurrencyBR(ticketMedio)}
       sub="estimado médio"
       icon={Wallet}
       isLoading={isLoading}

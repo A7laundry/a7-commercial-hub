@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { Skeleton } from "@/components/ui/skeleton"
-import { formatCurrency } from "@/lib/utils"
+import { formatCurrencyBR } from "@/lib/format"
 import type { DashboardMonthData } from "@/hooks/dashboard/useDashboardMonth"
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -127,7 +127,7 @@ export function MonthGoalsCard({
             current={revenueMonth}
             target={goals.totalGoalRevenue}
             color="#F5A623"
-            formatValue={(v) => formatCurrency(v, "BRL")}
+            formatValue={(v) => formatCurrencyBR(v)}
           />
           <GoalBar
             label="Vendas"

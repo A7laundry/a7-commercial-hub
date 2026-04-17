@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query"
 import { createClient } from "@/lib/supabase/client"
 import { Skeleton } from "@/components/ui/skeleton"
 import { UserPlus, ArrowRight } from "lucide-react"
-import { formatCurrency } from "@/lib/utils"
+import { formatCurrencyBR } from "@/lib/format"
 import { UserAvatar } from "@/components/shared/UserAvatar"
 
 // Static label/color maps — outside component
@@ -126,7 +126,7 @@ export function RecentAccountsCard({ tenantId }: { tenantId: string }) {
                     <p className="text-[10px] text-muted-foreground mt-0.5" suppressHydrationWarning>
                       {timeAgo(account.created_at)}
                       {account.estimated_value
-                        ? ` · ${formatCurrency(account.estimated_value, "BRL")}`
+                        ? ` · ${formatCurrencyBR(account.estimated_value)}`
                         : " · sem valor"}
                     </p>
                   </div>
