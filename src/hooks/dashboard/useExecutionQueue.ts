@@ -169,6 +169,7 @@ export function useExecutionQueue(tenantId: string) {
           .from("accounts")
           .select("*, phone_mappings(phone)")
           .eq("tenant_id", tenantId)
+          .eq("in_pipeline", true)
           .in("status", ["active", "prospect"])
           .limit(10000),
         supabase
