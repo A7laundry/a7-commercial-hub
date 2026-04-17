@@ -33,5 +33,6 @@ export function useAccounts(tenantId: string, filters: AccountFilters = {}) {
       return data as Account[]
     },
     enabled: Boolean(tenantId),
+    staleTime: 30_000,
   })
 }

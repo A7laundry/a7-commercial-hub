@@ -242,7 +242,7 @@ export default function InboxPage() {
     currentUser.user_id
   )
   const { data: threadMessages = [], isPending: threadLoading } =
-    useConversationThread(selectedId)
+    useConversationThread(tenant.id, selectedId)
   const { data: members = [] } = useTenantMembers()
 
   // Search filter (client-side on already-fetched data)
@@ -685,29 +685,36 @@ export default function InboxPage() {
               </div>
 
               {/* Input */}
-              <div className="border-t border-[#BBF7D0] p-3 flex gap-2 shrink-0 bg-[#F0FDF4]">
-                <Textarea
-                  value={reply}
-                  onChange={(e) => setReply(e.target.value)}
-                  placeholder="Digite sua mensagem..."
-                  rows={2}
-                  className="flex-1 resize-none text-sm bg-white border-[#BBF7D0] focus-visible:ring-green-300"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault()
-                      handleSend()
-                    }
-                  }}
-                />
-                <button
-                  type="button"
-                  onClick={handleSend}
-                  disabled={sending || !reply.trim()}
-                  className="btn-wpp self-end h-9 px-3 rounded-md flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <Send className="w-4 h-4" />
-                </button>
-              </div>
+              {(() => {
+                const windowPassed = !!selected.windowExpiresAt &&
+                  new Date(selected.windowExpiresAt).getTime() < Date.now()
+                return (
+                  <div className="border-t border-[#BBF7D0] p-3 flex gap-2 shrink-0 bg-[#F0FDF4]">
+                    <Textarea
+                      value={reply}
+                      onChange={(e) => setReply(e.target.value)}
+                      placeholder={windowPassed ? "Janela de 24h encerrada" : "Digite sua mensagem..."}
+                      rows={2}
+                      disabled={windowPassed || sending}
+                      className="flex-1 resize-none text-sm bg-white border-[#BBF7D0] focus-visible:ring-green-300"
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault()
+                          handleSend()
+                        }
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={handleSend}
+                      disabled={windowPassed || sending || !reply.trim()}
+                      className="btn-wpp self-end h-9 px-3 rounded-md flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <Send className="w-4 h-4" />
+                    </button>
+                  </div>
+                )
+              })()}
             </>
           )}
         </div>

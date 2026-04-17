@@ -32,5 +32,6 @@ export function useAlerts(tenantId: string, filters: AlertFilters = {}) {
         account_name: (row.accounts as { name?: string } | null)?.name ?? undefined,
       })) as Alert[]
     },
+    staleTime: 30_000,
   })
 }

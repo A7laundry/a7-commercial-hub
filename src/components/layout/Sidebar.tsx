@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation"
 import { useTenantContext } from "@/components/providers/TenantProvider"
 import { useOpenAlertsCount } from "@/hooks/alerts/useOpenAlertsCount"
 import { useInboxUnreadCount } from "@/hooks/inbox/useInboxUnreadCount"
+import { useExecutionQueue } from "@/hooks/dashboard/useExecutionQueue"
 import { useUserProfile } from "@/hooks/useUserProfile"
 import { UserAvatar } from "@/components/shared/UserAvatar"
 import {
@@ -103,6 +104,7 @@ function NavContent({
   pathname,
   openAlertsCount,
   inboxUnreadCount,
+  executionUrgentCount = 0,
   onNavigate,
   isAdmin = false,
 }: NavContentProps) {
@@ -142,6 +144,7 @@ function NavContent({
               const active = pathname === href || pathname.startsWith(`${href}/`)
               const alertBadge = href === "/alerts" && openAlertsCount > 0 ? openAlertsCount : null
               const inboxBadge = href === "/inbox" && inboxUnreadCount > 0 ? inboxUnreadCount : null
+              const executionBadge = href === "/execution" && executionUrgentCount > 0 ? executionUrgentCount : null
               return (
                 <Link
                   key={href}
@@ -172,6 +175,11 @@ function NavContent({
                           {inboxBadge > 99 ? "99+" : inboxBadge}
                         </span>
                       )}
+                      {executionBadge && (
+                        <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-red-500 text-white leading-none">
+                          {executionBadge > 99 ? "99+" : executionBadge}
+                        </span>
+                      )}
                     </>
                   )}
                 </Link>
@@ -192,8 +200,10 @@ export function MobileSidebarTrigger() {
   const { tenant, currentUser, isSuperAdmin } = useTenantContext()
   const { data: openAlertsCount = 0 } = useOpenAlertsCount(tenant.id)
   const { data: inboxUnreadCount = 0 } = useInboxUnreadCount(tenant.id)
+  const { data: executionItems = [] } = useExecutionQueue(tenant.id)
   const { data: profile } = useUserProfile(currentUser.user_id)
 
+  const executionUrgentCount = executionItems.filter((i) => i.urgency === "urgent").length
   const displayName = profile?.display_name ?? null
   const avatarUrl = profile?.avatar_url ?? null
   const roleLabel = ROLE_LABEL[currentUser.role] ?? currentUser.role
@@ -249,6 +259,7 @@ export function MobileSidebarTrigger() {
           pathname={pathname}
           openAlertsCount={openAlertsCount}
           inboxUnreadCount={inboxUnreadCount}
+          executionUrgentCount={executionUrgentCount}
           onNavigate={() => setOpen(false)}
           isAdmin={isSuperAdmin || currentUser.role === "owner" || currentUser.role === "admin"}
         />
@@ -265,8 +276,10 @@ export function Sidebar() {
   const { collapsed, toggle } = useSidebarCollapsed()
   const { data: openAlertsCount = 0 } = useOpenAlertsCount(tenant.id)
   const { data: inboxUnreadCount = 0 } = useInboxUnreadCount(tenant.id)
+  const { data: executionItems = [] } = useExecutionQueue(tenant.id)
   const { data: profile } = useUserProfile(currentUser.user_id)
 
+  const executionUrgentCount = executionItems.filter((i) => i.urgency === "urgent").length
   const displayName = profile?.display_name ?? null
   const avatarUrl = profile?.avatar_url ?? null
   const roleLabel = ROLE_LABEL[currentUser.role] ?? currentUser.role
@@ -346,6 +359,7 @@ export function Sidebar() {
         pathname={pathname}
         openAlertsCount={openAlertsCount}
         inboxUnreadCount={inboxUnreadCount}
+        executionUrgentCount={executionUrgentCount}
         isAdmin={isSuperAdmin || currentUser.role === "owner" || currentUser.role === "admin"}
       />
 

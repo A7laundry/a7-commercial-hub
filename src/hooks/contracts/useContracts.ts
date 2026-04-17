@@ -12,7 +12,7 @@ export type ContractFilters = {
 
 export function useContracts(tenantId: string, filters: ContractFilters = {}) {
   return useQuery({
-    queryKey: ["contracts", tenantId, filters],
+    queryKey: ["contracts:list", tenantId, filters],
     queryFn: async (): Promise<Contract[]> => {
       const supabase = createClient()
       let query = supabase
@@ -36,5 +36,6 @@ export function useContracts(tenantId: string, filters: ContractFilters = {}) {
       })) as Contract[]
     },
     enabled: Boolean(tenantId),
+    staleTime: 30_000,
   })
 }

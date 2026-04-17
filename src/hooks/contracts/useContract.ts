@@ -7,7 +7,7 @@ import type { Contract } from "@/types"
 
 export function useContract(tenantId: string, contractId: string) {
   return useQuery({
-    queryKey: ["contracts", tenantId, contractId],
+    queryKey: ["contracts:item", tenantId, contractId],
     queryFn: async (): Promise<Contract> => {
       const supabase = createClient()
       const { data, error } = await supabase

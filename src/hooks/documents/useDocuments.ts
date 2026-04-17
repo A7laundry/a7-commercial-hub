@@ -28,5 +28,6 @@ export function useDocuments(tenantId: string, filters: DocumentFilters = {}) {
       if (error) throw error
       return data as Document[]
     },
+    staleTime: 30_000,
   })
 }

@@ -105,6 +105,7 @@ export function useDashboardData(tenantId: string) {
           .from("accounts")
           .select("id, name, status, estimated_value")
           .eq("tenant_id", tenantId)
+          .eq("in_pipeline", true)
           .limit(10000),
 
         supabase
@@ -359,6 +360,6 @@ export function useDashboardData(tenantId: string) {
         accountsAtRisk,
       }
     },
-    staleTime: 15_000, // 15s — low enough to reflect recent deal/alert changes
+    staleTime: 45_000,
   })
 }

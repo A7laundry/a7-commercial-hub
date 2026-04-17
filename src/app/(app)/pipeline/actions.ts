@@ -85,8 +85,8 @@ export async function checkAutomationTriggers(tenantId: string) {
     .select("id")
     .eq("tenant_id", tenantId)
     .eq("commercial_status", "active")
+    .eq("in_pipeline", true)
     .or(`last_contact_at.lt.${thirtyDaysAgo},last_contact_at.is.null`)
-    .not("pipeline_stage", "in", '("closed","lost")')
 
   for (const acc of staleAccounts ?? []) {
     triggers.push({
@@ -123,6 +123,7 @@ export async function checkAutomationTriggers(tenantId: string) {
     .select("id")
     .eq("tenant_id", tenantId)
     .eq("pipeline_stage", "proposta")
+    .eq("in_pipeline", true)
     .lt("updated_at", fourteenDaysAgo)
 
   for (const acc of stalledNegotiations ?? []) {

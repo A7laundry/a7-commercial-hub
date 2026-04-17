@@ -125,8 +125,8 @@ export function useDailyPerformance(tenantId: string, date: string) {
     enabled: !!date,
     queryKey: ["daily_performance", tenantId, date],
     queryFn: async () => {
-      const dayStart = new Date(date + "T00:00:00").toISOString()
-      const dayEnd = new Date(date + "T23:59:59").toISOString()
+      const dayStart = new Date(date + "T00:00:00-03:00").toISOString()
+      const dayEnd = new Date(date + "T23:59:59-03:00").toISOString()
 
       const [
         waMessagesRes,

@@ -51,14 +51,14 @@ export default function ContractDetailPage({
 
   async function handleDelete() {
     await deleteContract(id)
-    qc.invalidateQueries({ queryKey: ["contracts", tenant.id] })
+    qc.invalidateQueries({ queryKey: ["contracts:list", tenant.id] })
     router.push("/contracts")
   }
 
   function handleEditSuccess() {
     setEditing(false)
-    qc.invalidateQueries({ queryKey: ["contracts", tenant.id, id] })
-    qc.invalidateQueries({ queryKey: ["contracts", tenant.id] })
+    qc.invalidateQueries({ queryKey: ["contracts:item", tenant.id, id] })
+    qc.invalidateQueries({ queryKey: ["contracts:list", tenant.id] })
   }
 
   if (isLoading) {

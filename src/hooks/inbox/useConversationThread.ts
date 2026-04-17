@@ -3,7 +3,7 @@ import { useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import type { WhatsAppMessage } from "@/types"
 
-export function useConversationThread(conversationId: string | null) {
+export function useConversationThread(tenantId: string, conversationId: string | null) {
   const supabase = createClient()
   const qc = useQueryClient()
 
@@ -22,7 +22,7 @@ export function useConversationThread(conversationId: string | null) {
           filter: `conversation_id=eq.${conversationId}`,
         },
         () => {
-          qc.invalidateQueries({ queryKey: ["thread", conversationId] })
+          qc.invalidateQueries({ queryKey: ["thread", tenantId, conversationId] })
         }
       )
       .subscribe()
@@ -34,7 +34,7 @@ export function useConversationThread(conversationId: string | null) {
   }, [conversationId, qc])
 
   return useQuery<WhatsAppMessage[]>({
-    queryKey: ["thread", conversationId],
+    queryKey: ["thread", tenantId, conversationId],
     queryFn: async () => {
       if (!conversationId) return []
 

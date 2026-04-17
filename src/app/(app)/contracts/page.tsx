@@ -44,7 +44,7 @@ export default function ContractsPage() {
 
   function handleSuccess() {
     setCreating(false)
-    qc.invalidateQueries({ queryKey: ["contracts", tenant.id] })
+    qc.invalidateQueries({ queryKey: ["contracts:list", tenant.id] })
   }
 
   const totalContracts = allContracts.length
