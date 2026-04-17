@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Minha Fila | CRM Commercial A7X</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-container": "#edeeef",
+                      "on-surface-variant": "#43474e",
+                      "tertiary-fixed-dim": "#adc6ff",
+                      "tertiary-fixed": "#d8e2ff",
+                      "surface-container-lowest": "#ffffff",
+                      "tertiary": "#000d29",
+                      "primary-fixed-dim": "#ffb955",
+                      "on-primary-fixed-variant": "#633f00",
+                      "secondary-fixed": "#d5e3ff",
+                      "secondary": "#455f86",
+                      "on-error-container": "#93000a",
+                      "secondary-fixed-dim": "#adc8f4",
+                      "surface-bright": "#f8f9fa",
+                      "on-primary-fixed": "#291800",
+                      "on-error": "#ffffff",
+                      "on-tertiary-fixed": "#001a42",
+                      "outline-variant": "#c4c6cf",
+                      "on-tertiary-fixed-variant": "#004395",
+                      "surface-variant": "#e1e3e4",
+                      "on-tertiary-container": "#4388fc",
+                      "surface-container-highest": "#e1e3e4",
+                      "on-secondary-fixed": "#001c3b",
+                      "on-primary-container": "#bf7d00",
+                      "on-secondary": "#ffffff",
+                      "error": "#ba1a1a",
+                      "primary-container": "#351f00",
+                      "error-container": "#ffdad6",
+                      "surface-tint": "#835500",
+                      "primary": "#180c00",
+                      "on-tertiary": "#ffffff",
+                      "on-secondary-fixed-variant": "#2d486d",
+                      "surface-container-low": "#f3f4f5",
+                      "inverse-on-surface": "#f0f1f2",
+                      "primary-fixed": "#ffddb4",
+                      "background": "#f8f9fa",
+                      "secondary-container": "#b5d0fd",
+                      "on-surface": "#191c1d",
+                      "outline": "#74777f",
+                      "tertiary-container": "#002252",
+                      "inverse-surface": "#2e3132",
+                      "surface-container-high": "#e7e8e9",
+                      "surface-dim": "#d9dadb",
+                      "on-background": "#191c1d",
+                      "surface": "#f8f9fa",
+                      "on-secondary-container": "#3f5980",
+                      "inverse-primary": "#ffb955",
+                      "on-primary": "#ffffff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "fontFamily": {
+                      "headline": ["Manrope"],
+                      "body": ["Inter"],
+                      "label": ["Inter"]
+              }
+            },
+          },
+        }
+    </script>
+</head>
+<body class="bg-surface font-body text-on-surface antialiased overflow-hidden">
+<!-- SideNavBar Shell -->
+<aside class="h-screen w-64 fixed left-0 top-0 bg-gradient-to-b from-[#022448] to-[#0a3060] shadow-2xl flex flex-col py-6 z-50">
+<div class="px-6 mb-8">
+<h1 class="text-2xl font-extrabold text-white font-headline">Minha Fila</h1>
+</div>
+<div class="px-6 mb-8 flex flex-col items-center">
+<div class="relative mb-3">
+<img alt="Denis Arruda" class="w-20 h-20 rounded-full border-2 border-amber-500 p-0.5 object-cover" data-alt="Professional headshot of a senior consultant with a warm smile, corporate setting, soft high-key studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDTLWaL5UcNwMVaMqH0a47vzzPYz71w-A2rHKFLQ9Y9c_Itl-3_MYJZ-bYwfrNqWJlT14uYqaC-aLKYQm9ial1EyxqIx6JpM054IcFWcggrQ_32bv4QOd6N7YNwxZSCRY-ZmrDKIPMQ3ooxMkw2OPrTmZssCNRF9XrEkD7nK-EIphIj0YxVexBBRrS8OADLPlOvSBDaEENOR-r_ZtKoeJacMomyvrzGNnJwSoTTyy72FviVMJtr41tb56YZ3YXrhNq4zH00F3qOd5BA"/>
+</div>
+<div class="text-center">
+<p class="font-headline font-bold text-white text-lg">Denis Arruda</p>
+<p class="text-slate-300 text-xs font-medium">Consultor Sênior</p>
+</div>
+</div>
+<div class="px-4 mb-8">
+<button class="w-full bg-gradient-to-r from-[#F5A623] to-[#D48C1D] text-white py-3 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-amber-900/20 active:scale-95 transition-transform font-bold">
+<span class="material-symbols-outlined" style="font-variation-settings: 'wght' 700;">add</span>
+                Nova Lead
+            </button>
+</div>
+<nav class="flex-1 px-2 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-slate-300 hover:bg-white/10 hover:text-white transition-all font-manrope text-sm font-medium rounded-lg" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+                Dashboard
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-amber-500 font-bold border-l-4 border-amber-500 bg-white/5 transition-all font-manrope text-sm" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">filter_list</span>
+                Minha Fila
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-300 hover:bg-white/10 hover:text-white transition-all font-manrope text-sm font-medium rounded-lg" href="#">
+<span class="material-symbols-outlined">person_add</span>
+                Leads
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-300 hover:bg-white/10 hover:text-white transition-all font-manrope text-sm font-medium rounded-lg" href="#">
+<span class="material-symbols-outlined">analytics</span>
+                Relatórios
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-300 hover:bg-white/10 hover:text-white transition-all font-manrope text-sm font-medium rounded-lg" href="#">
+<span class="material-symbols-outlined">settings</span>
+                Configurações
+            </a>
+</nav>
+<div class="px-2 mt-auto pt-4 border-t border-white/10">
+<a class="flex items-center gap-3 px-4 py-3 text-slate-300 hover:bg-white/10 hover:text-white transition-all font-manrope text-sm font-medium rounded-lg" href="#">
+<span class="material-symbols-outlined">help</span>
+                Suporte
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-300 hover:bg-white/10 hover:text-white transition-all font-manrope text-sm font-medium rounded-lg" href="#">
+<span class="material-symbols-outlined">logout</span>
+                Sair
+            </a>
+</div>
+</aside>
+<!-- Main Shell -->
+<main class="pl-64 flex flex-col h-screen relative">
+<!-- TopNavBar Shell -->
+<header class="fixed top-0 right-0 w-[calc(100%-16rem)] h-16 bg-white/80 backdrop-blur-md flex justify-between items-center px-8 z-40 border-b border-slate-100 shadow-sm">
+<div class="flex items-center gap-8">
+<h2 class="text-xl font-extrabold text-[#022448] font-headline">Minha Fila</h2>
+<div class="flex items-center bg-slate-100 rounded-full p-1 gap-1">
+<button class="px-5 py-1.5 rounded-full text-white bg-[#022448] shadow-inner font-bold text-sm">Urgente (5)</button>
+<button class="px-5 py-1.5 rounded-full text-slate-500 hover:text-[#022448] font-medium text-sm transition-colors">Alta Prioridade (8)</button>
+<button class="px-5 py-1.5 rounded-full text-slate-500 hover:text-[#022448] font-medium text-sm transition-colors">Todas (12)</button>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-4 text-slate-500">
+<span class="material-symbols-outlined cursor-pointer hover:text-amber-600 transition-colors">history</span>
+<div class="relative">
+<span class="material-symbols-outlined cursor-pointer hover:text-amber-600 transition-colors">notifications</span>
+<div class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-error rounded-full border-2 border-white"></div>
+</div>
+</div>
+<div class="flex items-center gap-4 pl-6 border-l border-slate-200">
+<div class="relative w-10 h-10">
+<svg class="w-10 h-10 transform -rotate-90">
+<circle cx="20" cy="20" fill="transparent" r="18" stroke="#f1f5f9" stroke-width="3"></circle>
+<circle cx="20" cy="20" fill="transparent" r="18" stroke="#022448" stroke-dasharray="113" stroke-dashoffset="75" stroke-width="3"></circle>
+</svg>
+<div class="absolute inset-0 flex items-center justify-center">
+<span class="text-[10px] font-headline font-extrabold text-[#022448]">33%</span>
+</div>
+</div>
+<div class="text-right">
+<p class="text-xs font-bold text-[#022448] font-headline uppercase tracking-tight">Progresso</p>
+<p class="text-[10px] text-slate-500 font-bold">4 de 12 leads</p>
+</div>
+</div>
+</div>
+</header>
+<!-- Content Canvas -->
+<section class="mt-16 mb-12 p-8 overflow-y-auto bg-surface space-y-6">
+<!-- URGENTE CARD (Expanded) -->
+<div class="bg-gradient-to-br from-[#FFFBFB] to-white border-l-4 border-[#EF4444] rounded-xl shadow-xl shadow-error/5 p-6 relative">
+<div class="flex justify-between items-start mb-6">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center font-headline font-bold text-[#DC2626] text-lg">
+                            LS
+                        </div>
+<div>
+<div class="flex items-center gap-3">
+<h3 class="text-lg font-extrabold text-[#022448] font-headline">Lavanderia São Paulo</h3>
+<span class="flex items-center gap-1.5 px-2.5 py-0.5 bg-red-100 text-red-700 text-[10px] font-extrabold rounded-full tracking-wider uppercase">
+<span class="material-symbols-outlined text-xs" style="font-variation-settings: 'FILL' 1;">bolt</span>
+                                    Urgente
+                                    <span class="w-1.5 h-1.5 bg-red-600 rounded-full animate-pulse"></span>
+</span>
+</div>
+<div class="flex items-center gap-4 mt-1">
+<div class="flex items-center gap-1 text-slate-500 text-xs">
+<span class="material-symbols-outlined text-sm">schedule</span>
+                                    23 dias sem contato
+                                </div>
+<div class="flex items-center gap-2">
+<div class="w-20 h-1 rounded-full bg-gradient-to-r from-green-400 via-yellow-400 to-red-500"></div>
+<span class="text-[10px] font-bold text-red-600">ALTO RISCO</span>
+</div>
+</div>
+</div>
+</div>
+<div class="flex gap-2">
+<button class="p-2 text-slate-400 hover:text-slate-600 transition-colors"><span class="material-symbols-outlined">more_vert</span></button>
+</div>
+</div>
+<!-- WhatsApp Composer -->
+<div class="bg-[#F0FDF4] border border-[#BBF7D0] rounded-2xl p-4">
+<div class="flex items-center gap-3 mb-4">
+<div class="w-10 h-10 bg-[#25D366] rounded-full flex items-center justify-center text-white shadow-md">
+<svg class="w-6 h-6 fill-current" viewbox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.432 2.56 1.234 3.559l-.801 2.923 2.991-.784c.965.528 2.056.805 3.167.806.001 0 .001 0 .002 0 3.18 0 5.766-2.586 5.767-5.766.001-3.18-2.585-5.765-5.767-5.765zm3.374 8.163c-.146.411-.741.758-1.018.806-.277.048-.545.068-.863-.028-.204-.061-.469-.148-1.013-.374-2.12-.885-3.488-3.048-3.593-3.189-.106-.141-.842-1.121-.842-2.138 0-1.017.531-1.517.72-1.716.189-.199.412-.249.549-.249.136 0 .273.001.393.007.129.006.297-.049.464.351.171.411.583 1.42.634 1.52.051.101.085.218.017.353-.068.136-.102.217-.204.337-.102.12-.214.269-.307.362-.102.102-.209.213-.09.418.119.204.53.874 1.137 1.414.783.697 1.442.913 1.646 1.015.204.102.324.086.444-.053.12-.139.516-.599.654-.804.138-.205.276-.171.464-.101.188.07.1.53.255.823z"></path></svg>
+</div>
+<span class="font-headline font-bold text-[#166534]">WhatsApp</span>
+<div class="ml-auto flex gap-2">
+<button class="px-3 py-1 bg-[#022448] text-white rounded-full text-[10px] font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">bolt</span> Proposta Inicial
+                            </button>
+<button class="px-3 py-1 bg-white text-slate-600 border border-slate-200 rounded-full text-[10px] font-bold flex items-center gap-1 hover:bg-slate-50">
+<span class="material-symbols-outlined text-[14px]">bolt</span> Cobrança Amigável
+                            </button>
+</div>
+</div>
+<div class="relative">
+<textarea class="w-full bg-white border border-slate-200 rounded-xl p-4 text-sm text-slate-700 focus:ring-2 focus:ring-green-400 focus:border-transparent resize-none h-24 mb-4 font-body" placeholder="Escreva sua mensagem aqui..."></textarea>
+<button class="absolute bottom-6 right-2 flex items-center gap-2 bg-gradient-to-r from-[#25D366] to-[#16A34A] text-white px-6 py-2 rounded-xl font-bold text-sm shadow-lg shadow-green-900/20 active:scale-95 transition-transform">
+                            Enviar no WhatsApp
+                            <span class="material-symbols-outlined text-lg">send</span>
+</button>
+</div>
+</div>
+</div>
+<!-- ALTA PRIORIDADE CARD -->
+<div class="bg-[#FFFBEB] rounded-xl p-5 border border-amber-100/50 shadow-sm flex items-center justify-between group hover:shadow-md transition-all">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-amber-200 flex items-center justify-center font-headline font-bold text-amber-700 text-sm">
+                        BV
+                    </div>
+<div>
+<h4 class="font-headline font-bold text-[#022448]">Lavanderia Boa Vista</h4>
+<p class="text-slate-500 text-[13px] font-medium">11 dias sem resposta</p>
+</div>
+</div>
+<div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="w-9 h-9 rounded-full bg-white flex items-center justify-center text-slate-400 hover:text-green-600 hover:bg-green-50 transition-colors">
+<span class="material-symbols-outlined text-lg">chat</span>
+</button>
+<button class="w-9 h-9 rounded-full bg-white flex items-center justify-center text-slate-400 hover:text-green-600 hover:bg-green-50 transition-colors">
+<span class="material-symbols-outlined text-lg">check_circle</span>
+</button>
+<button class="w-9 h-9 rounded-full bg-white flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
+<span class="material-symbols-outlined text-lg">snooze</span>
+</button>
+</div>
+</div>
+<!-- NORMAL CARD -->
+<div class="bg-[#EFF6FF] rounded-xl p-5 border border-blue-100/50 shadow-sm flex items-center justify-between group hover:shadow-md transition-all">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-blue-200 flex items-center justify-center font-headline font-bold text-blue-700 text-sm">
+                        LH
+                    </div>
+<div>
+<h4 class="font-headline font-bold text-[#022448]">Lavanderia Horizonte</h4>
+<p class="text-slate-500 text-[13px] font-medium">Contrato vence em 15 dias</p>
+</div>
+</div>
+<div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="w-9 h-9 rounded-full bg-white flex items-center justify-center text-slate-400 hover:text-green-600 hover:bg-green-50 transition-colors">
+<span class="material-symbols-outlined text-lg">chat</span>
+</button>
+<button class="w-9 h-9 rounded-full bg-white flex items-center justify-center text-slate-400 hover:text-green-600 hover:bg-green-50 transition-colors">
+<span class="material-symbols-outlined text-lg">check_circle</span>
+</button>
+<button class="w-9 h-9 rounded-full bg-white flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
+<span class="material-symbols-outlined text-lg">snooze</span>
+</button>
+</div>
+</div>
+<!-- CONCLUÍDO CARD -->
+<div class="bg-[#F0FDF4] rounded-xl p-5 border border-green-100/50 opacity-70 flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-green-200 flex items-center justify-center text-green-600">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div>
+<h4 class="font-headline font-bold text-slate-400 line-through">Lavanderia Estrela do Norte</h4>
+<p class="text-green-600 text-[11px] font-bold uppercase tracking-wider">Concluído</p>
+</div>
+</div>
+<div class="text-green-500">
+<span class="material-symbols-outlined text-xl opacity-20">celebration</span>
+</div>
+</div>
+</section>
+<!-- Footer Shell -->
+<footer class="fixed bottom-0 right-0 w-[calc(100%-16rem)] h-12 bg-gradient-to-r from-white to-slate-50 flex justify-between items-center px-8 border-t border-slate-200 z-40">
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2 text-amber-600 font-inter text-xs font-semibold">
+<span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">emoji_events</span>
+                    4 de 12 concluídas
+                </div>
+<div class="flex gap-4 border-l border-slate-200 pl-4">
+<a class="text-slate-500 hover:underline text-xs font-semibold" href="#">Termos</a>
+<a class="text-slate-500 hover:underline text-xs font-semibold" href="#">Privacidade</a>
+</div>
+</div>
+<button class="bg-[#022448] text-white px-6 py-1.5 rounded-full font-headline text-[11px] font-bold uppercase tracking-widest hover:bg-amber-600 transition-all active:scale-95">
+                Encerrar Turno
+            </button>
+</footer>
+</main>
+</body></html>

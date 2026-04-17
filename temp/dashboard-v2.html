@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>A7X Commercial Management Dashboard - Premium</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style type="text/tailwindcss">
+        :root {
+            --navy-primary: #022448;
+            --navy-secondary: #1E3A5F;
+            --amber-primary: #F5A623;
+            --surface-bg: #f8f9fa;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        .navy-gradient {
+            background: linear-gradient(135deg, var(--navy-primary) 0%, var(--navy-secondary) 100%);
+        }
+        .amber-gradient {
+            background: linear-gradient(135deg, var(--amber-primary) 0%, #D48C1D 100%);
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--surface-bg);
+        }
+        h1, h2, h3, h4, .font-headline {
+            font-family: 'Manrope', sans-serif;
+        }
+        .chart-grid-line {
+            stroke: rgba(2, 36, 72, 0.05);
+            stroke-width: 1;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                "primary": "#022448",
+                "secondary-fixed": "#ffddb4",
+                "surface": "#f8f9fa",
+                "surface-container-lowest": "#ffffff",
+                "on-surface-variant": "#43474e",
+                "error": "#ba1a1a",
+                "error-container": "#ffdad6"
+              },
+              "borderRadius": {
+                "DEFAULT": "0.125rem",
+                "lg": "0.25rem",
+                "xl": "0.5rem",
+                "full": "0.75rem"
+              }
+            }
+          }
+        }
+    </script>
+</head>
+<body class="text-on-surface">
+<aside class="h-screen w-[240px] fixed left-0 top-0 bg-[#022448] flex flex-col py-6 shadow-2xl z-50">
+<div class="px-6 mb-10">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-[#F5A623] flex items-center justify-center text-[#022448] font-extrabold text-xl">A7</div>
+<div class="flex flex-col">
+<span class="text-xl font-extrabold text-white tracking-tighter leading-tight">A7X Commercial</span>
+<span class="text-[10px] text-slate-400 font-medium uppercase tracking-widest">Management Dashboard</span>
+</div>
+</div>
+</div>
+<nav class="flex-1 space-y-1 px-3">
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl bg-white/10 text-[#F5A623] border-r-4 border-[#F5A623] font-['Manrope'] font-bold text-sm tracking-tight" href="#">
+<span class="material-symbols-outlined">dashboard</span> Dashboard
+        </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-300 hover:text-white hover:bg-white/5 font-['Manrope'] font-bold text-sm tracking-tight" href="#">
+<span class="material-symbols-outlined">group</span> Clientes
+        </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-300 hover:text-white hover:bg-white/5 font-['Manrope'] font-bold text-sm tracking-tight" href="#">
+<span class="material-symbols-outlined">description</span> Contratos
+        </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-300 hover:text-white hover:bg-white/5 font-['Manrope'] font-bold text-sm tracking-tight" href="#">
+<span class="material-symbols-outlined">analytics</span> Pipeline
+        </a>
+</nav>
+<div class="px-6 mt-auto">
+<div class="p-4 rounded-xl bg-white/5 flex items-center gap-3">
+<img class="w-10 h-10 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBaiUpVXFcw7Ajly7f2YYtYwjqfd9etBsmn4i6iHVoVedUgpkQIM73AisM0oEvQWWsVx9aytZ2codBjP9CMXf2Mb_a0u0PaDd8IgysjdrDZ_QdULyzE3TJN46gjC7MrBiPsOjrElVHbLAYLBCdwnI1B8hAGgodr1PN0YhwTywSA6sA5DQgzt2acly7vqs6GgTexg00z8cSAtmudMr219_eaYtOwbcBa1AHsiFUbCWluEb3EysDA-osWv5P-mqQmn8pQapqfvgHnl6s"/>
+<div class="flex flex-col">
+<span class="text-xs font-bold text-white">Ricardo Silva</span>
+<span class="text-[10px] text-slate-400">Head of Sales</span>
+</div>
+</div>
+</div>
+</aside>
+<main class="ml-[240px] min-h-screen p-8">
+<header class="flex justify-between items-center mb-10 h-16 px-4">
+<h1 class="text-3xl font-extrabold font-headline tracking-tight text-[#022448]">Dashboard</h1>
+<div class="flex items-center gap-8">
+<div class="flex bg-[#edeeef] p-1.5 rounded-xl">
+<button class="px-5 py-2 text-xs font-bold text-slate-500">Semana</button>
+<button class="px-5 py-2 text-xs font-bold text-[#022448] bg-white shadow-sm rounded-lg">Mês</button>
+<button class="px-5 py-2 text-xs font-bold text-slate-500">Trimestre</button>
+</div>
+<div class="w-10 h-10 rounded-full border-2 border-white shadow-md overflow-hidden">
+<img class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD1qV1-ud31kDoxG-poN9f1cCRE050i3P9_Au3C-odfkp1UttKuE4k0ny629yjxqpcxS9jP-2FFLkjTpRDZLQIhwWgWVdikocwq2msdwiwlr32_1PDZR2ptLOnXg0U1VqM49S58F9HD8IFqNi0TDeUPRVE3bWHHWfJImsR_rMgNOqx3mSs01Pwux2tcjrq8uhVBnPmmJvdf2dav-j1mzUsn_eEhg7sOKXqzp4XexDdQOw1k2OPrQaWw3l-oicUbe002F9U1itFZ0V4"/>
+</div>
+</div>
+</header>
+<div class="grid grid-cols-4 gap-6 mb-6">
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-[0_24px_40px_rgba(25,28,29,0.03)]">
+<p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-1">Clientes</p>
+<div class="flex items-end justify-between">
+<h3 class="text-3xl font-extrabold font-headline text-primary">1,284</h3>
+<span class="text-emerald-600 text-xs font-bold">+4.2%</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-[0_24px_40px_rgba(25,28,29,0.03)] flex flex-col justify-between">
+<div>
+<p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-1">Contratos Ativos</p>
+<h3 class="text-3xl font-extrabold font-headline text-primary">856</h3>
+</div>
+<div class="h-10 w-full mt-2">
+<svg class="w-full h-full overflow-visible" viewBox="0 0 200 40">
+<path d="M0 35 Q 25 32, 50 34 T 100 28 T 150 25 T 200 20" fill="none" stroke="#022448" stroke-width="1.5"></path>
+</svg>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-[0_24px_40px_rgba(25,28,29,0.03)]">
+<p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-1">Vencendo em Breve</p>
+<div class="flex items-end justify-between">
+<h3 class="text-3xl font-extrabold font-headline text-[#F5A623]">42</h3>
+<span class="material-symbols-outlined text-[#F5A623] text-sm">event_note</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-[0_24px_40px_rgba(25,28,29,0.03)]">
+<p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-1">Alertas Abertos</p>
+<div class="flex items-end justify-between">
+<h3 class="text-3xl font-extrabold font-headline text-error">12</h3>
+<span class="material-symbols-outlined text-error text-sm">warning</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-4 gap-6 mb-10">
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-[0_24px_40px_rgba(25,28,29,0.03)]">
+<p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-1">Docs Vencidos</p>
+<h3 class="text-3xl font-extrabold font-headline text-error">08</h3>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-[0_24px_40px_rgba(25,28,29,0.03)] flex flex-col justify-between">
+<div>
+<p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-1">Valor da Carteira</p>
+<h3 class="text-3xl font-extrabold font-headline text-primary">R$ 14.2M</h3>
+</div>
+<div class="h-10 w-full mt-2">
+<svg class="w-full h-full overflow-visible" viewBox="0 0 200 40">
+<path d="M0 38 Q 40 35, 80 30 T 160 15 T 200 10" fill="none" stroke="#022448" stroke-width="1.5"></path>
+</svg>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-[0_24px_40px_rgba(25,28,29,0.03)]">
+<p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-1">Novas Contas</p>
+<h3 class="text-3xl font-extrabold font-headline text-primary">24</h3>
+</div>
+<div class="navy-gradient p-6 rounded-xl shadow-xl flex items-center gap-4 relative overflow-hidden">
+<div class="relative z-10 flex-1">
+<p class="text-[10px] font-bold text-slate-300 uppercase tracking-widest mb-1">Total Pipeline</p>
+<h3 class="text-2xl font-extrabold font-headline text-[#ffddb4]">R$ 4.8M</h3>
+<p class="text-[10px] text-slate-400 mt-1">158 negociações</p>
+</div>
+<div class="relative z-10 w-[80px] h-[80px]">
+<svg class="w-full h-full" viewBox="0 0 36 36">
+<circle cx="18" cy="18" fill="transparent" r="15.9" stroke="rgba(255,255,255,0.1)" stroke-width="4"></circle>
+<circle cx="18" cy="18" fill="transparent" r="15.9" stroke="#F5A623" stroke-dasharray="25 100" stroke-dashoffset="0" stroke-width="4"></circle>
+<circle cx="18" cy="18" fill="transparent" r="15.9" stroke="#ffddb4" stroke-dasharray="40 100" stroke-dashoffset="-25" stroke-width="4"></circle>
+<circle cx="18" cy="18" fill="transparent" r="15.9" stroke="#1E3A5F" stroke-dasharray="35 100" stroke-dashoffset="-65" stroke-width="4"></circle>
+</svg>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-8 rounded-xl shadow-[0_24px_40px_rgba(25,28,29,0.03)] mb-8">
+<div class="flex justify-between items-center mb-8">
+<div>
+<h2 class="text-xl font-extrabold font-headline text-primary">Atividade — Últimos 6 meses</h2>
+<div class="flex gap-4 mt-2">
+<div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-primary"></span> <span class="text-[10px] font-bold text-slate-400 uppercase">Deals Ganhos</span></div>
+<div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-[#F5A623]"></span> <span class="text-[10px] font-bold text-slate-400 uppercase">Receita (R$)</span></div>
+</div>
+</div>
+<button class="text-primary text-xs font-bold flex items-center gap-2">
+                Ver relatório detalhado <span class="material-symbols-outlined text-sm">chevron_right</span>
+</button>
+</div>
+<div class="h-[240px] w-full relative">
+<svg class="w-full h-full overflow-visible" viewBox="0 0 1000 240">
+<line class="chart-grid-line" x1="0" x2="1000" y1="200" y2="200"></line>
+<line class="chart-grid-line" x1="0" x2="1000" y1="140" y2="140"></line>
+<line class="chart-grid-line" x1="0" x2="1000" y1="80" y2="80"></line>
+<path d="M0 180 Q 100 190, 200 160 T 400 140 T 600 120 T 800 100 T 1000 80 V 240 H 0 Z" fill="rgba(2, 36, 72, 0.05)"></path>
+<path d="M0 180 Q 100 190, 200 160 T 400 140 T 600 120 T 800 100 T 1000 80" fill="none" stroke="#022448" stroke-width="2.5"></path>
+<path d="M0 210 Q 150 200, 300 150 T 500 100 T 750 60 T 1000 30" fill="none" stroke="#F5A623" stroke-width="2.5"></path>
+</svg>
+<div class="flex justify-between px-2 mt-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+<span>Jan</span><span>Fev</span><span>Mar</span><span>Abr</span><span>Mai</span><span>Jun</span>
+</div>
+</div>
+</div>
+<div class="bg-[#f0f2f5] p-8 rounded-xl mb-10 border-l-8 border-[#F5A623]">
+<div class="flex items-center justify-between mb-8">
+<div class="flex items-center gap-4">
+<h2 class="text-2xl font-extrabold font-headline text-primary">O que fazer agora?</h2>
+<span class="bg-error-container text-error px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">3 urgentes</span>
+</div>
+<button class="amber-gradient text-white px-8 py-3 rounded-lg font-bold text-sm flex items-center gap-2 shadow-lg hover:scale-[1.02] transition-all">
+<span class="material-symbols-outlined text-sm">bolt</span> Ver minha fila
+            </button>
+</div>
+<div class="grid grid-cols-3 gap-6">
+<div class="bg-white p-5 rounded-xl flex items-center gap-4 shadow-sm">
+<div class="w-10 h-10 rounded-full bg-error-container text-error flex items-center justify-center"><span class="material-symbols-outlined">priority_high</span></div>
+<div><p class="text-xs font-bold text-primary">Renovação Crítica</p><p class="text-[10px] text-slate-500">Expira em 48 horas</p></div>
+</div>
+<div class="bg-white p-5 rounded-xl flex items-center gap-4 shadow-sm">
+<div class="w-10 h-10 rounded-full bg-secondary-fixed text-[#835500] flex items-center justify-center"><span class="material-symbols-outlined">warning</span></div>
+<div><p class="text-xs font-bold text-primary">Doc. Pendente</p><p class="text-[10px] text-slate-500">Análise de Compliance</p></div>
+</div>
+<div class="bg-white p-5 rounded-xl flex items-center gap-4 shadow-sm">
+<div class="w-10 h-10 rounded-full bg-blue-50 text-primary flex items-center justify-center"><span class="material-symbols-outlined">person_alert</span></div>
+<div><p class="text-xs font-bold text-primary">Risco de Churn</p><p class="text-[10px] text-slate-500">Tier Enterprise</p></div>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-5 gap-10 mb-10">
+<div class="col-span-3 bg-surface-container-lowest p-8 rounded-xl shadow-[0_24px_40px_rgba(25,28,29,0.03)]">
+<h3 class="text-lg font-extrabold font-headline text-primary mb-6">Performance por operador</h3>
+<div class="space-y-6">
+<div class="space-y-2">
+<div class="flex justify-between items-center text-xs font-bold text-slate-600"><span>Carlos Mendes</span><span>R$ 1.2M</span></div>
+<div class="h-3 w-full bg-slate-100 rounded-full overflow-hidden">
+<div class="h-full bg-[#F5A623] rounded-full" style="width: 85%"></div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between items-center text-xs font-bold text-slate-600"><span>Ana Paula</span><span>R$ 980k</span></div>
+<div class="h-3 w-full bg-slate-100 rounded-full overflow-hidden">
+<div class="h-full bg-[#F5A623] rounded-full" style="width: 70%"></div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between items-center text-xs font-bold text-slate-600"><span>Ricardo Lima</span><span>R$ 820k</span></div>
+<div class="h-3 w-full bg-slate-100 rounded-full overflow-hidden">
+<div class="h-full bg-[#F5A623] rounded-full opacity-80" style="width: 60%"></div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between items-center text-xs font-bold text-slate-600"><span>Beatriz Silva</span><span>R$ 450k</span></div>
+<div class="h-3 w-full bg-slate-100 rounded-full overflow-hidden">
+<div class="h-full bg-[#F5A623] rounded-full opacity-60" style="width: 35%"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="col-span-2 bg-surface-container-lowest p-8 rounded-xl shadow-[0_24px_40px_rgba(25,28,29,0.03)] flex flex-col items-center justify-center text-center">
+<h3 class="text-lg font-extrabold font-headline text-primary mb-2">Taxa de Conversão</h3>
+<p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-6">Média Geral</p>
+<div class="relative w-48 h-24 overflow-hidden">
+<svg class="w-full h-full" viewBox="0 0 100 50">
+<path d="M10 50 A 40 40 0 0 1 90 50" fill="none" stroke="#e1e3e4" stroke-linecap="round" stroke-width="8"></path>
+<path d="M10 50 A 40 40 0 0 1 70 20" fill="none" stroke="#022448" stroke-linecap="round" stroke-width="8"></path>
+<line stroke="#F5A623" stroke-linecap="round" stroke-width="2" x1="50" x2="70" y1="50" y2="20"></line>
+<circle cx="50" cy="50" fill="#F5A623" r="3"></circle>
+</svg>
+</div>
+<div class="mt-2">
+<span class="text-4xl font-extrabold font-headline text-primary">60.5%</span>
+<p class="text-[10px] text-emerald-600 font-bold mt-1">+2.4% vs mês anterior</p>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-10">
+<section>
+<h3 class="text-lg font-extrabold font-headline text-primary mb-6">Contratos vencendo</h3>
+<div class="space-y-3">
+<div class="bg-surface-container-lowest p-4 rounded-xl flex justify-between items-center">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-xs font-bold">IT</div>
+<div><p class="text-xs font-bold text-primary">Itaú Unibanco</p><p class="text-[10px] text-slate-400">Renovação Anual</p></div>
+</div>
+<div class="text-right"><p class="text-xs font-bold text-primary">R$ 450k</p><p class="text-[10px] text-error font-medium">em 4 dias</p></div>
+</div>
+<div class="bg-surface-container-lowest p-4 rounded-xl flex justify-between items-center">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-xs font-bold">BT</div>
+<div><p class="text-xs font-bold text-primary">BTG Pactual</p><p class="text-[10px] text-slate-400">Suporte Premium</p></div>
+</div>
+<div class="text-right"><p class="text-xs font-bold text-primary">R$ 120k</p><p class="text-[10px] text-amber-600 font-medium">em 12 dias</p></div>
+</div>
+</div>
+</section>
+<section>
+<h3 class="text-lg font-extrabold font-headline text-primary mb-6">Docs pendentes</h3>
+<div class="space-y-3">
+<div class="bg-surface-container-lowest p-4 rounded-xl flex justify-between items-center">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center"><span class="material-symbols-outlined text-sm">description</span></div>
+<div><p class="text-xs font-bold text-primary">Procuração_PJ.pdf</p><p class="text-[10px] text-slate-400">Magalu</p></div>
+</div>
+<button class="text-[10px] font-bold px-3 py-1.5 rounded-lg bg-primary text-white">Resolver</button>
+</div>
+<div class="bg-surface-container-lowest p-4 rounded-xl flex justify-between items-center">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center"><span class="material-symbols-outlined text-sm">description</span></div>
+<div><p class="text-xs font-bold text-primary">Aditivo_SLA_V2.docx</p><p class="text-[10px] text-slate-400">Localiza</p></div>
+</div>
+<button class="text-[10px] font-bold px-3 py-1.5 rounded-lg bg-primary text-white">Resolver</button>
+</div>
+</div>
+</section>
+</div>
+</main>
+<div class="fixed bottom-8 left-1/2 -translate-x-1/2 glass-panel p-2 rounded-2xl shadow-2xl flex items-center gap-1 z-50 border border-white/20">
+<button class="flex items-center gap-2 px-4 py-2 text-xs font-bold text-primary hover:bg-slate-100 rounded-xl transition-all">
+<span class="material-symbols-outlined text-lg">add_circle</span> Novo Cliente
+    </button>
+<div class="w-[1px] h-6 bg-slate-200 mx-1"></div>
+<button class="flex items-center gap-2 px-4 py-2 text-xs font-bold text-primary hover:bg-slate-100 rounded-xl transition-all">
+<span class="material-symbols-outlined text-lg">post_add</span> Gerar Contrato
+    </button>
+</div>
+
+</body></html>

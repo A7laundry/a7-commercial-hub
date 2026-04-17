@@ -94,9 +94,9 @@ export default function DashboardPage() {
           transition={{ duration: 0.35, delay: 0.07 }}
         >
           <KpiClientsInPipeline
-            totalAccounts={data?.totalAccounts ?? 0}
+            totalAccounts={pipelineData?.stats.totalAccounts ?? 0}
             activeAccounts={data?.activeAccounts ?? 0}
-            isLoading={isLoading}
+            isLoading={pipelineLoading}
           />
         </motion.div>
 

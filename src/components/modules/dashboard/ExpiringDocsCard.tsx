@@ -2,7 +2,10 @@ import { FileX, ArrowRight } from "lucide-react"
 import { DocumentStatusBadge } from "@/components/modules/documents/DocumentStatusBadge"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
-import type { DocumentSummary } from "@/hooks/dashboard/useDashboardData"
+type DocumentSummary = {
+  id: string; name: string; account_id: string | null; account_name: string | null
+  contract_id: string | null; expires_at: string; status: string; daysUntilExpiry: number
+}
 
 export function ExpiringDocsCard({ documents }: { documents: DocumentSummary[] }) {
   return (

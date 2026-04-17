@@ -20,9 +20,27 @@ async function getTenantId(supabase: Awaited<ReturnType<typeof createClient>>) {
   return data.tenant_id as string
 }
 
+const STAGE_LABEL: Record<PipelineStage, string> = {
+  lead:       "Lead",
+  em_contato: "Em contato",
+  proposta:   "Proposta",
+  sucesso:    "Sucesso",
+  cliente:    "Cliente ativo",
+  recorrente: "Recorrente",
+}
+
 export async function movePipelineStage(accountId: string, stage: PipelineStage) {
   const supabase = await createClient()
-  const tenantId = await getTenantId(supabase)
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: "Not authenticated" }
+
+  const { data: tenantRow } = await supabase
+    .from("tenant_users")
+    .select("tenant_id")
+    .eq("user_id", user.id)
+    .single()
+  if (!tenantRow) return { error: "No tenant found" }
+  const tenantId = tenantRow.tenant_id as string
 
   const { error } = await supabase
     .from("accounts")
@@ -31,6 +49,16 @@ export async function movePipelineStage(accountId: string, stage: PipelineStage)
     .eq("tenant_id", tenantId)
 
   if (error) return { error: error.message }
+
+  // Log stage change to timeline (best-effort — don't block on failure)
+  await supabase.from("account_timeline").insert({
+    tenant_id: tenantId,
+    account_id: accountId,
+    event_type: "stage_changed",
+    summary: `Movido para ${STAGE_LABEL[stage] ?? stage} no Kanban`,
+    created_by: user.id,
+  })
+
   revalidatePath("/pipeline")
   revalidatePath(`/accounts/${accountId}`)
   return { error: null }

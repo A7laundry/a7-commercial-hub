@@ -73,7 +73,7 @@ export function useDashboardMonth(tenantId: string) {
 
         supabase
           .from("account_timeline")
-          .select("id, created_by, created_at, event_type, description, account_id")
+          .select("id, created_by, created_at, event_type, summary, account_id")
           .eq("tenant_id", tenantId)
           .order("created_at", { ascending: false })
           .limit(8),
@@ -131,7 +131,7 @@ export function useDashboardMonth(tenantId: string) {
       const recentActivity = timelineRows.map((t) => ({
         id: t.id as string,
         eventType: (t.event_type as string | null) ?? "unknown",
-        description: t.description as string | null,
+        description: t.summary as string | null,
         accountName: t.account_id ? (accountNameMap.get(t.account_id as string) ?? null) : null,
         accountId: t.account_id as string | null,
         createdAt: t.created_at as string,

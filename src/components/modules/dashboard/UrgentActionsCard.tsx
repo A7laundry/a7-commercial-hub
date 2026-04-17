@@ -1,7 +1,10 @@
 import { AlertTriangle, AlertCircle, ArrowRight } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
-import type { UrgentAction } from "@/hooks/dashboard/useDashboardData"
+type UrgentAction = {
+  id: string; type: string; title: string; subtitle: string; href: string
+  severity: "critical" | "warning"
+}
 
 export function UrgentActionsCard({ actions }: { actions: UrgentAction[] }) {
   if (actions.length === 0) {

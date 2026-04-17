@@ -1,0 +1,225 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - navigation [ref=e3]:
+      - generic [ref=e4]: A7.
+      - generic [ref=e5]:
+        - link "Como funciona" [ref=e6] [cursor=pointer]:
+          - /url: "#como-funciona"
+        - link "Depoimentos" [ref=e7] [cursor=pointer]:
+          - /url: "#depoimentos"
+        - link "Começar grátis" [ref=e8] [cursor=pointer]:
+          - /url: /login
+    - generic [ref=e9]:
+      - img "Caos vs Controle — A7 Comercial" [ref=e11]
+      - generic:
+        - generic:
+          - generic: "746"
+      - generic:
+        - generic:
+          - generic: "384"
+      - generic:
+        - generic:
+          - generic: "990"
+      - generic:
+        - generic:
+          - generic: "75"
+      - generic:
+        - generic:
+          - generic: "431"
+      - img
+      - generic [ref=e13]:
+        - generic [ref=e14]:
+          - generic [ref=e15]: CRM Comercial para Lavanderias
+          - heading "Quantos clientes você perdeu sem saber?" [level=1] [ref=e16]:
+            - text: Quantos clientes você
+            - text: perdeu sem saber?
+          - paragraph [ref=e17]:
+            - text: O A7 organiza sua carteira, centraliza o WhatsApp da equipe e dispara campanhas para os clientes certos.
+            - strong [ref=e18]: Venda mais. Sem aumentar o time.
+          - generic [ref=e19]:
+            - link "Começar grátis por 15 dias" [ref=e20] [cursor=pointer]:
+              - /url: /login
+              - text: Começar grátis por 15 dias
+              - img [ref=e21]
+            - link "Ver como funciona →" [ref=e23] [cursor=pointer]:
+              - /url: "#como-funciona"
+          - paragraph [ref=e24]: Sem cartão de crédito. Sem compromisso.
+        - generic [ref=e25]:
+          - generic [ref=e26]: Scroll
+          - img [ref=e27]
+    - generic [ref=e31]:
+      - paragraph [ref=e32]: O Diagnóstico
+      - heading "Seu time atende. Mas não existe processo. Você cresce. Mas não sabe o porquê." [level=2] [ref=e33]:
+        - text: Seu time atende. Mas não existe processo.
+        - text: Você cresce. Mas não sabe o porquê.
+      - paragraph [ref=e34]: Sem CRM, sem pipeline, sem histórico de cliente — cada venda depende da memória de alguém. Isso tem um custo invisível, todo dia.
+      - generic [ref=e35]:
+        - generic [ref=e36]:
+          - img [ref=e38]
+          - heading "WhatsApp sem controle" [level=3] [ref=e40]
+          - paragraph [ref=e41]: Cada vendedor atende pelo próprio celular. Sem histórico, sem atribuição, sem visibilidade do que está sendo prometido.
+        - generic [ref=e42]:
+          - img [ref=e44]
+          - heading "Clientes sumindo em silêncio" [level=3] [ref=e46]
+          - paragraph [ref=e47]: Você não sabe qual cliente parou de comprar. Não tem alerta. Não tem fila de reativação. Descobre quando é tarde.
+        - generic [ref=e48]:
+          - img [ref=e50]
+          - heading "Sem pipeline de vendas" [level=3] [ref=e52]
+          - paragraph [ref=e53]: Quantos deals abertos você tem hoje? Qual o valor total? Qual a taxa de conversão? Se você não sabe, o problema é esse.
+    - generic [ref=e55]:
+      - generic [ref=e56]:
+        - paragraph [ref=e57]: A Transformação
+        - heading "O mesmo time. Resultado completamente diferente." [level=2] [ref=e58]
+      - generic [ref=e59]:
+        - generic [ref=e60]:
+          - generic [ref=e61]:
+            - img [ref=e63]
+            - generic [ref=e65]: Antes
+          - list [ref=e66]:
+            - listitem [ref=e67]:
+              - img [ref=e69]
+              - generic [ref=e71]: Carteira de clientes no Excel ou na memória
+            - listitem [ref=e72]:
+              - img [ref=e74]
+              - generic [ref=e76]: WhatsApp pessoal misturado com o comercial
+            - listitem [ref=e77]:
+              - img [ref=e79]
+              - generic [ref=e81]: Sem pipeline — não sabe quantos deals estão abertos
+            - listitem [ref=e82]:
+              - img [ref=e84]
+              - generic [ref=e86]: Campanhas disparadas manualmente, sem segmentação
+            - listitem [ref=e87]:
+              - img [ref=e89]
+              - generic [ref=e91]: Cliente some e você descobre semanas depois
+        - generic [ref=e92]:
+          - generic [ref=e93]:
+            - img [ref=e95]
+            - generic [ref=e97]: Com A7
+          - list [ref=e98]:
+            - listitem [ref=e99]:
+              - img [ref=e101]
+              - generic [ref=e103]: CRM com histórico completo de cada cliente
+            - listitem [ref=e104]:
+              - img [ref=e106]
+              - generic [ref=e108]: Inbox de WhatsApp com atribuição e status da equipe
+            - listitem [ref=e109]:
+              - img [ref=e111]
+              - generic [ref=e113]: Pipeline de deals com conversão e valor em tempo real
+            - listitem [ref=e114]:
+              - img [ref=e116]
+              - generic [ref=e118]: Campanhas segmentadas com um clique
+            - listitem [ref=e119]:
+              - img [ref=e121]
+              - generic [ref=e123]: Alertas automáticos de clientes em risco de churn
+    - generic [ref=e125]:
+      - paragraph [ref=e126]: Como funciona
+      - heading "Três passos para dominar sua carteira." [level=2] [ref=e127]
+      - generic [ref=e128]:
+        - generic [ref=e129]:
+          - generic [ref=e131]: "01"
+          - heading "Importe sua carteira" [level=3] [ref=e132]
+          - paragraph [ref=e133]: Cadastre seus clientes e conecte o WhatsApp da equipe. Onboarding guiado, sem precisar de TI.
+        - generic [ref=e134]:
+          - generic [ref=e136]: "02"
+          - heading "O sistema te diz o que fazer" [level=3] [ref=e137]
+          - paragraph [ref=e138]: Fila de ações priorizadas, alertas de churn, contratos vencendo — você sempre sabe quem ligar hoje.
+        - generic [ref=e139]:
+          - generic [ref=e140]: "03"
+          - heading "Dispare, feche e repita" [level=3] [ref=e141]
+          - paragraph [ref=e142]: Campanhas de WhatsApp segmentadas, deals no pipeline, conversão rastreada. Venda com método.
+    - generic [ref=e144]:
+      - generic [ref=e145]:
+        - paragraph [ref=e146]: O sistema
+        - heading "Visibilidade comercial total. Em tempo real." [level=2] [ref=e147]
+      - generic [ref=e148]:
+        - generic [ref=e154]: a7comercial.app — Visão Comercial
+        - generic [ref=e155]:
+          - generic [ref=e156]:
+            - img [ref=e158]
+            - img [ref=e161]
+            - img [ref=e164]
+            - img [ref=e167]
+          - generic [ref=e169]:
+            - generic [ref=e170]:
+              - generic [ref=e171]:
+                - paragraph [ref=e172]: Clientes ativos
+                - paragraph [ref=e173]: "184"
+              - generic [ref=e174]:
+                - paragraph [ref=e175]: Pipeline aberto
+                - paragraph [ref=e176]: R$ 47.200
+              - generic [ref=e177]:
+                - paragraph [ref=e178]: Em risco de churn
+                - paragraph [ref=e179]: "7"
+              - generic [ref=e180]:
+                - paragraph [ref=e181]: Taxa de conversão
+                - paragraph [ref=e182]: 34%
+            - generic [ref=e183]:
+              - paragraph [ref=e184]: Faturamento semanal
+              - img [ref=e185]
+            - generic [ref=e188]:
+              - generic [ref=e190]:
+                - generic [ref=e193]: Prospecção
+                - generic [ref=e194]: "5"
+              - generic [ref=e198]:
+                - generic [ref=e201]: Proposta
+                - generic [ref=e202]: "8"
+              - generic [ref=e206]:
+                - generic [ref=e209]: Negociação
+                - generic [ref=e210]: "3"
+              - generic [ref=e214]:
+                - generic [ref=e217]: Fechado
+                - generic [ref=e218]: "12"
+    - generic [ref=e222]:
+      - generic [ref=e223]:
+        - paragraph [ref=e224]: O que dizem os donos de lavanderia
+        - heading "Resultados reais. Palavras reais." [level=2] [ref=e225]
+      - generic [ref=e226]:
+        - generic [ref=e227]:
+          - generic [ref=e228]: “
+          - paragraph [ref=e229]: A gente não sabia quais clientes estavam em risco. Com o A7, a fila de urgências aparece todo dia — meu time sabe exatamente quem ligar.
+          - generic [ref=e230]:
+            - paragraph [ref=e231]: Carlos Menezes
+            - paragraph [ref=e232]: Lavanderia Express — São Paulo, SP
+        - generic [ref=e233]:
+          - generic [ref=e234]: “
+          - paragraph [ref=e235]: Antes cada vendedor atendia pelo próprio WhatsApp. Hoje tudo fica no inbox do A7, com histórico e atribuição. A gestão mudou completamente.
+          - generic [ref=e236]:
+            - paragraph [ref=e237]: Fernanda Rodrigues
+            - paragraph [ref=e238]: LavaMax — Belo Horizonte, MG
+        - generic [ref=e239]:
+          - generic [ref=e240]: “
+          - paragraph [ref=e241]: Disparei uma campanha de reativação para 60 clientes inativos e fechei 11 contratos em 2 semanas. Nunca tinha conseguido isso antes.
+          - generic [ref=e242]:
+            - paragraph [ref=e243]: Roberto Santos
+            - paragraph [ref=e244]: CleanPro — Rio de Janeiro, RJ
+    - generic [ref=e246]:
+      - paragraph [ref=e247]: Sua decisão
+      - heading "Você pode continuar vendendo na base do improviso." [level=2] [ref=e248]:
+        - text: Você pode continuar vendendo
+        - text: na base do improviso.
+      - heading "Ou começar a vender com método." [level=2] [ref=e249]
+      - paragraph [ref=e250]: 15 dias grátis. Sem cartão. Sua carteira organizada em minutos.
+      - link "Começar grátis agora" [ref=e251] [cursor=pointer]:
+        - /url: /login
+        - text: Começar grátis agora
+        - img [ref=e252]
+      - generic [ref=e254]:
+        - generic [ref=e255]: Sem contrato
+        - generic [ref=e256]: ·
+        - generic [ref=e257]: Cancele quando quiser
+        - generic [ref=e258]: ·
+        - generic [ref=e259]: Suporte incluso
+    - contentinfo [ref=e260]:
+      - generic [ref=e261]:
+        - generic [ref=e262]: A7.
+        - generic [ref=e263]:
+          - link "Privacidade" [ref=e264] [cursor=pointer]:
+            - /url: "#"
+          - link "Termos" [ref=e265] [cursor=pointer]:
+            - /url: "#"
+          - link "Contato" [ref=e266] [cursor=pointer]:
+            - /url: "#"
+        - paragraph [ref=e267]: © 2025 A7 Comercial. Todos os direitos reservados.
+  - button "Open Next.js Dev Tools" [ref=e273] [cursor=pointer]:
+    - img [ref=e274]
+  - alert [ref=e277]

@@ -2,7 +2,11 @@ import { FileText, ArrowRight } from "lucide-react"
 import { StatusBadge } from "@/components/shared/StatusBadge"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
-import type { ContractSummary } from "@/hooks/dashboard/useDashboardData"
+import type { ContractStatus } from "@/types"
+type ContractSummary = {
+  id: string; title: string; account_id: string; account_name: string
+  ends_at: string; status: ContractStatus; daysUntilExpiry: number
+}
 
 export function ExpiringContractsCard({ contracts }: { contracts: ContractSummary[] }) {
   return (
