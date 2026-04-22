@@ -13,7 +13,7 @@ import {
 } from "@/lib/commercial-intelligence"
 import type { Account, PipelineStage, CommercialStatus } from "@/types"
 import { cn } from "@/lib/utils"
-import { DollarSign, Clock, AlertTriangle, Pencil, ExternalLink, X, Save } from "lucide-react"
+import { Clock, AlertTriangle, Pencil, ExternalLink, X, Save } from "lucide-react"
 import { UserAvatar } from "@/components/shared/UserAvatar"
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
@@ -264,11 +264,15 @@ function AccountCard({
           </span>
         )}
         {account.estimated_value != null && (
-          <span className="flex items-center gap-1 text-green-700 font-medium ml-auto">
-            <DollarSign className="w-3 h-3" />
-            {account.estimated_value >= 1000
-              ? `${(account.estimated_value / 1000).toFixed(1)}k`
-              : account.estimated_value.toFixed(0)}
+          <span className="flex items-center gap-0.5 text-green-700 font-medium ml-auto">
+            <span className="text-[9px] font-bold">R$</span>
+            <span>
+              {account.estimated_value >= 1_000_000
+                ? `${(account.estimated_value / 1_000_000).toFixed(1)}M`
+                : account.estimated_value >= 1000
+                ? `${(account.estimated_value / 1000).toFixed(1)}k`
+                : account.estimated_value.toFixed(0)}
+            </span>
           </span>
         )}
       </div>
