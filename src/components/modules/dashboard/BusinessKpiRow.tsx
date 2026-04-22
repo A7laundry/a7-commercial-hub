@@ -10,6 +10,7 @@ type BusinessKpiRowProps = {
   revenueMonth: number
   totalAccounts: number
   activeAccounts: number
+  clientAccounts: number
   conversionRate: number
   totalCarteiraValue: number
   isLoading: boolean
@@ -106,10 +107,10 @@ export function KpiConversion({
 
 export function KpiTicketMedio({
   totalCarteiraValue,
-  totalAccounts,
+  clientAccounts,
   isLoading,
-}: Pick<BusinessKpiRowProps, "totalCarteiraValue" | "totalAccounts" | "isLoading">) {
-  const ticketMedio = totalCarteiraValue / Math.max(1, totalAccounts)
+}: Pick<BusinessKpiRowProps, "totalCarteiraValue" | "clientAccounts" | "isLoading">) {
+  const ticketMedio = totalCarteiraValue / Math.max(1, clientAccounts)
 
   return (
     <KpiCard

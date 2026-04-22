@@ -28,6 +28,7 @@ export type DashboardData = {
   // KPIs
   totalAccounts: number
   activeAccounts: number
+  clientAccounts: number   // apenas cliente + recorrente
   openAlerts: number
   totalCarteiraValue: number
 
@@ -47,7 +48,7 @@ export function useDashboardData(tenantId: string) {
       const [accountsRes, alertsRes, openAlertsCountRes] = await Promise.all([
         supabase
           .from("accounts")
-          .select("id, name, status, estimated_value")
+          .select("id, name, status, estimated_value, pipeline_stage")
           .eq("tenant_id", tenantId)
           .eq("in_pipeline", true)
           .limit(10000),
@@ -88,10 +89,14 @@ export function useDashboardData(tenantId: string) {
 
       // ── KPIs ─────────────────────────────────────────────────────────────
 
-      const totalCarteiraValue = accounts.reduce(
+      // Carteira = apenas clientes ativos e recorrentes (não leads/propostas)
+      const CLIENT_STAGES = ["cliente", "recorrente"]
+      const clientOnly = accounts.filter((a) => CLIENT_STAGES.includes(a.pipeline_stage as string))
+      const totalCarteiraValue = clientOnly.reduce(
         (sum, a) => sum + ((a.estimated_value as number | null) ?? 0),
         0,
       )
+      const clientAccounts = clientOnly.length
       const activeAccounts = accounts.filter((a) => a.status === "active").length
 
       // ── Accounts at risk (based on open alerts) ───────────────────────────
@@ -121,6 +126,7 @@ export function useDashboardData(tenantId: string) {
       return {
         totalAccounts: accounts.length,
         activeAccounts,
+        clientAccounts,
         openAlerts,
         totalCarteiraValue,
         recentAlerts: recentAlerts.filter((a) => a.status === "open").slice(0, 5),

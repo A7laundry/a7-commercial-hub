@@ -118,7 +118,7 @@ export default function DashboardPage() {
         >
           <KpiTicketMedio
             totalCarteiraValue={data?.totalCarteiraValue ?? 0}
-            totalAccounts={data?.totalAccounts ?? 0}
+            clientAccounts={data?.clientAccounts ?? 0}
             isLoading={isLoading}
           />
         </motion.div>
