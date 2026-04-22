@@ -89,8 +89,8 @@ export function useDashboardData(tenantId: string) {
 
       // ── KPIs ─────────────────────────────────────────────────────────────
 
-      // Carteira = apenas clientes ativos e recorrentes (não leads/propostas)
-      const CLIENT_STAGES = ["cliente", "recorrente"]
+      // Carteira = sucesso + cliente + recorrente (venda fechada a partir do Sucesso)
+      const CLIENT_STAGES = ["sucesso", "cliente", "recorrente"]
       const clientOnly = accounts.filter((a) => CLIENT_STAGES.includes(a.pipeline_stage as string))
       const totalCarteiraValue = clientOnly.reduce(
         (sum, a) => sum + ((a.estimated_value as number | null) ?? 0),

@@ -8,7 +8,7 @@ import { KanbanBoard } from "@/components/modules/pipeline/KanbanBoard"
 import { checkAutomationTriggers } from "./actions"
 import { Button } from "@/components/ui/button"
 import { RefreshCw, Zap, ArrowRight } from "lucide-react"
-import { formatCurrency } from "@/lib/utils"
+import { formatCurrencyBR } from "@/lib/format"
 
 const PIPELINE_STAGE_LABEL: Record<string, string> = {
   lead:       "Lead",
@@ -67,7 +67,7 @@ export default function PipelinePage() {
               <p className="text-sm text-muted-foreground mt-0.5">
                 {pipelineStats.totalAccounts} clientes ·{" "}
                 <span className="text-green-600 font-medium">
-                  {formatCurrency(pipelineStats.totalEstimatedValue, "BRL")} estimado
+                  {formatCurrencyBR(pipelineStats.closedValue)} em vendas fechadas
                 </span>
               </p>
             )}
@@ -121,7 +121,7 @@ export default function PipelinePage() {
                     {s.count}
                   </p>
                   <p className="text-xs font-medium text-[#F5A623] mt-0.5">
-                    {formatCurrency(s.value, "BRL")}
+                    {formatCurrencyBR(s.value)}
                   </p>
                 </div>
               )
@@ -135,7 +135,7 @@ export default function PipelinePage() {
                 {pipelineStats.totalAccounts}
               </p>
               <p className="text-xs font-medium text-[#F5A623] mt-0.5">
-                {formatCurrency(pipelineStats.totalEstimatedValue, "BRL")}
+                {formatCurrencyBR(pipelineStats.closedValue)}
               </p>
             </div>
 

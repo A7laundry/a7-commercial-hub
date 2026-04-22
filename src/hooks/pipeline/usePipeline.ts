@@ -34,7 +34,8 @@ export type OperatorByAccount = Map<string, OperatorRef>
 
 export type PipelineStats = {
   totalAccounts: number
-  totalEstimatedValue: number
+  totalEstimatedValue: number  // todos os estágios (para referência)
+  closedValue: number          // apenas sucesso + cliente + recorrente (vendas fechadas)
   byStage: Record<PipelineStage, { count: number; value: number }>
 }
 
@@ -113,9 +114,13 @@ export function usePipeline(tenantId: string) {
         return acc
       }, {} as PipelineBoard)
 
+      const CLOSED_STAGES: PipelineStage[] = ["sucesso", "cliente", "recorrente"]
       const stats: PipelineStats = {
         totalAccounts: accounts.length,
         totalEstimatedValue: accounts.reduce((s, a) => s + (a.estimated_value ?? 0), 0),
+        closedValue: accounts
+          .filter((a) => CLOSED_STAGES.includes(a.pipeline_stage as PipelineStage))
+          .reduce((s, a) => s + (a.estimated_value ?? 0), 0),
         byStage: PIPELINE_STAGES.reduce((acc, stage) => {
           const stageAccounts = board[stage]
           acc[stage] = {
