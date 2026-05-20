@@ -12,6 +12,7 @@ import { InsightsCard } from "@/components/modules/dashboard/InsightsCard"
 import { RecentAlertsCard } from "@/components/modules/dashboard/RecentAlertsCard"
 import { AccountsAtRiskCard } from "@/components/modules/dashboard/AccountsAtRiskCard"
 import { RecentAccountsCard } from "@/components/modules/dashboard/RecentAccountsCard"
+import { NewLeadsInbox } from "@/components/modules/dashboard/NewLeadsInbox"
 import { PendingReportBanner } from "@/components/modules/dashboard/PendingReportBanner"
 import { OperatorUsageCard } from "@/components/modules/dashboard/OperatorUsageCard"
 import { TodayLaunchesWidget } from "@/components/modules/dashboard/TodayLaunchesWidget"
@@ -229,6 +230,11 @@ export default function DashboardPage() {
       {/* ── Insights ──────────────────────────────────────────────────── */}
       <div className="mb-6">
         <InsightsCard insights={insights} isLoading={insightsLoading} />
+      </div>
+
+      {/* ── Leads Novos do WhatsApp (24h) ─────────────────────────────── */}
+      <div className="mb-4">
+        <NewLeadsInbox tenantId={tenant.id} />
       </div>
 
       {/* ── Operacional ───────────────────────────────────────────────── */}

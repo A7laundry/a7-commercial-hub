@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { createClient } from "@supabase/supabase-js"
 import { createHmac, timingSafeEqual } from "crypto"
 import { logger } from "@/lib/logger"
+import { createLeadFromWebhook } from "@/lib/lead-capture"
 
 const admin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -211,17 +212,19 @@ async function handleMetaWebhook(
             .maybeSingle()
 
           let tenant_id = mapping?.tenant_id ?? null
-          const account_id = mapping?.account_id ?? null
+          let account_id = mapping?.account_id ?? null
 
           // If no phone_mapping, identify tenant via whatsapp_tenant_config
           // (maps the business phoneNumberId → tenant_id)
+          const phoneNumberIdFromMeta = (metadata?.phone_number_id as string | undefined) ?? null
+          const displayPhoneFromMeta  = (metadata?.display_phone_number as string | undefined) ?? null
+
           if (!tenant_id) {
-            const phoneNumberId = metadata?.phone_number_id as string | undefined
-            if (phoneNumberId) {
+            if (phoneNumberIdFromMeta) {
               const { data: tenantConfig } = await admin
                 .from("whatsapp_tenant_config")
                 .select("tenant_id")
-                .eq("phone_number_id", phoneNumberId)
+                .eq("phone_number_id", phoneNumberIdFromMeta)
                 .maybeSingle()
               tenant_id = tenantConfig?.tenant_id ?? null
             }
@@ -238,6 +241,52 @@ async function handleMetaWebhook(
               metadata: { phone: from, wa_message_id },
             })
             continue
+          }
+
+          // ── Lead capture ─────────────────────────────────────────────────
+          // Se tenant resolvido mas SEM phone_mapping → lead NOVO do site.
+          // Cria Account (pipeline_stage=lead) + Deal + phone_mapping + timeline
+          // antes de seguir com o insert da mensagem.
+          if (!account_id) {
+            try {
+              const leadResult = await createLeadFromWebhook({
+                admin,
+                tenant_id,
+                sender_phone: from,
+                first_message: text,
+                message_timestamp: timestamp,
+                phone_number_id: phoneNumberIdFromMeta,
+                display_phone: displayPhoneFromMeta,
+              })
+              account_id = leadResult.account_id
+
+              logger.info({
+                event: leadResult.is_new
+                  ? "whatsapp.lead.created"
+                  : "whatsapp.lead.race_recovered",
+                status: "ok",
+                tenant_id,
+                entity_id: leadResult.account_id,
+                metadata: {
+                  phone: from,
+                  wa_message_id,
+                  parsed_tag: leadResult.parsed_tag,
+                  lp_label: leadResult.lp_info?.lp_label ?? null,
+                  unit: leadResult.unit_info?.unit ?? null,
+                },
+              })
+            } catch (leadErr) {
+              const errMsg = leadErr instanceof Error ? leadErr.message : String(leadErr)
+              logger.error({
+                event: "whatsapp.lead.create_failed",
+                status: "error",
+                tenant_id,
+                error: errMsg,
+                metadata: { phone: from, wa_message_id },
+              })
+              // Não bloqueia o fluxo — a mensagem é gravada órfã (account_id=null)
+              // como comportamento atual de fallback.
+            }
           }
 
           // Upsert conversation (atomic unread_count increment)
