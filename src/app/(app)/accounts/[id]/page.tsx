@@ -20,6 +20,7 @@ import { ContractsTable } from "@/components/modules/contracts/ContractsTable"
 import { DocumentsList } from "@/components/modules/documents/DocumentsList"
 import { OpportunityPanel } from "@/components/modules/accounts/OpportunityPanel"
 import { useAccountDeals } from "@/hooks/deals/useAccountDeals"
+import { CopilotDraftBox } from "@/components/modules/accounts/CopilotDraftBox"
 import { WhatsAppTimeline } from "@/components/modules/accounts/WhatsAppTimeline"
 import { QuickActions } from "@/components/modules/accounts/QuickActions"
 import { AccountTimeline } from "@/components/modules/accounts/AccountTimeline"
@@ -391,6 +392,7 @@ export default function AccountDetailPage({
             <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">WhatsApp</span>
           </div>
           <div className="p-4">
+            <CopilotDraftBox accountId={id} />
             <WhatsAppTimeline tenantId={tenant.id} accountId={id} />
           </div>
         </div>
